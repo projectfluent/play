@@ -1,0 +1,126 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Helvetica, "Fira Sans", Arial, sans-serif;
+    background-color: #f7f7f7;
+    color: #222;
+}
+
+.app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app__header {
+    flex: 0;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.app__title {
+    font-size: 2rem;
+    font-weight: normal;
+    margin: 0;
+}
+
+.app__nav {
+    margin-left: 1rem;
+}
+
+.app__panels {
+    flex: 1;
+}
+
+.panellist {
+    display: flex;
+}
+
+.panellist__button {
+    margin: .2rem;
+    padding: .3rem .5rem;
+    border: outset 2px #999;
+    background-color: #ffa;
+}
+
+.panellist__button:hover,
+.panellist__button:focus {
+    background-color: #ffc;
+}
+
+.panellist__button:active,
+.panellist__button--active {
+    border: inset 2px #999;
+}
+
+.panels {
+    display: flex;
+    height: 100%;
+}
+
+.panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #ddd;
+    padding: 5px;
+}
+
+.panel--white {
+    background-color: #fff;
+}
+
+.panel:last-child {
+    border-right: none;
+}
+
+.panel__title {
+    color: #666;
+    font-size: .8rem;
+    font-weight: normal;
+}
+
+.translations__editor,
+.externals__editor {
+    flex: 1;
+    margin: 0 0 -5px -5px;
+}
+
+.translations__editor {
+    background-color: #fff !important;
+}
+
+.externals__editor {
+    background-color: transparent !important;
+}
+
+.message {
+    display: flex;
+    margin: .3rem 0;
+}
+
+.message__id {
+    flex: 1;
+}
+
+.message__value {
+    flex: 2;
+}
+
+.message__id code {
+    padding: 2px;
+    margin-right: 1rem;
+    background-color: #fff;
+}
+
+.error__name {
+    display: block;
+    margin-bottom: .3rem;
+}
+
+.error__message {
+    display: block;
+    margin-bottom: 1rem;
+}
