@@ -5,7 +5,8 @@ import Editor from './editor';
 import { change_translations } from './actions';
 
 function TranslationsPanel(props) {
-    const { value, change_translations } = props;
+    const { value, annotations, change_translations } = props;
+
     return (
         <section className="panel panel--white">
             <h1 className="panel__title">Translations</h1>
@@ -14,6 +15,7 @@ function TranslationsPanel(props) {
                 className="translations__editor"
                 gutter={true}
                 value={value}
+                annotations={annotations}
                 onChange={change_translations}
             />
         </section>
@@ -21,7 +23,13 @@ function TranslationsPanel(props) {
 }
 
 const mapState = state => ({
-    value: state.translations
+    value: state.translations,
+    annotations: state.parse_errors.map(err => ({
+        type: 'error',
+        text: err.message,
+        row: err.lineNumber - 1,
+        column: err.columnNumber
+    }))
 });
 
 const mapDispatch = {

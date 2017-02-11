@@ -6,17 +6,24 @@ import 'brace/mode/json';
 import './editor-mode-fluent.js';
 
 class Editor extends Component {
+    componentWillUpdate() {
+        const { annotations } = this.props;
+        this.editor.getSession().setAnnotations(annotations);
+    }
+
     componentDidMount(){
         const {
-            mode, gutter = "true", value, onChange
+            mode, gutter = "true", value, annotations, onChange
         } = this.props;
-        const editor = brace.edit(this.root);
 
-        editor.setValue(value);
-        editor.clearSelection();
-        editor.on('change', () => onChange(editor.getValue()));
+        this.editor = brace.edit(this.root);
 
-        editor.setOptions({
+        this.editor.setValue(value);
+        this.editor.getSession().setAnnotations(annotations);
+        this.editor.clearSelection();
+        this.editor.on('change', () => onChange(this.editor.getValue()));
+
+        this.editor.setOptions({
             selectionStyle: 'text',
             highlightActiveLine: false,
             highlightSelectedWord: false,
@@ -48,7 +55,8 @@ class Editor extends Component {
             theme: `ace/theme/github`
         });
 
-        editor.getSession().setOptions({
+        this.editor.getSession().setOptions({
+            firstLineNumber: 1,
             useWorker: false,
             useSoftTabs: true,
             tabSize: 4,
