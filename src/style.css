@@ -34,24 +34,24 @@ body {
     flex: 1;
 }
 
-.panellist {
+.panelslist {
     display: flex;
 }
 
-.panellist__button {
+.panelslist__button {
     margin: .2rem;
     padding: .3rem .5rem;
     border: outset 2px #999;
     background-color: #ffa;
 }
 
-.panellist__button:hover,
-.panellist__button:focus {
+.panelslist__button:hover,
+.panelslist__button:focus {
     background-color: #ffc;
 }
 
-.panellist__button:active,
-.panellist__button--active {
+.panelslist__button:active,
+.panelslist__button--active {
     border: inset 2px #999;
 }
 

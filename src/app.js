@@ -1,6 +1,6 @@
 import React from 'react';
 
-import PanelList from './panel-list';
+import PanelsList from './panels-list';
 import Panels from './panels';
 
 import './style.css';
@@ -11,7 +11,7 @@ export default function App() {
             <header className="app__header">
                 <h1 className="app__title">Fluent Playground</h1>
                 <nav className="app__nav">
-                    <PanelList />
+                    <PanelsList />
                 </nav>
             </header>
 

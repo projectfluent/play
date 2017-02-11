@@ -3,15 +3,15 @@ import { connect } from 'react-redux';
 
 import { toggle_panel } from './actions';
 
-function PanelList(props) {
+function PanelsList(props) {
     const { visible_panels, toggle_panel } = props;
     return (
-        <div className="panellist">
+        <div className="panelslist">
             <button
                 className={
                     visible_panels.has('translations')
-                        ? 'panellist__button panellist__button--active'
-                        : 'panellist__button'
+                        ? 'panelslist__button panelslist__button--active'
+                        : 'panelslist__button'
                 }
                 onClick={evt => toggle_panel('translations', evt)}>
                 Translations
@@ -20,8 +20,8 @@ function PanelList(props) {
             <button
                 className={
                     visible_panels.has('external')
-                        ? 'panellist__button panellist__button--active'
-                        : 'panellist__button'
+                        ? 'panelslist__button panelslist__button--active'
+                        : 'panelslist__button'
                 }
                 onClick={evt => toggle_panel('external', evt)}>
                 External Data
@@ -30,8 +30,8 @@ function PanelList(props) {
             <button
                 className={
                     visible_panels.has('errors')
-                        ? 'panellist__button panellist__button--active'
-                        : 'panellist__button'
+                        ? 'panelslist__button panelslist__button--active'
+                        : 'panelslist__button'
                 }
                 onClick={evt => toggle_panel('errors', evt)}>
                 Errors
@@ -40,8 +40,8 @@ function PanelList(props) {
             <button
                 className={
                     visible_panels.has('output')
-                        ? 'panellist__button panellist__button--active'
-                        : 'panellist__button'
+                        ? 'panelslist__button panelslist__button--active'
+                        : 'panelslist__button'
                 }
                 onClick={evt => toggle_panel('output', evt)}>
                 Output
@@ -66,4 +66,4 @@ function mapDispatch(dispatch) {
 }
 
 
-export default connect(mapState, mapDispatch)(PanelList);
+export default connect(mapState, mapDispatch)(PanelsList);
