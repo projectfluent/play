@@ -1,6 +1,27 @@
 import {
-    create_context, format_messages, parse_externals, default_state
-} from './state';
+    parse_translations, create_context, format_messages, parse_externals,
+} from './fluent';
+
+// defaults
+
+const translations = 'hello-world = Hello, { $who }!';
+const [ast, parse_errors] = parse_translations(translations);
+const externals = { who: 'world' };
+const externals_string = JSON.stringify(externals, null, 4);
+const ctx = create_context(translations);
+const [out, format_errors] = format_messages(ctx, externals);
+
+const default_state = {
+    translations,
+    parse_errors,
+    format_errors,
+    externals,
+    externals_errors: [],
+    externals_string,
+    ast,
+    ctx,
+    out
+};
 
 export default function reducer(state = {
     ...default_state,
@@ -21,31 +42,34 @@ export default function reducer(state = {
         case 'CHANGE_TRANSLATIONS': {
             const { value } = action;
             const { externals } = state;
-            const context = create_context(value);
-            const [outputs, fmt_errors] = format_messages(context, externals)
+            const ctx = create_context(value);
+            const [ast, parse_errors] = parse_translations(value);
+            const [out, format_errors] = format_messages(ctx, externals);
 
             return {
                 ...state,
                 translations: value,
-                translations_errors: [...fmt_errors],
-                context,
-                outputs
+                parse_errors,
+                format_errors,
+                ast,
+                ctx,
+                out
             };
         }
         case 'CHANGE_EXTERNALS': {
             const { value } = action;
-            const { context } = state;
+            const { ctx } = state;
 
             const [externals, externals_errors] = parse_externals(value);
-            const [outputs, fmt_errors] = format_messages(context, externals)
+            const [out, format_errors] = format_messages(ctx, externals);
 
             return {
                 ...state,
                 externals,
                 externals_errors,
                 externals_string: value,
-                translations_errors: [...fmt_errors],
-                outputs
+                format_errors,
+                out
             };
         }
         default:

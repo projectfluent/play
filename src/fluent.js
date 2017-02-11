@@ -1,5 +1,9 @@
 /* global Fluent */
 
+export function parse_translations(translations) {
+    return Fluent.syntax.parser.parse(translations);
+}
+
 export function create_context(translations) {
     const context = new Fluent.MessageContext('en-US');
     context.addMessages(translations);
@@ -21,22 +25,4 @@ export function parse_externals(externals) {
     } catch (err) {
         return [{}, [err]];
     }
-}
-
-// defaults
-
-const translations = 'hello-world = Hello, { $who }!';
-const externals = { who: 'world' };
-const externals_string = JSON.stringify(externals, null, 4);
-const context = create_context(translations);
-const [outputs, fmt_errors] = format_messages(context, externals);
-
-export const default_state = {
-    translations,
-    translations_errors: [...fmt_errors],
-    externals,
-    externals_errors: [],
-    externals_string,
-    context,
-    outputs
 }

@@ -25,9 +25,17 @@ function ErrorsPanel(props) {
 }
 
 function mapState(state) {
-    const { externals_errors, translations_errors } = state;
+    const {
+        externals_errors,
+        parse_errors,
+        format_errors,
+    } = state;
     return {
-        errors: [...externals_errors, ...translations_errors]
+        errors: [
+            ...externals_errors,
+            ...parse_errors,
+            ...format_errors
+        ]
     };
 }
 

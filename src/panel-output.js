@@ -14,12 +14,12 @@ function Message(props) {
 }
 
 function OutputPanel(props) {
-    const { outputs } = props;
+    const { messages } = props;
     
     return (
         <section className="panel">
             <h1 className="panel__title">Output</h1>
-            {Array.from(outputs).map(([id, value]) => (
+            {Array.from(messages).map(([id, value]) => (
                 <Message key={id} id={id} value={value} />
             ))}
         </section>
@@ -27,7 +27,7 @@ function OutputPanel(props) {
 }
 
 const mapState = state => ({
-    outputs: state.outputs
+    messages: state.out
 });
 
 export default connect(mapState)(OutputPanel);
