@@ -597,7 +597,7 @@ function valuesOf(opts) {
  * The role of the FTL resolver is to format a translation object to an
  * instance of `FTLType`.
  *
- * Translations can contain references to other entities or external arguments,
+ * Translations can contain references to other messages or external arguments,
  * conditional logic in form of select expressions, traits which describe their
  * grammatical features, and can use FTL builtins which make use of the `Intl`
  * formatters to format numbers, dates, lists and more into the context's
@@ -607,17 +607,17 @@ function valuesOf(opts) {
  * translation as possible.  In rare situations where the resolver didn't know
  * how to recover from an error it will return an instance of `FTLNone`.
  *
- * `EntityReference`, `MemberExpression` and `SelectExpression` resolve to raw
- * Runtime Entries objects and the result of the resolution needs to be passed
- * into `Value` to get their real value.  This is useful for composing
- * expressions.  Consider:
+ * `MessageReference`, `VariantExpression`, `AttributeExpression` and
+ * `SelectExpression` resolve to raw Runtime Entries objects and the result of
+ * the resolution needs to be passed into `Value` to get their real value.
+ * This is useful for composing expressions.  Consider:
  *
  *     brand-name[nominative]
  *
- * which is a `MemberExpression` with properties `obj: EntityReference` and
- * `key: Keyword`.  If `EntityReference` was resolved eagerly, it would
- * instantly resolve to the value of the `brand-name` entity.  Instead, we want
- * to get the entity object and look for its `nominative` trait.
+ * which is a `VariantExpression` with properties `id: MessageReference` and
+ * `key: Keyword`.  If `MessageReference` was resolved eagerly, it would
+ * instantly resolve to the value of the `brand-name` message.  Instead, we
+ * want to get the message object and look for its `nominative` variant.
  *
  * All other expressions (except for `FunctionReference` which is only used in
  * `CallExpression`) resolve to an instance of `FTLType`, which must then be
@@ -651,20 +651,20 @@ function DefaultMember(env, members, def) {
 
 
 /**
- * Resolve a reference to an entity to the entity object.
+ * Resolve a reference to a message to the message object.
  *
  * @private
  */
-function EntityReference(env, {name}) {
+function MessageReference(env, {name}) {
   const { ctx, errors } = env;
-  const entity = ctx.messages.get(name);
+  const message = ctx.messages.get(name);
 
-  if (!entity) {
-    errors.push(new ReferenceError(`Unknown entity: ${name}`));
+  if (!message) {
+    errors.push(new ReferenceError(`Unknown message: ${name}`));
     return new FTLNone(name);
   }
 
-  return entity;
+  return message;
 }
 
 
@@ -674,9 +674,9 @@ function EntityReference(env, {name}) {
  * @private
  */
 function VariantExpression(env, {id, key}) {
-  const entity = EntityReference(env, id);
-  if (entity instanceof FTLNone) {
-    return entity;
+  const message = MessageReference(env, id);
+  if (message instanceof FTLNone) {
+    return message;
   }
 
   const { ctx, errors } = env;
@@ -688,9 +688,9 @@ function VariantExpression(env, {id, key}) {
       node[0].exp === null;
   }
 
-  if (isVariantList(entity.val)) {
+  if (isVariantList(message.val)) {
     // Match the specified key against keys of each variant, in order.
-    for (const variant of entity.val[0].vars) {
+    for (const variant of message.val[0].vars) {
       const variantKey = Value(env, variant.key);
       if (keyword.match(ctx, variantKey)) {
         return variant;
@@ -699,7 +699,7 @@ function VariantExpression(env, {id, key}) {
   }
 
   errors.push(new ReferenceError(`Unknown variant: ${keyword.toString(ctx)}`));
-  return Value(env, entity);
+  return Value(env, message);
 }
 
 
@@ -709,23 +709,23 @@ function VariantExpression(env, {id, key}) {
  * @private
  */
 function AttributeExpression(env, {id, name}) {
-  const entity = EntityReference(env, id);
-  if (entity instanceof FTLNone) {
-    return entity;
+  const message = MessageReference(env, id);
+  if (message instanceof FTLNone) {
+    return message;
   }
 
-  if (entity.attrs) {
+  if (message.attrs) {
     // Match the specified name against keys of each attribute.
-    for (const attrName in entity.attrs) {
+    for (const attrName in message.attrs) {
       if (name === attrName) {
-        return entity.attrs[name];
+        return message.attrs[name];
       }
     }
   }
 
   const { errors } = env;
   errors.push(new ReferenceError(`Unknown attribute: ${name}`));
-  return Value(env, entity);
+  return Value(env, message);
 }
 
 /**
@@ -802,8 +802,8 @@ function Value(env, expr) {
     case 'call':
       return CallExpression(env, expr);
     case 'ref': {
-      const entity = EntityReference(env, expr);
-      return Value(env, entity);
+      const message = MessageReference(env, expr);
+      return Value(env, message);
     }
     case 'attr': {
       const attr = AttributeExpression(env, expr);
@@ -973,19 +973,19 @@ function Pattern(env, ptn) {
  *
  * @param   {MessageContext} ctx
  * @param   {Object}         args
- * @param   {Object}         entity
+ * @param   {Object}         message
  * @param   {Array}          errors
  * @returns {FTLType}
  */
-function resolve(ctx, args, entity, errors = []) {
+function resolve(ctx, args, message, errors = []) {
   const env = {
     ctx, args, errors, dirty: new WeakSet()
   };
-  return Value(env, entity);
+  return Value(env, message);
 }
 
 /**
- * An `L10nError` with information about language and entity ID in which
+ * An `L10nError` with information about language and message ID in which
  * the error happened.
  */
 class L10nError extends Error {
@@ -1498,7 +1498,7 @@ class EntriesParser {
 
       const exp = this.getSelectorExpression();
 
-      // EntityReference in this place may be an entity reference, like:
+      // MessageReference in this place may be an entity reference, like:
       // `call(foo)`, or, if it's followed by `:` it will be a key-value pair.
       if (exp.type !== 'ref' ||
          exp.namespace !== undefined) {
@@ -1884,13 +1884,13 @@ class MessageContext {
    * Add a translation resource to the context.
    *
    * The translation resource must use the FTL syntax.  It will be parsed by
-   * the context and each translation unit (entity) will be available in the
+   * the context and each translation unit (message) will be available in the
    * `messages` map by its identifier.
    *
    *     ctx.addMessages('foo = Foo');
    *     ctx.messages.get('foo');
    *
-   *     // Returns a raw representation of the 'foo' entity.
+   *     // Returns a raw representation of the 'foo' message.
    *
    * Parsed entities should be formatted with the `format` method in case they
    * contain logic (references, select expressions etc.).
@@ -1908,9 +1908,9 @@ class MessageContext {
   }
 
   /**
-   * Format an entity to a string or null.
+   * Format a message to a string or null.
    *
-   * Format a raw `entity` from the context's `messages` map into a string (or
+   * Format a raw `message` from the context's `messages` map into a string (or
    * a null if it has a null value).  `args` will be used to resolve references
    * to external arguments inside of the translation.
    *
@@ -1932,28 +1932,28 @@ class MessageContext {
    *
    *     [<ReferenceError: Unknown external: name>]
    *
-   * @param   {Object | string}    entity
+   * @param   {Object | string}    message
    * @param   {Object | undefined} args
    * @param   {Array}              errors
    * @returns {?string}
    */
-  format(entity, args, errors) {
+  format(message, args, errors) {
     // optimize entities which are simple strings with no attributes
-    if (typeof entity === 'string') {
-      return entity;
+    if (typeof message === 'string') {
+      return message;
     }
 
     // optimize simple-string entities with attributes
-    if (typeof entity.val === 'string') {
-      return entity.val;
+    if (typeof message.val === 'string') {
+      return message.val;
     }
 
     // optimize entities with null values
-    if (entity.val === undefined) {
+    if (message.val === undefined) {
       return null;
     }
 
-    const result = resolve(this, args, entity, errors);
+    const result = resolve(this, args, message, errors);
     return result instanceof FTLNone ? null : result;
   }
 
@@ -2018,7 +2018,7 @@ class Entry extends Node {
 class Message extends Entry {
   constructor(id, value = null, attributes = null, comment = null) {
     super();
-    this.type = 'Entity';
+    this.type = 'Message';
     this.id = id;
     this.value = value;
     this.attributes = attributes;
@@ -2058,7 +2058,7 @@ class NumberExpression extends Expression {
   }
 }
 
-class MessageReference extends Expression {
+class MessageReference$1 extends Expression {
   constructor(id) {
     super();
     this.type = 'MessageReference';
@@ -2193,7 +2193,7 @@ var ast = Object.freeze({
 	Expression: Expression,
 	StringExpression: StringExpression,
 	NumberExpression: NumberExpression,
-	MessageReference: MessageReference,
+	MessageReference: MessageReference$1,
 	ExternalArgument: ExternalArgument$1,
 	SelectExpression: SelectExpression$1,
 	AttributeExpression: AttributeExpression$1,
@@ -2212,6 +2212,7 @@ var ast = Object.freeze({
 
 class ParserStream {
   constructor(string) {
+    this.string = string;
     this.iter = string[Symbol.iterator]();
     this.buf = [];
     this.peekIndex = 0;
@@ -2297,6 +2298,14 @@ class ParserStream {
     return this.index;
   }
 
+  getLineNumber() {
+    return this.string.slice(1, this.index).split('\n').length;
+  }
+
+  getColumnNumber() {
+    return this.index - this.string.lastIndexOf('\n', this.index - 1);
+  }
+
   getPeekIndex() {
     return this.peekIndex;
   }
@@ -2327,6 +2336,33 @@ class ParserStream {
 
     this.index = this.peekIndex;
   }
+}
+
+function error(ps, message) {
+  const err = new SyntaxError(message);
+  err.lineNumber = ps.getLineNumber();
+  err.columnNumber = ps.getColumnNumber();
+  return err;
+}
+
+function getErrorSlice(source, start, end) {
+  const len = source.length;
+
+  let startPos;
+  let sliceLen = end - start;
+
+  if (len < sliceLen) {
+    startPos = 0;
+    sliceLen = len;
+  } else if (start + sliceLen >= len) {
+    startPos = len - sliceLen - 1;
+  } else {
+    startPos = start;
+  }
+
+  return startPos > 0 ?
+    source.substr(startPos - 1, sliceLen) :
+    source.substr(0, sliceLen);
 }
 
 /* eslint no-magic-numbers: "off" */
@@ -2371,7 +2407,7 @@ class FTLParserStream extends ParserStream {
       return true;
     }
 
-    throw new Error(`ExpectedToken ${ch}`);
+    throw error(this, `Expected token ${ch}`);
   }
 
   takeCharIf(ch) {
@@ -2461,7 +2497,7 @@ class FTLParserStream extends ParserStream {
       this.next();
       return ret;
     }
-    throw new Error('ExpectedCharRange');
+    throw error(this, 'Expected char range');
   }
 
   takeIDChar() {
@@ -2496,26 +2532,6 @@ class FTLParserStream extends ParserStream {
 
     return this.takeChar(closure);
   }
-}
-
-function getErrorSlice(source, start, end) {
-  const len = source.length;
-
-  let startPos;
-  let sliceLen = end - start;
-
-  if (len < sliceLen) {
-    startPos = 0;
-    sliceLen = len;
-  } else if (start + sliceLen >= len) {
-    startPos = len - sliceLen - 1;
-  } else {
-    startPos = start;
-  }
-
-  return startPos > 0 ?
-    source.substr(startPos - 1, sliceLen) :
-    source.substr(0, sliceLen);
 }
 
 /*  eslint no-magic-numbers: [0]  */
@@ -2569,7 +2585,7 @@ function getEntry(ps) {
   if (comment) {
     return comment;
   }
-  throw Error('ExpectedEntry');
+  throw error(ps, 'Expected entry');
 }
 
 function getComment(ps) {
@@ -2637,7 +2653,7 @@ function getMessage(ps, comment) {
   }
 
   if (pattern === undefined && attrs === undefined) {
-    throw new Error('MissingField');
+    throw error(ps, 'Missing field');
   }
 
   return new Message(id, pattern, attrs, comment);
@@ -2663,7 +2679,7 @@ function getAttributes(ps) {
     const value = getPattern(ps);
 
     if (value === undefined) {
-      throw new Error('ExpectedField');
+      throw error(ps, 'Expected field');
     }
 
     attrs.push(new Attribute(key, value));
@@ -2692,7 +2708,7 @@ function getVariantKey(ps) {
   const ch = ps.current();
 
   if (!ch) {
-    throw new Error('Expected VariantKey');
+    throw error(ps, 'Expected VariantKey');
   }
 
   const cc = ch.charCodeAt(0);
@@ -2731,7 +2747,7 @@ function getVariants(ps) {
     const value = getPattern(ps);
 
     if (!value) {
-      throw new Error('ExpectedField');
+      throw error(ps, 'Expected field');
     }
 
     variants.push(new Variant(key, value, defaultIndex));
@@ -2742,7 +2758,7 @@ function getVariants(ps) {
   }
 
   if (!hasDefault) {
-    throw new Error('MissingDefaultVariant');
+    throw error(ps, 'Missing default variant');
   }
 
   return variants;
@@ -2774,7 +2790,7 @@ function getDigits(ps) {
   }
 
   if (num.length === 0) {
-    throw new Error('ExpectedCharRange');
+    throw error(ps, 'Expected char range');
   }
 
   return num;
@@ -2816,7 +2832,7 @@ function getPattern(ps) {
   while ((ch = ps.current())) {
     if (ch === '\n') {
       if (quoteDelimited) {
-        throw new Error('ExpectedToken');
+        throw error(ps, 'Expected roken');
       }
 
       if (firstLine && buffer.length !== 0) {
@@ -2841,7 +2857,7 @@ function getPattern(ps) {
         }
       } else {
         if (isIndented && !ps.takeCharIf(' ')) {
-          throw new Error('Generic');
+          throw error(ps, 'Generic');
         }
       }
 
@@ -2918,7 +2934,7 @@ function getExpression(ps) {
       const variants = getVariants(ps);
 
       if (variants.length === 0) {
-        throw new Error('MissingVariants');
+        throw error(ps, 'Missing variants');
       }
 
       ps.expectChar('\n');
@@ -2985,7 +3001,7 @@ function getCallArgs(ps) {
 
     if (ps.current() === ':') {
       if (exp.type !== 'MessageReference') {
-        throw new Error('ForbiddenKey');
+        throw error(ps, 'Forbidden key');
       }
 
       ps.next();
@@ -3017,7 +3033,7 @@ function getArgVal(ps) {
   } else if (ps.currentIs('"')) {
     return getString(ps);
   }
-  throw new Error('ExpectedField');
+  throw error(ps, 'Expected field');
 }
 
 function getString(ps) {
@@ -3040,7 +3056,7 @@ function getLiteral(ps) {
   const ch = ps.current();
 
   if (!ch) {
-    throw new Error('Expected literal');
+    throw error(ps, 'Expected literal');
   }
 
   if (ps.isNumberStart()) {
@@ -3054,7 +3070,7 @@ function getLiteral(ps) {
   }
 
   const name = getIdentifier(ps);
-  return new MessageReference(name);
+  return new MessageReference$1(name);
 
 }
 
