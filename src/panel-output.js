@@ -42,7 +42,7 @@ function OutputPanel(props) {
                     }
                     case 'JunkEntry': {
                         const { content } = entry;
-                        return <Junk value={content} />;
+                        return <Junk key={Date.now()} value={content} />;
                     }
                     case 'Comment':
                     case 'Section':
