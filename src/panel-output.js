@@ -13,20 +13,49 @@ function Message(props) {
     );
 }
 
+function Junk(props) {
+    const { value } = props;
+    return (
+        <div className="junk">
+            <div className="junk__id">
+                <code>SyntaxError</code>
+            </div>
+            <div className="junk__value">
+                <code>{value}</code>
+            </div>
+        </div>
+    );
+}
+
 function OutputPanel(props) {
-    const { messages } = props;
+    const { body, messages } = props;
     
     return (
         <section className="panel">
             <h1 className="panel__title">Output</h1>
-            {Array.from(messages).map(([id, value]) => (
-                <Message key={id} id={id} value={value} />
-            ))}
+            {body.map(entry => {
+                switch (entry.type) {
+                    case 'Message': {
+                        const { id: { name: id } } = entry;
+                        const value = messages.get(id);
+                        return <Message key={id} id={id} value={value} />;
+                    }
+                    case 'JunkEntry': {
+                        const { content } = entry;
+                        return <Junk value={content} />;
+                    }
+                    case 'Comment':
+                    case 'Section':
+                    default:
+                        return null;
+                }
+            })}
         </section>
     );
 }
 
 const mapState = state => ({
+    body: state.ast.body,
     messages: state.out
 });
 

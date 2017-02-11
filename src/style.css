@@ -6,6 +6,10 @@ body {
     color: #222;
 }
 
+code {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
 .app {
     height: 100vh;
     display: flex;
@@ -96,23 +100,39 @@ body {
     background-color: transparent !important;
 }
 
-.message {
+.message,
+.junk {
     display: flex;
     margin: .3rem 0;
 }
 
-.message__id {
+.message code {
+    font-size: .9rem;
+    padding: 2px;
+    background-color: #fff;
+    color: #666;
+}
+
+.junk code {
+    font-size: .9rem;
+
+    padding: 2px;
+    color: #999;
+}
+
+.message__id,
+.junk__id {
     flex: 1;
 }
 
-.message__value {
-    flex: 2;
+.junk__id,
+.junk__value {
+    font-style: italic;
 }
 
-.message__id code {
-    padding: 2px;
-    margin-right: 1rem;
-    background-color: #fff;
+.message__value,
+.junk__value {
+    flex: 2;
 }
 
 .error__name {

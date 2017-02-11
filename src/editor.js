@@ -41,7 +41,7 @@ class Editor extends Component {
             showLineNumbers: false,
             showGutter: gutter,
             displayIndentGuides: false,
-            fontSize: 18,
+            fontSize: 16,
             //fontFamily: 'monospace', 
             scrollPastEnd: false,
             fixedWidthGutter: false,
