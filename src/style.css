@@ -30,6 +30,12 @@ code {
     margin: 0;
 }
 
+.app__wordmark {
+    display: inline-block;
+    margin-right: 1rem;
+    font-family: 'Sarina', cursive;
+}
+
 .app__nav {
     margin-left: 1rem;
 }

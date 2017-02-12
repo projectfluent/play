@@ -9,7 +9,10 @@ export default function App() {
     return (
         <div className="app">
             <header className="app__header">
-                <h1 className="app__title">Fluent Playground</h1>
+                <h1 className="app__title">
+                    <span className="app__wordmark">fluent</span>
+                    playground
+                </h1>
                 <nav className="app__nav">
                     <PanelsList />
                 </nav>
