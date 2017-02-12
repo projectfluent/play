@@ -8,6 +8,6 @@ build:
 	npm run build
 
 deploy:
-	gh-pages -d build -o upstream
+	gh-pages -d build
 
 .PHONY: build
