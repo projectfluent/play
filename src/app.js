@@ -11,7 +11,7 @@ export default function App() {
             <header className="app__header">
                 <h1 className="app__title">
                     <span className="app__wordmark">fluent</span>
-                    playground
+                    Playground
                 </h1>
                 <nav className="app__nav">
                     <PanelsList />
