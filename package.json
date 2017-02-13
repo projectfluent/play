@@ -1,7 +1,7 @@
 {
-  "name": "fluent-play",
+  "name": "fluent-playground",
   "version": "0.1.0",
-  "homepage": "https://projectfluent.github.io/play",
+  "homepage": "http://projectfluent.io/play",
   "private": true,
   "devDependencies": {
     "gh-pages": "^0.12.0",
@@ -18,7 +18,6 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
     "deploy": "npm run build && gh-pages -d build"
   }
 }
