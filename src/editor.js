@@ -6,8 +6,8 @@ import 'brace/mode/json';
 import './editor-mode-fluent.js';
 
 class Editor extends Component {
-    componentWillUpdate() {
-        const { annotations } = this.props;
+    componentWillReceiveProps(nextProps) {
+        const { annotations } = nextProps;
         this.editor.getSession().setAnnotations(annotations);
     }
 
