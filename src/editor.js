@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 
 import brace from 'brace';
-import 'brace/theme/github';
 import 'brace/mode/json';
-import './editor-mode-fluent.js';
+
+import './editor-mode-fluent';
+import './editor-theme-fluent'
 
 class Editor extends Component {
     componentWillReceiveProps(nextProps) {
@@ -13,7 +14,7 @@ class Editor extends Component {
 
     componentDidMount(){
         const {
-            mode, gutter = "true", value, annotations, onChange
+            mode, gutter = "true", fontSize = 14, value, annotations, onChange
         } = this.props;
 
         this.editor = brace.edit(this.root);
@@ -48,11 +49,10 @@ class Editor extends Component {
             showLineNumbers: false,
             showGutter: gutter,
             displayIndentGuides: false,
-            fontSize: 16,
-            //fontFamily: 'monospace', 
+            fontSize,
             scrollPastEnd: false,
             fixedWidthGutter: false,
-            theme: `ace/theme/github`
+            theme: `ace/theme/fluent`
         });
 
         this.editor.getSession().setOptions({

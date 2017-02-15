@@ -13,6 +13,7 @@ function TranslationsPanel(props) {
             <Editor
                 mode="fluent"
                 className="translations__editor"
+                fontSize={16}
                 gutter={true}
                 value={value}
                 annotations={annotations}
