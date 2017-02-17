@@ -5,7 +5,7 @@ import {
 // defaults
 
 const translations = 'hello-world = Hello, { $who }!';
-const [ast, parse_errors] = parse_translations(translations);
+const [ast, annotations] = parse_translations(translations);
 const externals = { who: 'world' };
 const externals_string = JSON.stringify(externals, null, 4);
 const ctx = create_context(translations);
@@ -13,7 +13,7 @@ const [out, format_errors] = format_messages(ctx, externals);
 
 const default_state = {
     translations,
-    parse_errors,
+    annotations,
     format_errors,
     externals,
     externals_errors: [],
@@ -43,13 +43,13 @@ export default function reducer(state = {
             const { value } = action;
             const { externals } = state;
             const ctx = create_context(value);
-            const [ast, parse_errors] = parse_translations(value);
+            const [ast, annotations] = parse_translations(value);
             const [out, format_errors] = format_messages(ctx, externals);
 
             return {
                 ...state,
                 translations: value,
-                parse_errors,
+                annotations,
                 format_errors,
                 ast,
                 ctx,

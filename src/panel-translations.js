@@ -25,11 +25,11 @@ function TranslationsPanel(props) {
 
 const mapState = state => ({
     value: state.translations,
-    annotations: state.parse_errors.map(err => ({
+    annotations: state.annotations.map(annot => ({
         type: 'error',
-        text: err.message,
-        row: err.lineNumber - 1,
-        column: err.columnNumber
+        text: annot.message,
+        row: annot.line_offset,
+        column: annot.column_offset
     }))
 });
 

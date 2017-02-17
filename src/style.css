@@ -6,7 +6,7 @@ body {
     color: #222;
 }
 
-code {
+code, pre {
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
@@ -141,12 +141,30 @@ code {
     flex: 2;
 }
 
-.error__name {
-    display: block;
+.error,
+.annotation {
+    margin-bottom: 1rem;
+}
+
+.error__name,
+.annotation__name {
+    font-weight: bold;
     margin-bottom: .3rem;
 }
 
 .error__message {
-    display: block;
-    margin-bottom: 1rem;
+    font-size: .9rem;
+}
+
+.annotation__slice,
+.annotation__label {
+    margin: 0;
+    padding: 2px;
+    font-size: .9rem;
+    color: #666;
+    background-color: #fff;
+}
+
+.annotation__label {
+    color: #d14;
 }
