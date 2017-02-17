@@ -22,6 +22,8 @@ const default_state = {
 
 export default function reducer(state = {
     ...default_state,
+    is_fetching: false,
+    fetch_error: null,
     visible_panels: new Set(['translations', 'output'])
 }, action) {
     switch (action.type) {
@@ -69,7 +71,66 @@ export default function reducer(state = {
                 out
             };
         }
+        case 'REQUEST_GIST': {
+            return {
+                ...state,
+                is_fetching: true,
+            };
+        }
+        case 'ERROR_GIST': {
+            return {
+                ...state,
+                is_fetching: false,
+                fetch_error: 'Error fetching the gist',
+            };
+        }
+        case 'RECEIVE_GIST': {
+            const { files } = action.gist;
+            if (!has_required_files(files)) {
+                return {
+                    ...state,
+                    is_fetching: false,
+                    fetch_error: 'The gist does not contain Playground data.',
+                };
+            }
+
+            const translations = files['playground.ftl'].content;
+            const externals_string = files['playground.json'].content;
+
+            const ctx = create_context(translations);
+            const [ast, annotations] = parse_translations(translations);
+            const [externals, externals_errors] = parse_externals(
+                externals_string
+            );
+            const [out, format_errors] = format_messages(ctx, externals);
+
+            return {
+                ...state,
+                is_fetching: false,
+                translations,
+                annotations,
+                externals,
+                externals_errors,
+                externals_string,
+                format_errors,
+                ast,
+                ctx,
+                out
+            };
+        }
+        case 'RESET_ALL': {
+            return {
+                ...default_state,
+                is_fetching: false,
+                fetch_error: null,
+                visible_panels: new Set(['translations', 'output'])
+            };
+        }
         default:
             return state;
     }
+}
+
+function has_required_files(files) {
+    return ('playground.ftl' in files) && ('playground.json' in files);
 }

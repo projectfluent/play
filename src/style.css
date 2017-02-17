@@ -16,6 +16,21 @@ code, pre {
     flex-direction: column;
 }
 
+.app__modal {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.app__info,
+.app__error {
+    margin-bottom: 1rem;
+    font-style: italic;
+    color: #666;
+}
+
 .app__header {
     flex: 0;
     display: flex;
@@ -48,6 +63,7 @@ code, pre {
     display: flex;
 }
 
+.app__button,
 .panelslist__button {
     margin: .2rem;
     padding: .3rem .5rem;
@@ -55,11 +71,14 @@ code, pre {
     background-color: #ffa;
 }
 
+.app__button:hover,
+.app__button:hover,
 .panelslist__button:hover,
 .panelslist__button:focus {
     background-color: #ffc;
 }
 
+.app__button:active,
 .panelslist__button:active,
 .panelslist__button--active {
     border: inset 2px #999;
