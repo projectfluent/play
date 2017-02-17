@@ -29,12 +29,12 @@ function PanelsList(props) {
 
             <button
                 className={
-                    visible_panels.has('errors')
+                    visible_panels.has('console')
                         ? 'panelslist__button panelslist__button--active'
                         : 'panelslist__button'
                 }
-                onClick={evt => toggle_panel('errors', evt)}>
-                Errors
+                onClick={evt => toggle_panel('console', evt)}>
+                Console
             </button>
 
             <button

@@ -35,12 +35,12 @@ function AnnotationDisplay(props) {
     );
 }
 
-function ErrorsPanel(props) {
+function ConsolePanel(props) {
     const { annotations, errors } = props;
     
     return (
         <section className="panel">
-            <h1 className="panel__title">Errors</h1>
+            <h1 className="panel__title">Console</h1>
             {annotations.map((annot, idx) => (
                 <AnnotationDisplay key={idx} annotation={annot} />
             ))}
@@ -66,4 +66,4 @@ function mapState(state) {
     };
 }
 
-export default connect(mapState)(ErrorsPanel);
+export default connect(mapState)(ConsolePanel);
