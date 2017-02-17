@@ -18,7 +18,7 @@ function Junk(props) {
     return (
         <div className="junk">
             <div className="junk__id">
-                <code>SyntaxError</code>
+                <code>ParseError</code>
             </div>
             <div className="junk__value">
                 <code>{value}</code>
@@ -40,7 +40,7 @@ function OutputPanel(props) {
                         const value = messages.get(id);
                         return <Message key={id} id={id} value={value} />;
                     }
-                    case 'JunkEntry': {
+                    case 'Junk': {
                         const { content } = entry;
                         return <Junk key={Date.now()} value={content} />;
                     }
