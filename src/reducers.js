@@ -1,12 +1,9 @@
+import { translations, externals } from './defaults';
 import {
     parse_translations, create_context, format_messages, parse_externals,
 } from './fluent';
 
-// defaults
-
-const translations = 'hello-world = Hello, { $who }!';
 const [ast, annotations] = parse_translations(translations);
-const externals = { who: 'world' };
 const externals_string = JSON.stringify(externals, null, 4);
 const ctx = create_context(translations);
 const [out, format_errors] = format_messages(ctx, externals);
