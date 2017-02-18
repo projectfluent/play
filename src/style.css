@@ -40,6 +40,7 @@ code, pre {
 }
 
 .app__title {
+    flex: 1;
     font-size: 2rem;
     font-weight: normal;
     margin: 0;
@@ -51,8 +52,28 @@ code, pre {
     font-family: 'Sarina', cursive;
 }
 
-.app__nav {
-    margin-left: 1rem;
+.app__buttons,
+.app__links {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.app__links {
+    justify-content: flex-end;
+}
+
+.link,
+.link:visited {
+    display: inline-block;
+    margin-left: 2rem;
+    color: #06d;
+    text-decoration: none;
+}
+
+.link:hover {
+    color: #05c;
+    text-decoration: underline;
 }
 
 .app__panels {

@@ -92,8 +92,14 @@ class App extends Component {
                         <span className="app__wordmark">fluent</span>
                         Playground
                     </h1>
-                    <nav className="app__nav">
+
+                    <nav className="app__buttons">
                         <PanelsList />
+                    </nav>
+
+                    <nav className="app__links">
+                        <a className="link" href="http://projectfluent.io/fluent/guide">Syntax Guide</a>
+                        <a className="link" href="http://projectfluent.io">ProjectFluent.io</a>
                     </nav>
                 </header>
 
