@@ -2,6 +2,7 @@ import { translations, externals } from './defaults';
 import {
     parse_translations, create_context, format_messages, parse_externals,
 } from './fluent';
+import { validate_gist } from './github';
 
 const [ast, annotations] = parse_translations(translations);
 const externals_string = JSON.stringify(externals, null, 4);
@@ -23,7 +24,7 @@ const default_state = {
 export default function reducer(state = {
     ...default_state,
     is_fetching: false,
-    fetch_error: null,
+    fixture_error: null,
     visible_panels: new Set(['translations', 'output'])
 }, action) {
     switch (action.type) {
@@ -78,22 +79,27 @@ export default function reducer(state = {
             };
         }
         case 'ERROR_GIST': {
+            const { error } = action;
             return {
                 ...state,
                 is_fetching: false,
-                fetch_error: 'Error fetching the gist',
+                fixture_error: error
             };
         }
         case 'RECEIVE_GIST': {
-            const { files } = action.gist;
-            if (!has_required_files(files)) {
+            const { gist } = action;
+
+            try {
+                validate_gist(gist);
+            } catch(error) {
                 return {
                     ...state,
                     is_fetching: false,
-                    fetch_error: 'The gist does not contain Playground data.',
+                    fixture_error: error
                 };
             }
 
+            const { files } = gist;
             const translations = files['playground.ftl'].content;
             const externals_string = files['playground.json'].content;
 
@@ -122,15 +128,11 @@ export default function reducer(state = {
             return {
                 ...default_state,
                 is_fetching: false,
-                fetch_error: null,
+                fixture_error: null,
                 visible_panels: new Set(['translations', 'output'])
             };
         }
         default:
             return state;
     }
-}
-
-function has_required_files(files) {
-    return ('playground.ftl' in files) && ('playground.json' in files);
 }

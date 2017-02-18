@@ -1,4 +1,4 @@
-const GITHUB_API = 'https://api.github.com';
+import { request } from './github';
 
 export function toggle_panel(name) {
     return {
@@ -23,24 +23,15 @@ export function change_externals(value) {
 
 export function fetch_gist(id) {
     return async function(dispatch) {
-        dispatch({
-            type: 'REQUEST_GIST'
-        });
+        dispatch({ type: 'REQUEST_GIST' });
 
-        const url = `${GITHUB_API}/gists/${id}`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            return dispatch({
-                type: 'ERROR_GIST'
-            });
+        try {
+            var gist = await request('GET', `/gists/${id}`);
+        } catch(error) {
+            return dispatch({ type: 'ERROR_GIST', error });
         }
 
-        const gist = await response.json();
-        dispatch({
-            type: 'RECEIVE_GIST',
-            gist
-        });
+        dispatch({ type: 'RECEIVE_GIST', gist });
     };
 }
 
