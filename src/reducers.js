@@ -126,7 +126,7 @@ export default function reducer(state = {
             const translations = files['playground.ftl'].content;
             const externals_string = files['playground.json'].content;
 
-            const { locale } = state;
+            const { locale, dir } = parse_setup(files, state);
 
             const ctx = create_context(locale, translations);
             const [ast, annotations] = parse_translations(translations);
@@ -138,6 +138,8 @@ export default function reducer(state = {
             return {
                 ...state,
                 is_fetching: false,
+                locale,
+                dir,
                 translations,
                 annotations,
                 externals,
@@ -160,4 +162,23 @@ export default function reducer(state = {
         default:
             return state;
     }
+}
+
+function parse_setup(files, state) {
+    if (!files['setup.json']) {
+        return state;
+    }
+
+    const content = files['setup.json'].content;
+
+    try {
+        var setup = JSON.parse(content);
+    } catch (err) {
+        return state;
+    }
+
+    return {
+        locale: setup.locale || state.locale,
+        dir: setup.dir || state.dir,
+    };
 }
