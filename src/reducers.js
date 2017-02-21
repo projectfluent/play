@@ -28,6 +28,9 @@ export default function reducer(state = {
     dir: 'ltr',
     is_fetching: false,
     fixture_error: null,
+    is_creating: false,
+    create_error: null,
+    gist_id: null,
     visible_panels: new Set(['translations', 'output'])
 }, action) {
     switch (action.type) {
@@ -95,13 +98,14 @@ export default function reducer(state = {
                 out
             };
         }
-        case 'REQUEST_GIST': {
+        case 'REQUEST_GIST_FETCH': {
             return {
                 ...state,
                 is_fetching: true,
+                fixture_error: null
             };
         }
-        case 'ERROR_GIST': {
+        case 'ERROR_GIST_FETCH': {
             const { error } = action;
             return {
                 ...state,
@@ -109,7 +113,7 @@ export default function reducer(state = {
                 fixture_error: error
             };
         }
-        case 'RECEIVE_GIST': {
+        case 'RECEIVE_GIST_FETCH': {
             const { gist } = action;
 
             try {
@@ -151,10 +155,37 @@ export default function reducer(state = {
                 out
             };
         }
+        case 'REQUEST_GIST_CREATE': {
+            return {
+                ...state,
+                is_creating: true,
+                create_error: null,
+                gist_id: null
+            };
+        }
+        case 'ERROR_GIST_CREATE': {
+            const { error } = action;
+            return {
+                ...state,
+                is_creating: false,
+                create_error: error,
+                gist_id: null
+            };
+        }
+        case 'RECEIVE_GIST_CREATE': {
+            const { response: { id } } = action;
+
+            return {
+                ...state,
+                is_creating: false,
+                gist_id: id
+            };
+        }
         case 'RESET_ALL': {
             return {
                 ...default_state,
                 is_fetching: false,
+                is_creating: false,
                 fixture_error: null,
                 visible_panels: new Set(['translations', 'output'])
             };

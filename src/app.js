@@ -4,6 +4,7 @@ import query from 'query-string';
 
 import PanelsList from './panels-list';
 import Panels from './panels';
+import Share from './share';
 import { fetch_gist, reset_all } from './actions';
 
 import './style.css';
@@ -23,7 +24,7 @@ function FixtureError(props) {
     let error_message;
 
     switch (error.type) {
-        case 'FETCH_ERROR': {
+        case 'NETWORK_ERROR': {
             const { data: response } = error;
             error_message = (
                 <div className="app__error">
@@ -35,7 +36,7 @@ function FixtureError(props) {
             );
             break;
         }
-        case 'GIST_ERROR': {
+        case 'FIXTURE_ERROR': {
             error_message = (
                 <div className="app__error">
                     The gist does not appear to contain valid
@@ -59,7 +60,7 @@ function FixtureError(props) {
     return (
         <div className="app__modal">
             { error_message }
-            <button className="app__button" onClick={action}>
+            <button className="modal__button" onClick={action}>
                 Use defaults
             </button>
         </div>
@@ -95,6 +96,10 @@ class App extends Component {
 
                     <nav className="app__buttons">
                         <PanelsList />
+                    </nav>
+
+                    <nav className="app__share">
+                        <Share />
                     </nav>
 
                     <nav className="app__links">

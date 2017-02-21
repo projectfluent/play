@@ -84,7 +84,18 @@ code, pre {
     display: flex;
 }
 
-.app__button,
+.modal__button,
+.share__button {
+    margin: .2rem;
+    padding: .3rem .5rem;
+    border: outset 2px #999;
+}
+
+.share__error {
+    font-size: .8rem;
+    color: #666;
+}
+
 .panelslist__button {
     margin: .2rem;
     padding: .3rem .5rem;
@@ -92,14 +103,11 @@ code, pre {
     background-color: #ffa;
 }
 
-.app__button:hover,
-.app__button:hover,
 .panelslist__button:hover,
 .panelslist__button:focus {
     background-color: #ffc;
 }
 
-.app__button:active,
 .panelslist__button:active,
 .panelslist__button--active {
     border: inset 2px #999;
