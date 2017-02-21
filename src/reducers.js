@@ -4,12 +4,14 @@ import {
 } from './fluent';
 import { validate_gist } from './github';
 
+const locale = 'en-US';
 const [ast, annotations] = parse_translations(translations);
 const externals_string = JSON.stringify(externals, null, 4);
-const ctx = create_context(translations);
+const ctx = create_context(locale, translations);
 const [out, format_errors] = format_messages(ctx, externals);
 
 const default_state = {
+    locale,
     translations,
     annotations,
     format_errors,
@@ -23,6 +25,7 @@ const default_state = {
 
 export default function reducer(state = {
     ...default_state,
+    dir: 'ltr',
     is_fetching: false,
     fixture_error: null,
     visible_panels: new Set(['translations', 'output'])
@@ -41,8 +44,8 @@ export default function reducer(state = {
         }
         case 'CHANGE_TRANSLATIONS': {
             const { value } = action;
-            const { externals } = state;
-            const ctx = create_context(value);
+            const { locale, externals } = state;
+            const ctx = create_context(locale, value);
             const [ast, annotations] = parse_translations(value);
             const [out, format_errors] = format_messages(ctx, externals);
 
@@ -54,6 +57,26 @@ export default function reducer(state = {
                 ast,
                 ctx,
                 out
+            };
+        }
+        case 'CHANGE_LOCALE': {
+            const { value: locale } = action;
+            const { translations, externals } = state;
+            const ctx = create_context(locale, translations);
+            const [out, format_errors] = format_messages(ctx, externals);
+
+            return {
+                ...state,
+                locale,
+                format_errors,
+                ctx,
+                out
+            };
+        }
+        case 'CHANGE_DIR': {
+            return {
+                ...state,
+                dir: action.value
             };
         }
         case 'CHANGE_EXTERNALS': {
@@ -103,7 +126,9 @@ export default function reducer(state = {
             const translations = files['playground.ftl'].content;
             const externals_string = files['playground.json'].content;
 
-            const ctx = create_context(translations);
+            const { locale } = state;
+
+            const ctx = create_context(locale, translations);
             const [ast, annotations] = parse_translations(translations);
             const [externals, externals_errors] = parse_externals(
                 externals_string

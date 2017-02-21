@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import TranslationsPanel from './panel-translations';
-import ExternalsPanel from './panel-externals';
+import ConfigPanel from './panel-config';
 import ConsolePanel from './panel-console';
 import OutputPanel from './panel-output';
 
@@ -11,7 +11,7 @@ function Panels(props) {
     return (
         <div className="panels">
             { visible.has('translations') && <TranslationsPanel /> }
-            { visible.has('external') && <ExternalsPanel /> }
+            { visible.has('config') && <ConfigPanel /> }
             { visible.has('console') && <ConsolePanel /> }
             { visible.has('output') && <OutputPanel /> }
         </div>

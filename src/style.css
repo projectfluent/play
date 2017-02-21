@@ -130,6 +130,21 @@ code, pre {
     color: #666;
     font-size: .8rem;
     font-weight: normal;
+    margin-top: 2rem;
+}
+
+.panel__title:first-child {
+    margin-top: .6rem;
+}
+
+.setting {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.setting__name,
+.setting__value {
+    flex: 1;
 }
 
 .translations__editor,

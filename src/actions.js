@@ -14,6 +14,20 @@ export function change_translations(value) {
     };
 }
 
+export function change_locale(value) {
+    return {
+      type: 'CHANGE_LOCALE',
+      value
+    };
+}
+
+export function change_dir(value) {
+    return {
+      type: 'CHANGE_DIR',
+      value
+    };
+}
+
 export function change_externals(value) {
     return {
       type: 'CHANGE_EXTERNALS',

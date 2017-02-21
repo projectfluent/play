@@ -19,12 +19,12 @@ function PanelsList(props) {
 
             <button
                 className={
-                    visible_panels.has('external')
+                    visible_panels.has('config')
                         ? 'panelslist__button panelslist__button--active'
                         : 'panelslist__button'
                 }
-                onClick={evt => toggle_panel('external', evt)}>
-                External Data
+                onClick={evt => toggle_panel('config', evt)}>
+                Config
             </button>
 
             <button

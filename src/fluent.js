@@ -36,8 +36,8 @@ export function parse_translations(translations) {
     return [res, annotations];
 }
 
-export function create_context(translations) {
-    const context = new Fluent.MessageContext('en-US');
+export function create_context(locale, translations) {
+    const context = new Fluent.MessageContext(locale);
     context.addMessages(translations);
     return context;
 }
