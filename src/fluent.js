@@ -1,12 +1,14 @@
-/* global Fluent, FluentSyntax */
+import 'fluent-intl-polyfill';
+import { MessageContext } from 'fluent/compat';
+import { parse, lineOffset, columnOffset } from 'fluent-syntax/compat';
 
 function annotation_display(source, entry, annot) {
     const { name, message, pos } = annot;
 
     const slice = source.substring(entry.span.from, entry.span.to).trimRight();
-    const line_offset = FluentSyntax.lineOffset(source, pos);
-    const column_offset = FluentSyntax.columnOffset(source, pos);
-    const span_offset = FluentSyntax.lineOffset(source, entry.span.from);
+    const line_offset = lineOffset(source, pos);
+    const column_offset = columnOffset(source, pos);
+    const span_offset = lineOffset(source, entry.span.from);
     const head_len = line_offset - span_offset + 1;
     const lines = slice.split('\n');
     const head = lines.slice(0, head_len).join('\n');
@@ -23,7 +25,7 @@ function annotation_display(source, entry, annot) {
 }
 
 export function parse_translations(translations) {
-    const res = FluentSyntax.parse(translations);
+    const res = parse(translations);
     const annotations = res.body.reduce(
         (annots, entry) => annots.concat(
             entry.annotations.map(
@@ -37,7 +39,7 @@ export function parse_translations(translations) {
 }
 
 export function create_context(locale, translations) {
-    const context = new Fluent.MessageContext(locale);
+    const context = new MessageContext(locale);
     context.addMessages(translations);
     return context;
 }
