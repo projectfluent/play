@@ -1,6 +1,7 @@
 import 'fluent-intl-polyfill';
 import { MessageContext } from 'fluent/compat';
-import { parse, lineOffset, columnOffset } from 'fluent-syntax/compat';
+import { parse, lineOffset, columnOffset, Resource }
+    from 'fluent-syntax/compat';
 
 function annotation_display(source, entry, annot) {
     const { name, message, pos } = annot;
@@ -25,7 +26,16 @@ function annotation_display(source, entry, annot) {
 }
 
 export function parse_translations(translations) {
-    const res = parse(translations);
+    try {
+        var res = parse(translations);
+    }  catch (err) {
+        console.error(err);
+        return [
+          new Resource([]),
+          []
+        ];
+    }
+
     const annotations = res.body.reduce(
         (annots, entry) => annots.concat(
             entry.annotations.map(
