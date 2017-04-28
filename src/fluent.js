@@ -65,8 +65,17 @@ export function format_messages(context, externals) {
 
 export function parse_externals(externals) {
     try {
-        return [JSON.parse(externals), []];
+        var obj = JSON.parse(externals);
     } catch (err) {
         return [{}, [err]];
     }
+
+    for (const [key, val] of Object.entries(obj)) {
+      const milliseconds = Date.parse(val);
+      if (!isNaN(milliseconds)) {
+        obj[key] = new Date(milliseconds);
+      }
+    }
+
+    return [obj, []];
 }
