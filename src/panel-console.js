@@ -20,12 +20,12 @@ function ErrorDisplay(props) {
 
 function AnnotationDisplay(props) {
     const {
-        annotation: { name, message, line_offset, column_offset, head, tail }
+        annotation: { code, message, line_offset, column_offset, head, tail }
     } = props;
 
     return (
         <div className="annotation">
-            <div className="annotation__name">{name} on line {line_offset + 1}</div>
+            <div className="annotation__name">Parsing error {code} on line {line_offset + 1}</div>
             <pre className="annotation__slice">{head}</pre>
             <pre className="annotation__label">
                 {indent(column_offset)}⮤ {message}

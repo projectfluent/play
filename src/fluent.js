@@ -1,22 +1,24 @@
-import 'fluent-intl-polyfill';
+import 'fluent-intl-polyfill/compat';
 import { MessageContext } from 'fluent/compat';
-import { parse, lineOffset, columnOffset, Resource }
+import { FluentParser, lineOffset, columnOffset, Resource }
     from 'fluent-syntax/compat';
 
-function annotation_display(source, entry, annot) {
-    const { name, message, pos } = annot;
+const fluent_parser = new FluentParser();
 
-    const slice = source.substring(entry.span.from, entry.span.to).trimRight();
-    const line_offset = lineOffset(source, pos);
-    const column_offset = columnOffset(source, pos);
-    const span_offset = lineOffset(source, entry.span.from);
+function annotation_display(source, entry, annot) {
+    const { code, message, span: { start } } = annot;
+
+    const slice = source.substring(entry.span.start, entry.span.end).trimRight();
+    const line_offset = lineOffset(source, start);
+    const column_offset = columnOffset(source, start);
+    const span_offset = lineOffset(source, entry.span.start);
     const head_len = line_offset - span_offset + 1;
     const lines = slice.split('\n');
     const head = lines.slice(0, head_len).join('\n');
     const tail = lines.slice(head_len).join('\n');
 
     return {
-        name,
+        code,
         message,
         line_offset,
         column_offset,
@@ -27,7 +29,7 @@ function annotation_display(source, entry, annot) {
 
 export function parse_translations(translations) {
     try {
-        var res = parse(translations);
+        var res = fluent_parser.parse(translations);
     }  catch (err) {
         console.error(err);
         return [

@@ -18,7 +18,7 @@ function Junk(props) {
     return (
         <div className="junk">
             <div className="junk__id">
-                <code>ParseError</code>
+                <code>Parsing error</code>
             </div>
             <div className="junk__value">
                 <code dir={dir}>{value}</code>

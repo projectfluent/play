@@ -27,7 +27,7 @@ const mapState = state => ({
     value: state.translations,
     annotations: state.annotations.map(annot => ({
         type: 'error',
-        text: annot.message,
+        text: `${annot.code}: ${annot.message}`,
         row: annot.line_offset,
         column: annot.column_offset
     }))
