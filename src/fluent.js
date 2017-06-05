@@ -73,9 +73,11 @@ export function parse_externals(externals) {
     }
 
     for (const [key, val] of Object.entries(obj)) {
-      const milliseconds = Date.parse(val);
-      if (!isNaN(milliseconds)) {
-        obj[key] = new Date(milliseconds);
+      if (typeof val === 'string') {
+        const milliseconds = Date.parse(val);
+        if (!isNaN(milliseconds)) {
+          obj[key] = new Date(milliseconds);
+        }
       }
     }
 
