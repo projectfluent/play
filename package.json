@@ -4,20 +4,20 @@
   "homepage": "http://projectfluent.io/play",
   "private": true,
   "devDependencies": {
-    "gh-pages": "^0.12.0",
-    "react-scripts": "0.9.4"
+    "gh-pages": "^1.0.0",
+    "react-scripts": "1.0.7"
   },
   "dependencies": {
     "brace": "^0.10.0",
-    "fluent": "^0.4.0",
+    "fluent": "^0.4.1",
     "fluent-intl-polyfill": "^0.1.0",
-    "fluent-syntax": "^0.4.0",
+    "fluent-syntax": "^0.5.0",
     "query-string": "^4.3.2",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-redux": "^5.0.3",
     "redux": "^3.6.0",
-    "redux-logger": "^2.8.2",
+    "redux-logger": "^3.0.6",
     "redux-thunk": "^2.2.0"
   },
   "scripts": {

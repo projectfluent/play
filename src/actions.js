@@ -83,7 +83,7 @@ export function create_gist() {
 }
 
 export function reset_all() {
-    history.replaceState({ gist: null }, document.title, '?');
+    window.history.replaceState({ gist: null }, document.title, '?');
     return {
       type: 'RESET_ALL'
     };

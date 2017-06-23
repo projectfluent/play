@@ -69,7 +69,7 @@ function FixtureError(props) {
 
 class App extends Component {
     componentWillMount() {
-        const { gist } = query.parse(location.search);
+        const { gist } = query.parse(window.location.search);
 
         if (gist) {
             const { fetch_gist } = this.props;
