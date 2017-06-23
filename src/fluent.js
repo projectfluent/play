@@ -65,6 +65,8 @@ export function format_messages(context, externals) {
     return [outputs, errors];
 }
 
+const iso_re = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
 export function parse_externals(externals) {
     try {
         var obj = JSON.parse(externals);
@@ -73,9 +75,8 @@ export function parse_externals(externals) {
     }
 
     for (const [key, val] of Object.entries(obj)) {
-      const milliseconds = Date.parse(val);
-      if (!isNaN(milliseconds)) {
-        obj[key] = new Date(milliseconds);
+      if (iso_re.test(val)) {
+        obj[key] = new Date(val);
       }
     }
 

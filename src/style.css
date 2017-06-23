@@ -145,6 +145,11 @@ code, pre {
     margin-top: .6rem;
 }
 
+.panel__hint {
+    color: #666;
+    font-size: .8rem;
+}
+
 .setting {
     display: flex;
     margin-bottom: 1rem;
