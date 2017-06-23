@@ -19,6 +19,16 @@ function PanelsList(props) {
 
             <button
                 className={
+                    visible_panels.has('ast')
+                        ? 'panelslist__button panelslist__button--active'
+                        : 'panelslist__button'
+                }
+                onClick={evt => toggle_panel('ast', evt)}>
+                AST
+            </button>
+
+            <button
+                className={
                     visible_panels.has('config')
                         ? 'panelslist__button panelslist__button--active'
                         : 'panelslist__button'

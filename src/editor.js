@@ -14,7 +14,8 @@ class Editor extends Component {
 
     componentDidMount(){
         const {
-            mode, gutter = "true", fontSize = 14, value, annotations, onChange
+            mode, gutter = "true", fontSize = 14, readOnly = false, value,
+            annotations, onChange
         } = this.props;
 
         this.editor = brace.edit(this.root);
@@ -29,7 +30,7 @@ class Editor extends Component {
             selectionStyle: 'text',
             highlightActiveLine: false,
             highlightSelectedWord: false,
-            readOnly: false,
+            readOnly,
             cursorStyle: 'ace',
             mergeUndoDeltas: false,
             behavioursEnabled: false,
