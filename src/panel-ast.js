@@ -12,7 +12,7 @@ function ASTPanel(props) {
             <Editor
                 className="ast__editor"
                 mode="json"
-                readOnly={false}
+                readOnly={true}
                 gutter={false}
                 value={ast}
             />

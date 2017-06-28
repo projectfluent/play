@@ -6,16 +6,28 @@ import 'brace/mode/json';
 import './editor-mode-fluent';
 import './editor-theme-fluent'
 
+
 class Editor extends Component {
     componentWillReceiveProps(nextProps) {
-        const { annotations } = nextProps;
-        this.editor.getSession().setAnnotations(annotations);
+        // XXX We don't allow changing most of the Editor config here to avoid
+        // infinite loops between setValue and onChange.
+
+        const { annotations, value } = nextProps;
+
+        if (annotations) {
+            this.editor.getSession().setAnnotations(annotations);
+        }
+
+        if (value && !this.props.onChange) {
+            this.editor.setValue(value);
+            this.editor.clearSelection();
+        }
     }
 
     componentDidMount(){
         const {
-            mode, gutter = "true", fontSize = 14, readOnly = false, value,
-            annotations, onChange
+            annotations = [], fontSize = 14, gutter = true, mode = "fluent",
+            onChange, readOnly = false, value = ""
         } = this.props;
 
         this.editor = brace.edit(this.root);
@@ -24,7 +36,10 @@ class Editor extends Component {
         this.editor.getSession().setAnnotations(annotations);
         this.editor.clearSelection();
         this.editor.gotoLine(0);
-        this.editor.on('change', () => onChange(this.editor.getValue()));
+
+        if (onChange) {
+            this.editor.on('change', () => onChange(this.editor.getValue()));
+        }
 
         this.editor.setOptions({
             selectionStyle: 'text',
