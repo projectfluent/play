@@ -13,7 +13,7 @@ function Fetching() {
     return (
         <div className="app__modal">
             <div className="app__info">
-               Fetching…
+                Fetching…
             </div>
         </div>
     );
@@ -59,7 +59,7 @@ function FixtureError(props) {
 
     return (
         <div className="app__modal">
-            { error_message }
+            {error_message}
             <button className="modal__button" onClick={action}>
                 Use defaults
             </button>
@@ -103,13 +103,13 @@ class App extends Component {
                     </nav>
 
                     <nav className="app__links">
-                        <a className="link" href="http://projectfluent.io/fluent/guide">Syntax Guide</a>
-                        <a className="link" href="http://projectfluent.io">ProjectFluent.io</a>
+                        <a className="link" href="http://projectfluent.org/fluent/guide">Syntax Guide</a>
+                        <a className="link" href="http://projectfluent.org">projectfluent.org</a>
                     </nav>
                 </header>
 
                 <section className="app__panels">
-                    { content }
+                    {content}
                 </section>
             </div>
         );

@@ -1,7 +1,7 @@
 {
   "name": "fluent-playground",
   "version": "0.1.0",
-  "homepage": "http://projectfluent.io/play",
+  "homepage": "http://projectfluent.org/play",
   "private": true,
   "devDependencies": {
     "gh-pages": "^1.1.0",
