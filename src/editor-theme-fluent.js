@@ -44,20 +44,9 @@ function theme(acequire, exports, module) {
             font-style: italic;
         }
 
-        .ace-fluent .ace_section {
-            color: #666;
-        }
-
         .ace-fluent .ace_message {
             font-weight: bold;
         }
-
-        /*
-        .ace-fluent .ace_tag {
-            font-weight: normal;
-            color: #009926;
-        }
-        */
 
         .ace-fluent .ace_string {
             color: #1a1aa6;
@@ -67,7 +56,7 @@ function theme(acequire, exports, module) {
             color: #08c;
         }
 
-        .ace-fluent .ace_symbol {
+        .ace-fluent .ace_variantName {
             color: #222;
         }
 

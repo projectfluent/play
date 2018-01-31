@@ -1,5 +1,5 @@
 export const translations = 
-`// Try editing the translations here!
+`# Try editing the translations here!
 
 hello-world = Hello, world!
 

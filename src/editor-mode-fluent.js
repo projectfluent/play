@@ -20,20 +20,15 @@ function highlighting(acequire, exports, module) {
 
         const _ = '\\s*';
         const number = '[0-9]+(?:\\.[0-9]+)?';
-        const identifier = '[a-zA-Z_?-][a-zA-Z0-9_?-]*';
+        const identifier = '[a-zA-Z-][a-zA-Z0-9_?-]*';
         const word = '[^\\s{}\\[\\]\\\\]+';
-        const symbol = `${word}(?:[ \t]+${word})?`;
+        const variantName = `${word}(?:[ \t]+${word})?`;
 
         this.$rules = {
             "start" : [
                 {
                     token: "comment",
-                    regex: /^\/\/ .*$/
-                },
-                {
-                    token: "section",
-                    regex: /^\[\[/,
-                    push: "section"
+                    regex: /^#{1,3}($| .*$)/
                 },
                 {
                     token: "message.identifier",
@@ -50,21 +45,7 @@ function highlighting(acequire, exports, module) {
                     push: "value"
                 },
                 {
-                    token: "message.tag",
-                    regex: `^${_}#${word}$`,
-                },
-                {
                     defaultToken: "invalid"
-                }
-            ],
-            "section" : [
-                {
-                    token : "section",
-                    regex : /\]\]\s*$/,
-                    next: "pop"
-                },
-                {
-                    defaultToken: "section"
                 }
             ],
             "value" : [
@@ -101,8 +82,8 @@ function highlighting(acequire, exports, module) {
                     push: "value"
                 },
                 {
-                    regex : `^(${_})(\\*?\\[${_})(${symbol})(${_}\\])`,
-                    token : ["text", "operator", "symbol", "operator"],
+                    regex : `^(${_})(\\*?\\[${_})(${variantName})(${_}\\])`,
+                    token : ["text", "operator", "variantName", "operator"],
                     push: "value"
                 },
                 {
@@ -138,8 +119,8 @@ function highlighting(acequire, exports, module) {
                     token : "variable"
                 },
                 {
-                    regex : `(${identifier})(\\[${symbol}\\])`,
-                    token : ["message.identifier", "symbol"]
+                    regex : `(${identifier})(\\[${variantName}\\])`,
+                    token : ["message.identifier", "variantName"]
                 },
                 {
                     regex : `(${identifier})(\\.${identifier})`,
