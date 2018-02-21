@@ -20,7 +20,7 @@ function highlighting(acequire, exports, module) {
 
         const _ = '\\s*';
         const number = '[0-9]+(?:\\.[0-9]+)?';
-        const identifier = '[a-zA-Z-][a-zA-Z0-9_?-]*';
+        const identifier = '[a-zA-Z-][a-zA-Z0-9_-]*';
         const word = '[^\\s{}\\[\\]\\\\]+';
         const variantName = `${word}(?:[ \t]+${word})?`;
 
@@ -32,12 +32,8 @@ function highlighting(acequire, exports, module) {
                 },
                 {
                     token: "message.identifier",
-                    regex: `^${identifier}${_}=`,
+                    regex: `^-?${identifier}${_}=`,
                     push: "value"
-                },
-                {
-                    token : "message.identifier",
-                    regex: `^${identifier}${_}`,
                 },
                 {
                     token: "message.attribute",
@@ -91,7 +87,7 @@ function highlighting(acequire, exports, module) {
                     token : "string.quoted"
                 },
                 {
-                    regex : /[A-Z_?-]+/,
+                    regex : /[A-Z][A-Z_?-]*/,
                     token : "function.name",
                 },
                 {
@@ -119,7 +115,7 @@ function highlighting(acequire, exports, module) {
                     token : "variable"
                 },
                 {
-                    regex : `(${identifier})(\\[${variantName}\\])`,
+                    regex : `(-${identifier})(\\[${variantName}\\])`,
                     token : ["message.identifier", "variantName"]
                 },
                 {
@@ -131,14 +127,25 @@ function highlighting(acequire, exports, module) {
                     token : "message.identifier"
                 },
                 {
+                    regex : `-${identifier}`,
+                    token : "message.identifier"
+                },
+                {
                     regex : /\s*->\s*$/,
                     token : "operator",
+                },
+                {
+                    regex: /\s+/,
+                    token: "string"
                 },
                 {
                     regex : /}/,
                     token : "placeable",
                     next : "pop"
                 },
+                {
+                    defaultToken: "invalid"
+                }
             ]
         };
 
