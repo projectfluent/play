@@ -61,6 +61,7 @@ export function format_messages(context, externals) {
     const errors = [];
     for (const [id, message] of context.messages) {
         const formatted_message = {
+            id,
             value: context.format(message, externals, errors),
             attributes: Object.entries(message.attrs || {}).map(
                 ([attr_id, attr_value]) => ({

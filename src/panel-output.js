@@ -32,14 +32,14 @@ function Message(props) {
 }
 
 function Junk(props) {
-    const { value, dir } = props;
+    const { content, dir } = props;
     return (
         <div className="panel__row junk">
             <div className="junk__id">
                 <code>Parsing error</code>
             </div>
             <div className="junk__value">
-                <code dir={dir}>{value}</code>
+                <code dir={dir}>{content}</code>
             </div>
         </div>
     );
@@ -55,16 +55,23 @@ function OutputPanel(props) {
                 switch (entry.type) {
                     case 'Message': {
                         const { id: { name: id } } = entry;
-                        const {value, attributes} = messages.get(id);
+
+                        // Protect against differences between the tooling
+                        // parser and the runtime parser. If the runtime parser
+                        // didn't parse this message, don't try to show it
+                        // formatted.
+                        if (!messages.has(id)) {
+                            return null;
+                        }
+
                         return <Message key={id}
-                            id={id}
-                            value={value}
-                            attributes={attributes}
+                            {...messages.get(id)}
                             dir={dir}/>;
                     }
                     case 'Junk': {
-                        const { content } = entry;
-                        return <Junk key={Date.now()} value={content} dir={dir}/>;
+                        return <Junk key={Date.now()}
+                            {...entry}
+                            dir={dir}/>;
                     }
                     case 'Comment':
                     case 'Section':
