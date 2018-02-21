@@ -60,7 +60,16 @@ export function format_messages(context, externals) {
     const outputs = new Map(); 
     const errors = [];
     for (const [id, message] of context.messages) {
-        outputs.set(id, context.format(message, externals, errors)); 
+        const formatted_message = {
+            value: context.format(message, externals, errors),
+            attributes: Object.entries(message.attrs || {}).map(
+                ([attr_id, attr_value]) => ({
+                    id: attr_id,
+                    value: context.format(attr_value, externals, errors)
+                })
+            )
+        };
+        outputs.set(id, formatted_message);
     }
     return [outputs, errors];
 }

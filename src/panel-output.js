@@ -1,14 +1,32 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-function Message(props) {
-    const { id, value, dir } = props;
+function Attribute({id, value, dir}) {
     return (
-        <div className="message">
-            <div className="message__id">
-                <code>{id}</code>
+        <div className="attribute">
+            <div className="attribute__id">
+                <code>.{id}</code>
             </div>
-            <div className="message__value" dir={dir}>{value}</div>
+            <div className="attribute__value" dir={dir}>{value}</div>
+        </div>
+    );
+}
+
+function Message(props) {
+    const { id, value, attributes, dir } = props;
+    return (
+        <div className="panel__row">
+            <div className="message">
+                <div className="message__id">
+                    <code>{id}</code>
+                </div>
+                <div className="message__value" dir={dir}>{value}</div>
+            </div>
+            {attributes.map(
+                attr => <Attribute key={`${id}.${attr.id}`}
+                    {...attr}
+                    dir={dir}/>
+            )}
         </div>
     );
 }
@@ -16,7 +34,7 @@ function Message(props) {
 function Junk(props) {
     const { value, dir } = props;
     return (
-        <div className="junk">
+        <div className="panel__row junk">
             <div className="junk__id">
                 <code>Parsing error</code>
             </div>
@@ -37,8 +55,12 @@ function OutputPanel(props) {
                 switch (entry.type) {
                     case 'Message': {
                         const { id: { name: id } } = entry;
-                        const value = messages.get(id);
-                        return <Message key={id} id={id} value={value} dir={dir}/>;
+                        const {value, attributes} = messages.get(id);
+                        return <Message key={id}
+                            id={id}
+                            value={value}
+                            attributes={attributes}
+                            dir={dir}/>;
                     }
                     case 'Junk': {
                         const { content } = entry;

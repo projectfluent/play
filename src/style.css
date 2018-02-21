@@ -150,6 +150,10 @@ code, pre {
     font-size: .8rem;
 }
 
+.panel__row {
+    border-bottom: 1px solid #eee;
+}
+
 .setting {
     display: flex;
     margin-bottom: 1rem;
@@ -177,12 +181,14 @@ code, pre {
 }
 
 .message,
+.attribute,
 .junk {
     display: flex;
     margin: .3rem 0;
 }
 
-.message code {
+.message code,
+.attribute code {
     font-size: .9rem;
     padding: 2px;
     background-color: #fff;
@@ -191,24 +197,29 @@ code, pre {
 
 .junk code {
     font-size: .9rem;
-
+    font-style: italic;
     padding: 2px;
     color: #999;
 }
 
 .message__id,
+.attribute__id,
 .junk__id {
     flex: 1;
 }
 
-.junk__id,
-.junk__value {
-    font-style: italic;
-}
-
 .message__value,
+.attribute__value,
 .junk__value {
     flex: 2;
+}
+
+.attribute__id {
+    margin-left: 2rem;
+}
+
+.attribute__value {
+    margin-left: -2rem;
 }
 
 .error,
