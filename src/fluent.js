@@ -5,13 +5,13 @@ import { FluentParser, lineOffset, columnOffset, Resource }
 
 const fluent_parser = new FluentParser();
 
-function annotation_display(source, entry, annot) {
+function annotation_display(source, junk, annot) {
     const { code, message, span: { start } } = annot;
 
-    const slice = source.substring(entry.span.start, entry.span.end).trimRight();
+    const slice = source.substring(junk.span.start, junk.span.end).trimRight();
     const line_offset = lineOffset(source, start);
     const column_offset = columnOffset(source, start);
-    const span_offset = lineOffset(source, entry.span.start);
+    const span_offset = lineOffset(source, junk.span.start);
     const head_len = line_offset - span_offset + 1;
     const lines = slice.split('\n');
     const head = lines.slice(0, head_len).join('\n');
@@ -38,11 +38,11 @@ export function parse_translations(translations) {
         ];
     }
 
-    const annotations = res.body.reduce(
-        (annots, entry) => annots.concat(
-            entry.annotations.map(
-                annot => annotation_display(translations, entry, annot)
-
+    const junks = res.body.filter(entry => entry.type === "Junk");
+    const annotations = junks.reduce(
+        (annots, junk) => annots.concat(
+            junk.annotations.map(
+                annot => annotation_display(translations, junk, annot)
             )
         ),
         []
