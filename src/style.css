@@ -181,6 +181,7 @@ code, pre {
 }
 
 .message,
+.term,
 .attribute,
 .junk {
     display: flex;
@@ -195,6 +196,7 @@ code, pre {
     color: #666;
 }
 
+.term__value,
 .junk code {
     font-size: .9rem;
     font-style: italic;
@@ -203,12 +205,14 @@ code, pre {
 }
 
 .message__id,
+.term__id,
 .attribute__id,
 .junk__id {
     flex: 1;
 }
 
 .message__value,
+.term__value,
 .attribute__value,
 .junk__value {
     flex: 2;

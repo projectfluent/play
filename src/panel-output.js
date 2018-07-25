@@ -31,6 +31,20 @@ function Message(props) {
     );
 }
 
+function Term(props) {
+    const { id } = props;
+    return (
+        <div className="panel__row term">
+            <div className="term__id">
+                <code>{id}</code>
+            </div>
+            <div className="term__value">
+                Terms may only be used in other Messages.
+            </div>
+        </div>
+    );
+}
+
 function Junk(props) {
     const { content, dir } = props;
     return (
@@ -54,7 +68,7 @@ function OutputPanel(props) {
             {body.map(entry => {
                 switch (entry.type) {
                     case 'Message': {
-                        const { id: { name: id } } = entry;
+                        const id = entry.id.name;
 
                         // Protect against differences between the tooling
                         // parser and the runtime parser. If the runtime parser
@@ -67,6 +81,10 @@ function OutputPanel(props) {
                         return <Message key={id}
                             {...messages.get(id)}
                             dir={dir}/>;
+                    }
+                    case 'Term': {
+                        const id = entry.id.name;
+                        return <Term key={id} id={id}/>;
                     }
                     case 'Junk': {
                         return <Junk key={Date.now()}
