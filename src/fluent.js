@@ -1,5 +1,5 @@
 import 'fluent-intl-polyfill/compat';
-import { MessageContext } from 'fluent/compat';
+import { FluentBundle } from 'fluent/compat';
 import { FluentParser, lineOffset, columnOffset, Resource }
     from 'fluent-syntax/compat';
 
@@ -51,7 +51,7 @@ export function parse_translations(translations) {
 }
 
 export function create_context(locale, translations) {
-    const context = new MessageContext(locale);
+    const context = new FluentBundle(locale);
     context.addMessages(translations);
     return context;
 }
