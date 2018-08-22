@@ -6,7 +6,7 @@ ace.define(
     theme
 );
 
-function theme(acequire, exports, module) {
+function theme(acequire, exports) {
     exports.isDark = false;
     exports.cssClass = "ace-fluent";
 

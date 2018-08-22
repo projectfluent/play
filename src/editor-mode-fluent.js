@@ -12,7 +12,7 @@ ace.define(
     mode
 );
 
-function highlighting(acequire, exports, module) {
+function highlighting(acequire, exports) {
     const oop = acequire("../lib/oop");
     const TextHighlightRules = acequire("./text_highlight_rules").TextHighlightRules;
 
@@ -157,7 +157,7 @@ function highlighting(acequire, exports, module) {
     exports.FluentHighlightRules = FluentHighlightRules;
 }
 
-function mode(acequire, exports, module) {
+function mode(acequire, exports) {
     const oop = acequire("../lib/oop");
     const TextMode = acequire("./text").Mode;
     const FluentHighlightRules = acequire("./fluent_highlight_rules").FluentHighlightRules;
