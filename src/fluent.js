@@ -1,4 +1,4 @@
-import 'fluent-intl-polyfill/compat';
+import 'intl-pluralrules';
 import { FluentBundle } from 'fluent/compat';
 import { FluentParser, lineOffset, columnOffset, Resource }
     from 'fluent-syntax/compat';
