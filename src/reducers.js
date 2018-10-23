@@ -8,7 +8,7 @@ const locale = 'en-US';
 const [ast, annotations] = parse_translations(translations);
 const externals_string = JSON.stringify(externals, null, 4);
 const ctx = create_context(locale, translations);
-const [out, format_errors] = format_messages(ctx, externals);
+const [out, format_errors] = format_messages(ast, ctx, externals);
 
 const default_state = {
     locale,
@@ -50,7 +50,7 @@ export default function reducer(state = {
             const { locale, externals } = state;
             const ctx = create_context(locale, value);
             const [ast, annotations] = parse_translations(value);
-            const [out, format_errors] = format_messages(ctx, externals);
+            const [out, format_errors] = format_messages(ast, ctx, externals);
 
             return {
                 ...state,
@@ -64,9 +64,9 @@ export default function reducer(state = {
         }
         case 'CHANGE_LOCALE': {
             const { value: locale } = action;
-            const { translations, externals } = state;
+            const { ast, translations, externals } = state;
             const ctx = create_context(locale, translations);
-            const [out, format_errors] = format_messages(ctx, externals);
+            const [out, format_errors] = format_messages(ast, ctx, externals);
 
             return {
                 ...state,
@@ -84,10 +84,10 @@ export default function reducer(state = {
         }
         case 'CHANGE_EXTERNALS': {
             const { value } = action;
-            const { ctx } = state;
+            const { ast, ctx } = state;
 
             const [externals, externals_errors] = parse_externals(value);
-            const [out, format_errors] = format_messages(ctx, externals);
+            const [out, format_errors] = format_messages(ast, ctx, externals);
 
             return {
                 ...state,
@@ -137,7 +137,7 @@ export default function reducer(state = {
             const [externals, externals_errors] = parse_externals(
                 externals_string
             );
-            const [out, format_errors] = format_messages(ctx, externals);
+            const [out, format_errors] = format_messages(ast, ctx, externals);
 
             return {
                 ...state,

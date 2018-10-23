@@ -56,14 +56,19 @@ export function create_context(locale, translations) {
     return context;
 }
 
-export function format_messages(context, externals) {
+export function format_messages(ast, context, externals) {
     const outputs = new Map(); 
     const errors = [];
-    for (const [id, message] of context.messages) {
+    for (const entry of ast.body) {
+        if (entry.type !== "Message") {
+            continue;
+        }
+        const id = entry.id.name;
+        const message = context.getMessage(id);
         const formatted_message = {
             id,
             value: context.format(message, externals, errors),
-            attributes: Object.entries(message.attrs || {}).map(
+            attributes: Object.entries(message && message.attrs || {}).map(
                 ([attr_id, attr_value]) => ({
                     id: attr_id,
                     value: context.format(attr_value, externals, errors)

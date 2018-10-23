@@ -65,19 +65,10 @@ function OutputPanel(props) {
     return (
         <section className="panel">
             <h1 className="panel__title">Output</h1>
-            {body.map(entry => {
+            {body.map((entry, index) => {
                 switch (entry.type) {
                     case 'Message': {
                         const id = entry.id.name;
-
-                        // Protect against differences between the tooling
-                        // parser and the runtime parser. If the runtime parser
-                        // didn't parse this message, don't try to show it
-                        // formatted.
-                        if (!messages.has(id)) {
-                            return null;
-                        }
-
                         return <Message key={id}
                             {...messages.get(id)}
                             dir={dir}/>;
@@ -87,7 +78,7 @@ function OutputPanel(props) {
                         return <Term key={id} id={id}/>;
                     }
                     case 'Junk': {
-                        return <Junk key={Date.now()}
+                        return <Junk key={index}
                             {...entry}
                             dir={dir}/>;
                     }
