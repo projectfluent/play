@@ -50,13 +50,13 @@ export function parse_translations(translations) {
     return [res, annotations];
 }
 
-export function create_context(locale, translations) {
-    const context = new FluentBundle(locale);
-    context.addMessages(translations);
-    return context;
+export function create_bundle(locale, translations) {
+    const bundle = new FluentBundle(locale);
+    bundle.addMessages(translations);
+    return bundle;
 }
 
-export function format_messages(ast, context, externals) {
+export function format_messages(ast, bundle, externals) {
     const outputs = new Map(); 
     const errors = [];
     for (const entry of ast.body) {
@@ -64,14 +64,14 @@ export function format_messages(ast, context, externals) {
             continue;
         }
         const id = entry.id.name;
-        const message = context.getMessage(id);
+        const message = bundle.getMessage(id);
         const formatted_message = {
             id,
-            value: context.format(message, externals, errors),
+            value: bundle.format(message, externals, errors),
             attributes: Object.entries(message && message.attrs || {}).map(
                 ([attr_id, attr_value]) => ({
                     id: attr_id,
-                    value: context.format(attr_value, externals, errors)
+                    value: bundle.format(attr_value, externals, errors)
                 })
             )
         };

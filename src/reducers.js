@@ -1,14 +1,14 @@
 import { translations, externals } from './defaults';
 import {
-    parse_translations, create_context, format_messages, parse_externals,
+    parse_translations, create_bundle, format_messages, parse_externals,
 } from './fluent';
 import { validate_gist } from './github';
 
 const locale = 'en-US';
 const [ast, annotations] = parse_translations(translations);
 const externals_string = JSON.stringify(externals, null, 4);
-const ctx = create_context(locale, translations);
-const [out, format_errors] = format_messages(ast, ctx, externals);
+const bundle = create_bundle(locale, translations);
+const [out, format_errors] = format_messages(ast, bundle, externals);
 
 const default_state = {
     locale,
@@ -19,7 +19,7 @@ const default_state = {
     externals_errors: [],
     externals_string,
     ast,
-    ctx,
+    bundle,
     out
 };
 
@@ -48,9 +48,9 @@ export default function reducer(state = {
         case 'CHANGE_TRANSLATIONS': {
             const { value } = action;
             const { locale, externals } = state;
-            const ctx = create_context(locale, value);
+            const bundle = create_bundle(locale, value);
             const [ast, annotations] = parse_translations(value);
-            const [out, format_errors] = format_messages(ast, ctx, externals);
+            const [out, format_errors] = format_messages(ast, bundle, externals);
 
             return {
                 ...state,
@@ -58,21 +58,21 @@ export default function reducer(state = {
                 annotations,
                 format_errors,
                 ast,
-                ctx,
+                bundle,
                 out
             };
         }
         case 'CHANGE_LOCALE': {
             const { value: locale } = action;
             const { ast, translations, externals } = state;
-            const ctx = create_context(locale, translations);
-            const [out, format_errors] = format_messages(ast, ctx, externals);
+            const bundle = create_bundle(locale, translations);
+            const [out, format_errors] = format_messages(ast, bundle, externals);
 
             return {
                 ...state,
                 locale,
                 format_errors,
-                ctx,
+                bundle,
                 out
             };
         }
@@ -84,10 +84,10 @@ export default function reducer(state = {
         }
         case 'CHANGE_EXTERNALS': {
             const { value } = action;
-            const { ast, ctx } = state;
+            const { ast, bundle } = state;
 
             const [externals, externals_errors] = parse_externals(value);
-            const [out, format_errors] = format_messages(ast, ctx, externals);
+            const [out, format_errors] = format_messages(ast, bundle, externals);
 
             return {
                 ...state,
@@ -132,12 +132,12 @@ export default function reducer(state = {
 
             const { locale, dir } = parse_setup(files, state);
 
-            const ctx = create_context(locale, translations);
+            const bundle = create_bundle(locale, translations);
             const [ast, annotations] = parse_translations(translations);
             const [externals, externals_errors] = parse_externals(
                 externals_string
             );
-            const [out, format_errors] = format_messages(ast, ctx, externals);
+            const [out, format_errors] = format_messages(ast, bundle, externals);
 
             return {
                 ...state,
@@ -151,7 +151,7 @@ export default function reducer(state = {
                 externals_string,
                 format_errors,
                 ast,
-                ctx,
+                bundle,
                 out
             };
         }
