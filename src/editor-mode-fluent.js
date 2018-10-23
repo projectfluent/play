@@ -21,22 +21,20 @@ function highlighting(acequire, exports) {
         const _ = '\\s*';
         const number = '[0-9]+(?:\\.[0-9]+)?';
         const identifier = '[a-zA-Z-][a-zA-Z0-9_-]*';
-        const word = '[^\\s{}\\[\\]\\\\]+';
-        const variantName = `${word}(?:[ \t]+${word})?`;
 
         this.$rules = {
-            "start" : [
+            start : [
                 {
                     token: "comment",
                     regex: /^#{1,3}($| .*$)/
                 },
                 {
-                    token: "message.identifier",
+                    token: "entity.name",
                     regex: `^-?${identifier}${_}=`,
                     push: "value"
                 },
                 {
-                    token: "message.attribute",
+                    token: "entity.name",
                     regex: `^${_}\\.${identifier}${_}=`,
                     push: "value"
                 },
@@ -44,42 +42,47 @@ function highlighting(acequire, exports) {
                     defaultToken: "invalid"
                 }
             ],
-            "value" : [
+            value : [
                 {
-                    regex : /(?:^\s+)?{/,
-                    token : "placeable",
+                    // block_text
+                    regex: /^\s+[^.*[{}\s]/,
+                    token: "string.unquoted"
+                },
+                {
+                    // inline_placeable
+                    regex : /{/,
+                    token : "paren",
                     push : "placeable"
                 },
                 {
-                    regex: /^\s+[^.#*[}\s]+/,
-                    token: "string"
+                    // block_placeable
+                    regex : /^\s*{/,
+                    token : "paren",
+                    push : "placeable"
                 },
                 {
+                    // blank_line
                     regex: /^\s*$/,
-                    token: "string"
+                    token: "string.unquoted"
                 },
                 {
                     regex: /^/,
                     next: "pop"
                 },
                 {
-                    defaultToken: "string"
+                    // inline_text
+                    defaultToken: "string.unquoted"
                 }
             ],
-            "placeable" : [
-                {
-                    regex : /^\S.*$/,
-                    token : "invalid",
-                    next : "pop"
-                },
+            placeable : [
                 {
                     regex : `^(${_})(\\*?\\[${_})(${number})(${_}\\])`,
-                    token : ["text", "operator", "number", "operator"],
+                    token : ["blank", "keyword", "constant.numeric", "keyword"],
                     push: "value"
                 },
                 {
-                    regex : `^(${_})(\\*?\\[${_})(${variantName})(${_}\\])`,
-                    token : ["text", "operator", "variantName", "operator"],
+                    regex : `^(${_})(\\*?\\[${_})(${identifier})(${_}\\])`,
+                    token : ["blank", "keyword", "keyword", "keyword"],
                     push: "value"
                 },
                 {
@@ -88,59 +91,63 @@ function highlighting(acequire, exports) {
                 },
                 {
                     regex : /[A-Z][A-Z_?-]*/,
-                    token : "function.name",
+                    token : "entity.name.function",
                 },
                 {
                     regex : /\(/,
-                    token : "function.paren",
+                    token : "paren",
                 },
                 {
                     regex : /\s*,\s*/,
-                    token : "function.comma",
+                    token : "punctuation",
                 },
                 {
                     regex : `${identifier}\\s*:\\s*`,
-                    token : "function.argname",
+                    token : "keyword",
                 },
                 {
                     regex : /\)/,
-                    token : "function.paren"
+                    token : "paren"
                 },
                 {
                     regex : number,
-                    token : "number"
+                    token : "constant.numeric"
                 },
                 {
                     regex : `\\$${identifier}`,
-                    token : "variable"
+                    token : "variable.parameter"
                 },
                 {
-                    regex : `(-${identifier})(\\[${variantName}\\])`,
-                    token : ["message.identifier", "variantName"]
+                    regex : `(-${identifier})(\\[)(${number})(\\])`,
+                    token : ["variable", "paren", "constant.numeric", "paren"]
                 },
                 {
-                    regex : `(${identifier})(\\.${identifier})`,
-                    token : ["message.identifier", "message.attribute"]
+                    regex : `(-${identifier})(\\[)(${identifier})(\\])`,
+                    token : ["variable", "paren", "keyword", "paren"]
+                },
+                {
+                    regex : `(${identifier})(\\.)(${identifier})`,
+                    token : ["variable", "punctuation.operator", "keyword"]
                 },
                 {
                     regex : identifier,
-                    token : "message.identifier"
+                    token : "variable"
                 },
                 {
                     regex : `-${identifier}`,
-                    token : "message.identifier"
+                    token : "variable"
                 },
                 {
                     regex : /\s*->\s*$/,
-                    token : "operator",
+                    token : "keyword.operator",
                 },
                 {
                     regex: /\s+/,
-                    token: "string"
+                    token: "blank"
                 },
                 {
                     regex : /}/,
-                    token : "placeable",
+                    token : "paren",
                     next : "pop"
                 },
                 {

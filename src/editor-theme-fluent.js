@@ -44,27 +44,41 @@ function theme(acequire, exports) {
             font-style: italic;
         }
 
-        .ace-fluent .ace_message {
+        /* Message and Term definitions */
+        .ace-fluent .ace_entity {
             font-weight: bold;
         }
 
-        .ace-fluent .ace_string {
+        /* TextElements */
+        .ace-fluent .ace_string.ace_unquoted {
             color: #1a1aa6;
         }
 
-        .ace-fluent .ace_number {
+        /* MessageReferences and TermReferences */
+        .ace-fluent .ace_variable {
             color: #08c;
         }
 
-        .ace-fluent .ace_variantName {
-            color: #222;
-        }
-
-        .ace-fluent .ace_variable {
+        /* VariableReferences */
+        .ace-fluent .ace_parameter {
             color: #930f80;
         }
 
+        .ace-fluent .ace_keyword,
         .ace-fluent .ace_function {
+            font-weight: normal;
+            color: #930f80;
+        }
+
+        /* Literals */
+        .ace-fluent .ace_constant,
+        .ace-fluent .ace_string.ace_quoted {
+            color: green;
+        }
+
+        /* Parens and commas */
+        .ace-fluent .ace_paren,
+        .ace-fluent .ace_punctuation {
             color: #08c;
         }
 
