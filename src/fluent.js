@@ -8,13 +8,13 @@ const fluent_parser = new FluentParser();
 function annotation_display(source, junk, annot) {
     const { code, message, span: { start } } = annot;
 
-    const slice = source.substring(junk.span.start, junk.span.end).trimRight();
+    const slice = source.substring(junk.span.start, junk.span.end);
     const line_offset = lineOffset(source, start);
     const column_offset = columnOffset(source, start);
     const span_offset = lineOffset(source, junk.span.start);
     const head_len = line_offset - span_offset + 1;
     const lines = slice.split('\n');
-    const head = lines.slice(0, head_len).join('\n');
+    const head = lines.slice(0, head_len).join('\n') + '\n';
     const tail = lines.slice(head_len).join('\n');
 
     return {
