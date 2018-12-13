@@ -24018,7 +24018,7 @@ if (typeof Intl === 'undefined') {
 },{"./plural-rules":"../node_modules/intl-pluralrules/plural-rules.js"}],"../node_modules/fluent/compat.js":[function(require,module,exports) {
 var define;
 var global = arguments[3];
-/* fluent@0.9.1 */
+/* fluent@0.10.0 */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define('fluent', ['exports'], factory) : factory(global.Fluent = {});
 })(this, function (exports) {
@@ -24218,26 +24218,10 @@ var global = arguments[3];
     return unwrapped;
   }
 
-  /* global Intl */
-
   const MAX_PLACEABLE_LENGTH = 2500; // Unicode bidi isolation characters.
 
   const FSI = '\u2068';
-  const PDI = '\u2069';
-  /**
-   * Helper for matching a variant key to the given selector.
-   *
-   * Used in SelectExpressions and VariantExpressions.
-   *
-   * @param   {FluentBundle} bundle
-   *    Resolver environment object.
-   * @param   {FluentType} key
-   *    The key of the currently considered variant.
-   * @param   {FluentType} selector
-   *    The selector based om which the correct variant should be chosen.
-   * @returns {FluentType}
-   * @private
-   */
+  const PDI = '\u2069'; // Helper: match a variant key to the given selector.
 
   function match(bundle, selector, key) {
     if (key === selector) {
@@ -24258,106 +24242,37 @@ var global = arguments[3];
     }
 
     return false;
-  }
-  /**
-   * Helper for choosing the default value from a set of members.
-   *
-   * Used in SelectExpressions and Type.
-   *
-   * @param   {Object} env
-   *    Resolver environment object.
-   * @param   {Object} members
-   *    Hash map of variants from which the default value is to be selected.
-   * @param   {Number} star
-   *    The index of the default variant.
-   * @returns {FluentType}
-   * @private
-   */
+  } // Helper: resolve the default variant from a list of variants.
 
-  function DefaultMember(env, members, star) {
-    if (members[star]) {
-      return members[star];
+
+  function getDefault(env, variants, star) {
+    if (variants[star]) {
+      return Type(env, variants[star]);
     }
 
     const errors = env.errors;
     errors.push(new RangeError("No default"));
     return new FluentNone();
-  }
-  /**
-   * Resolve a reference to another message.
-   *
-   * @param   {Object} env
-   *    Resolver environment object.
-   * @param   {Object} id
-   *    The identifier of the message to be resolved.
-   * @param   {String} id.name
-   *    The name of the identifier.
-   * @returns {FluentType}
-   * @private
-   */
+  } // Helper: resolve arguments to a call expression.
 
-  function MessageReference(env, _ref) {
-    let name = _ref.name;
-    const bundle = env.bundle,
-          errors = env.errors;
-    const message = name.startsWith("-") ? bundle._terms.get(name) : bundle._messages.get(name);
 
-    if (!message) {
-      const err = name.startsWith("-") ? new ReferenceError(`Unknown term: ${name}`) : new ReferenceError(`Unknown message: ${name}`);
-      errors.push(err);
-      return new FluentNone(name);
-    }
+  function getArguments(env, args) {
+    const positional = [];
+    const named = {};
 
-    return message;
-  }
-  /**
-   * Resolve a variant expression to the variant object.
-   *
-   * @param   {Object} env
-   *    Resolver environment object.
-   * @param   {Object} expr
-   *    An expression to be resolved.
-   * @param   {Object} expr.ref
-   *    An Identifier of a message for which the variant is resolved.
-   * @param   {Object} expr.id.name
-   *    Name a message for which the variant is resolved.
-   * @param   {Object} expr.key
-   *    Variant key to be resolved.
-   * @returns {FluentType}
-   * @private
-   */
-
-  function VariantExpression(env, _ref2) {
-    let ref = _ref2.ref,
-        selector = _ref2.selector;
-    const message = MessageReference(env, ref);
-
-    if (message instanceof FluentNone) {
-      return message;
-    }
-
-    const bundle = env.bundle,
-          errors = env.errors;
-    const sel = Type(env, selector);
-    const value = message.value || message;
-
-    function isVariantList(node) {
-      return Array.isArray(node) && node[0].type === "select" && node[0].selector === null;
-    }
-
-    if (isVariantList(value)) {
-      // Match the specified key against keys of each variant, in order.
+    if (args) {
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = value[0].variants[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          const variant = _step.value;
-          const key = Type(env, variant.key);
+        for (var _iterator = args[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          const arg = _step.value;
 
-          if (match(env.bundle, sel, key)) {
-            return variant;
+          if (arg.type === "narg") {
+            named[arg.name] = Type(env, arg.value);
+          } else {
+            positional.push(Type(env, arg));
           }
         }
       } catch (err) {
@@ -24376,130 +24291,18 @@ var global = arguments[3];
       }
     }
 
-    errors.push(new ReferenceError(`Unknown variant: ${sel.toString(bundle)}`));
-    return Type(env, message);
-  }
-  /**
-   * Resolve an attribute expression to the attribute object.
-   *
-   * @param   {Object} env
-   *    Resolver environment object.
-   * @param   {Object} expr
-   *    An expression to be resolved.
-   * @param   {String} expr.ref
-   *    An ID of a message for which the attribute is resolved.
-   * @param   {String} expr.name
-   *    Name of the attribute to be resolved.
-   * @returns {FluentType}
-   * @private
-   */
+    return [positional, named];
+  } // Resolve an expression to a Fluent type.
 
-  function AttributeExpression(env, _ref3) {
-    let ref = _ref3.ref,
-        name = _ref3.name;
-    const message = MessageReference(env, ref);
-
-    if (message instanceof FluentNone) {
-      return message;
-    }
-
-    if (message.attrs) {
-      // Match the specified name against keys of each attribute.
-      for (const attrName in message.attrs) {
-        if (name === attrName) {
-          return message.attrs[name];
-        }
-      }
-    }
-
-    const errors = env.errors;
-    errors.push(new ReferenceError(`Unknown attribute: ${name}`));
-    return Type(env, message);
-  }
-  /**
-   * Resolve a select expression to the member object.
-   *
-   * @param   {Object} env
-   *    Resolver environment object.
-   * @param   {Object} expr
-   *    An expression to be resolved.
-   * @param   {String} expr.selector
-   *    Selector expression
-   * @param   {Array} expr.variants
-   *    List of variants for the select expression.
-   * @param   {Number} expr.star
-   *    Index of the default variant.
-   * @returns {FluentType}
-   * @private
-   */
-
-  function SelectExpression(env, _ref4) {
-    let selector = _ref4.selector,
-        variants = _ref4.variants,
-        star = _ref4.star;
-
-    if (selector === null) {
-      return DefaultMember(env, variants, star);
-    }
-
-    let sel = Type(env, selector);
-
-    if (sel instanceof FluentNone) {
-      return DefaultMember(env, variants, star);
-    } // Match the selector against keys of each variant, in order.
-
-
-    var _iteratorNormalCompletion2 = true;
-    var _didIteratorError2 = false;
-    var _iteratorError2 = undefined;
-
-    try {
-      for (var _iterator2 = variants[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-        const variant = _step2.value;
-        const key = Type(env, variant.key);
-
-        if (match(env.bundle, sel, key)) {
-          return variant;
-        }
-      }
-    } catch (err) {
-      _didIteratorError2 = true;
-      _iteratorError2 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-          _iterator2.return();
-        }
-      } finally {
-        if (_didIteratorError2) {
-          throw _iteratorError2;
-        }
-      }
-    }
-
-    return DefaultMember(env, variants, star);
-  }
-  /**
-   * Resolve expression to a Fluent type.
-   *
-   * JavaScript strings are a special case.  Since they natively have the
-   * `toString` method they can be used as if they were a Fluent type without
-   * paying the cost of creating a instance of one.
-   *
-   * @param   {Object} env
-   *    Resolver environment object.
-   * @param   {Object} expr
-   *    An expression object to be resolved into a Fluent type.
-   * @returns {FluentType}
-   * @private
-   */
 
   function Type(env, expr) {
-    // A fast-path for strings which are the most common case, and for
-    // `FluentNone` which doesn't require any additional logic.
+    // A fast-path for strings which are the most common case. Since they
+    // natively have the `toString` method they can be used as if they were
+    // a FluentType instance without incurring the cost of creating one.
     if (typeof expr === "string") {
       return env.bundle._transform(expr);
-    }
+    } // A fast-path for `FluentNone` which doesn't require any additional logic.
+
 
     if (expr instanceof FluentNone) {
       return expr;
@@ -24512,41 +24315,25 @@ var global = arguments[3];
     }
 
     switch (expr.type) {
+      case "str":
+        return expr.value;
+
       case "num":
         return new FluentNumber(expr.value);
 
       case "var":
         return VariableReference(env, expr);
 
-      case "func":
-        return FunctionReference(env, expr);
-
-      case "call":
-        return CallExpression(env, expr);
+      case "term":
+        return TermReference(_objectSpread({}, env, {
+          args: {}
+        }), expr);
 
       case "ref":
-        {
-          const message = MessageReference(env, expr);
-          return Type(env, message);
-        }
-
-      case "getattr":
-        {
-          const attr = AttributeExpression(env, expr);
-          return Type(env, attr);
-        }
-
-      case "getvar":
-        {
-          const variant = VariantExpression(env, expr);
-          return Type(env, variant);
-        }
+        return expr.args ? FunctionReference(env, expr) : MessageReference(env, expr);
 
       case "select":
-        {
-          const member = SelectExpression(env, expr);
-          return Type(env, member);
-        }
+        return SelectExpression(env, expr);
 
       case undefined:
         {
@@ -24563,28 +24350,17 @@ var global = arguments[3];
       default:
         return new FluentNone();
     }
-  }
-  /**
-   * Resolve a reference to a variable.
-   *
-   * @param   {Object} env
-   *    Resolver environment object.
-   * @param   {Object} expr
-   *    An expression to be resolved.
-   * @param   {String} expr.name
-   *    Name of an argument to be returned.
-   * @returns {FluentType}
-   * @private
-   */
+  } // Resolve a reference to a variable.
 
-  function VariableReference(env, _ref5) {
-    let name = _ref5.name;
+
+  function VariableReference(env, _ref) {
+    let name = _ref.name;
     const args = env.args,
           errors = env.errors;
 
     if (!args || !args.hasOwnProperty(name)) {
       errors.push(new ReferenceError(`Unknown variable: ${name}`));
-      return new FluentNone(name);
+      return new FluentNone(`$${name}`);
     }
 
     const arg = args[name]; // Return early if the argument already is an instance of FluentType.
@@ -24608,25 +24384,99 @@ var global = arguments[3];
 
       default:
         errors.push(new TypeError(`Unsupported variable type: ${name}, ${typeof arg}`));
-        return new FluentNone(name);
+        return new FluentNone(`$${name}`);
     }
-  }
-  /**
-   * Resolve a reference to a function.
-   *
-   * @param   {Object}  env
-   *    Resolver environment object.
-   * @param   {Object} expr
-   *    An expression to be resolved.
-   * @param   {String} expr.name
-   *    Name of the function to be returned.
-   * @returns {Function}
-   * @private
-   */
+  } // Resolve a reference to another message.
 
-  function FunctionReference(env, _ref6) {
-    let name = _ref6.name;
-    // Some functions are built-in.  Others may be provided by the runtime via
+
+  function MessageReference(env, _ref2) {
+    let name = _ref2.name,
+        attr = _ref2.attr;
+    const bundle = env.bundle,
+          errors = env.errors;
+
+    const message = bundle._messages.get(name);
+
+    if (!message) {
+      const err = new ReferenceError(`Unknown message: ${name}`);
+      errors.push(err);
+      return new FluentNone(name);
+    }
+
+    if (attr) {
+      const attribute = message.attrs && message.attrs[attr];
+
+      if (attribute) {
+        return Type(env, attribute);
+      }
+
+      errors.push(new ReferenceError(`Unknown attribute: ${attr}`));
+      return Type(env, message);
+    }
+
+    return Type(env, message);
+  } // Resolve a call to a Term with key-value arguments.
+
+
+  function TermReference(env, _ref3) {
+    let name = _ref3.name,
+        attr = _ref3.attr,
+        selector = _ref3.selector,
+        args = _ref3.args;
+    const bundle = env.bundle,
+          errors = env.errors;
+    const id = `-${name}`;
+
+    const term = bundle._terms.get(id);
+
+    if (!term) {
+      const err = new ReferenceError(`Unknown term: ${id}`);
+      errors.push(err);
+      return new FluentNone(id);
+    } // Every TermReference has its own args.
+
+
+    const _getArguments = getArguments(env, args),
+          _getArguments2 = _slicedToArray(_getArguments, 2),
+          keyargs = _getArguments2[1];
+
+    const local = _objectSpread({}, env, {
+      args: keyargs
+    });
+
+    if (attr) {
+      const attribute = term.attrs && term.attrs[attr];
+
+      if (attribute) {
+        return Type(local, attribute);
+      }
+
+      errors.push(new ReferenceError(`Unknown attribute: ${attr}`));
+      return Type(local, term);
+    }
+
+    const variantList = getVariantList(term);
+
+    if (selector && variantList) {
+      return SelectExpression(local, _objectSpread({}, variantList, {
+        selector
+      }));
+    }
+
+    return Type(local, term);
+  } // Helper: convert a value into a variant list, if possible.
+
+
+  function getVariantList(term) {
+    const value = term.value || term;
+    return Array.isArray(value) && value[0].type === "select" && value[0].selector === null ? value[0] : null;
+  } // Resolve a call to a Function with positional and key-value arguments.
+
+
+  function FunctionReference(env, _ref4) {
+    let name = _ref4.name,
+        args = _ref4.args;
+    // Some functions are built-in. Others may be provided by the runtime via
     // the `FluentBundle` constructor.
     const _functions = env.bundle._functions,
           errors = env.errors;
@@ -24642,80 +24492,64 @@ var global = arguments[3];
       return new FluentNone(`${name}()`);
     }
 
-    return func;
-  }
-  /**
-   * Resolve a call to a Function with positional and key-value arguments.
-   *
-   * @param   {Object} env
-   *    Resolver environment object.
-   * @param   {Object} expr
-   *    An expression to be resolved.
-   * @param   {Object} expr.callee
-   *    FTL Function object.
-   * @param   {Array} expr.args
-   *    FTL Function argument list.
-   * @returns {FluentType}
-   * @private
-   */
-
-  function CallExpression(env, _ref7) {
-    let callee = _ref7.callee,
-        args = _ref7.args;
-    const func = FunctionReference(env, callee);
-
-    if (func instanceof FluentNone) {
-      return func;
-    }
-
-    const posargs = [];
-    const keyargs = {};
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
-
     try {
-      for (var _iterator3 = args[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-        const arg = _step3.value;
-
-        if (arg.type === "narg") {
-          keyargs[arg.name] = Type(env, arg.value);
-        } else {
-          posargs.push(Type(env, arg));
-        }
-      }
-    } catch (err) {
-      _didIteratorError3 = true;
-      _iteratorError3 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-          _iterator3.return();
-        }
-      } finally {
-        if (_didIteratorError3) {
-          throw _iteratorError3;
-        }
-      }
-    }
-
-    try {
-      return func(posargs, keyargs);
+      return func(...getArguments(env, args));
     } catch (e) {
       // XXX Report errors.
       return new FluentNone();
     }
-  }
-  /**
-   * Resolve a pattern (a complex string with placeables).
-   *
-   * @param   {Object} env
-   *    Resolver environment object.
-   * @param   {Array} ptn
-   *    Array of pattern elements.
-   * @returns {Array}
-   * @private
-   */
+  } // Resolve a select expression to the member object.
+
+
+  function SelectExpression(env, _ref5) {
+    let selector = _ref5.selector,
+        variants = _ref5.variants,
+        star = _ref5.star;
+
+    if (selector === null) {
+      return getDefault(env, variants, star);
+    }
+
+    let sel = Type(env, selector);
+
+    if (sel instanceof FluentNone) {
+      const variant = getDefault(env, variants, star);
+      return Type(env, variant);
+    } // Match the selector against keys of each variant, in order.
+
+
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
+
+    try {
+      for (var _iterator2 = variants[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        const variant = _step2.value;
+        const key = Type(env, variant.key);
+
+        if (match(env.bundle, sel, key)) {
+          return Type(env, variant);
+        }
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
+    }
+
+    const variant = getDefault(env, variants, star);
+    return Type(env, variant);
+  } // Resolve a pattern (a complex string with placeables).
+
 
   function Pattern(env, ptn) {
     const bundle = env.bundle,
@@ -24733,13 +24567,13 @@ var global = arguments[3];
     // only when the pattern has more than one element.
 
     const useIsolating = bundle._useIsolating && ptn.length > 1;
-    var _iteratorNormalCompletion4 = true;
-    var _didIteratorError4 = false;
-    var _iteratorError4 = undefined;
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
 
     try {
-      for (var _iterator4 = ptn[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-        const elem = _step4.value;
+      for (var _iterator3 = ptn[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        const elem = _step3.value;
 
         if (typeof elem === "string") {
           result.push(bundle._transform(elem));
@@ -24764,16 +24598,16 @@ var global = arguments[3];
         }
       }
     } catch (err) {
-      _didIteratorError4 = true;
-      _iteratorError4 = err;
+      _didIteratorError3 = true;
+      _iteratorError3 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
-          _iterator4.return();
+        if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+          _iterator3.return();
         }
       } finally {
-        if (_didIteratorError4) {
-          throw _iteratorError4;
+        if (_didIteratorError3) {
+          throw _iteratorError3;
         }
       }
     }
@@ -24812,39 +24646,38 @@ var global = arguments[3];
 
   // With the /m flag, the ^ matches at the beginning of every line.
 
-  const RE_MESSAGE_START = /^(-?[a-zA-Z][a-zA-Z0-9_-]*) *= */mg; // Both Attributes and Variants are parsed in while loops. These regexes are
+  const RE_MESSAGE_START = /^(-?[a-zA-Z][\w-]*) *= */mg; // Both Attributes and Variants are parsed in while loops. These regexes are
   // used to break out of them.
 
-  const RE_ATTRIBUTE_START = /\.([a-zA-Z][a-zA-Z0-9_-]*) *= */y; // [^] matches all characters, including newlines.
-  // XXX Use /s (dotall) when it's widely supported.
+  const RE_ATTRIBUTE_START = /\.([a-zA-Z][\w-]*) *= */y;
+  const RE_VARIANT_START = /\*?\[/y;
+  const RE_NUMBER_LITERAL = /(-?[0-9]+(\.[0-9]+)?)/y;
+  const RE_IDENTIFIER = /([a-zA-Z][\w-]*)/y;
+  const RE_REFERENCE = /([$-])?([a-zA-Z][\w-]*)(?:\.([a-zA-Z][\w-]*))?/y; // A "run" is a sequence of text or string literal characters which don't
+  // require any special handling. For TextElements such special characters are: {
+  // (starts a placeable), and line breaks which require additional logic to check
+  // if the next line is indented. For StringLiterals they are: \ (starts an
+  // escape sequence), " (ends the literal), and line breaks which are not allowed
+  // in StringLiterals. Note that string runs may be empty; text runs may not.
 
-  const RE_VARIANT_START = /\*?\[[^]*?] */y;
-  const RE_IDENTIFIER = /(-?[a-zA-Z][a-zA-Z0-9_-]*)/y;
-  const RE_NUMBER_LITERAL = /(-?[0-9]+(\.[0-9]+)?)/y; // A "run" is a sequence of text or string literal characters which don't
-  // require any special handling. For TextElements such special characters are:
-  // { (starts a placeable), \ (starts an escape sequence), and line breaks which
-  // require additional logic to check if the next line is indented. For
-  // StringLiterals they are: \ (starts an escape sequence), " (ends the
-  // literal), and line breaks which are not allowed in StringLiterals. Also note
-  // that string runs may be empty, but text runs may not.
-
-  const RE_TEXT_RUN = /([^\\{\n\r]+)/y;
+  const RE_TEXT_RUN = /([^{}\n\r]+)/y;
   const RE_STRING_RUN = /([^\\"\n\r]*)/y; // Escape sequences.
 
-  const RE_UNICODE_ESCAPE = /\\u([a-fA-F0-9]{4})/y;
   const RE_STRING_ESCAPE = /\\([\\"])/y;
-  const RE_TEXT_ESCAPE = /\\([\\{])/y; // Used for trimming TextElements and indents. With the /m flag, the $ matches
-  // the end of every line.
+  const RE_UNICODE_ESCAPE = /\\u([a-fA-F0-9]{4})|\\U([a-fA-F0-9]{6})/y; // Used for trimming TextElements and indents.
 
-  const RE_TRAILING_SPACES = / +$/mg; // CRLFs are normalized to LF.
+  const RE_LEADING_NEWLINES = /^\n+/;
+  const RE_TRAILING_SPACES = / +$/; // Used in makeIndent to strip spaces from blank lines and normalize CRLF to LF.
 
-  const RE_CRLF = /\r\n/g; // Common tokens.
+  const RE_BLANK_LINES = / *\r?\n/g; // Used in makeIndent to measure the indentation.
+
+  const RE_INDENT = /( *)$/; // Common tokens.
 
   const TOKEN_BRACE_OPEN = /{\s*/y;
   const TOKEN_BRACE_CLOSE = /\s*}/y;
   const TOKEN_BRACKET_OPEN = /\[\s*/y;
-  const TOKEN_BRACKET_CLOSE = /\s*]/y;
-  const TOKEN_PAREN_OPEN = /\(\s*/y;
+  const TOKEN_BRACKET_CLOSE = /\s*] */y;
+  const TOKEN_PAREN_OPEN = /\s*\(\s*/y;
   const TOKEN_ARROW = /\s*->\s*/y;
   const TOKEN_COLON = /\s*:\s*/y; // Note the optional comma. As a deviation from the Fluent EBNF, the parser
   // doesn't enforce commas between call arguments.
@@ -24936,7 +24769,7 @@ var global = arguments[3];
         }
 
         return false;
-      } // Execute a regex, advance the cursor, and return the capture group.
+      } // Execute a regex, advance the cursor, and return all capture groups.
 
 
       function match(re) {
@@ -24948,7 +24781,12 @@ var global = arguments[3];
         }
 
         cursor = re.lastIndex;
-        return result[1];
+        return result;
+      } // Execute a regex, advance the cursor, and return the capture group.
+
+
+      function match1(re) {
+        return match(re)[1];
       }
 
       function parseMessage() {
@@ -24973,7 +24811,7 @@ var global = arguments[3];
         let attrs = {};
 
         while (test(RE_ATTRIBUTE_START)) {
-          let name = match(RE_ATTRIBUTE_START);
+          let name = match1(RE_ATTRIBUTE_START);
           let value = parsePattern();
 
           if (value === null) {
@@ -24989,16 +24827,13 @@ var global = arguments[3];
       function parsePattern() {
         // First try to parse any simple text on the same line as the id.
         if (test(RE_TEXT_RUN)) {
-          var first = match(RE_TEXT_RUN);
-        } // If there's a backslash escape or a placeable on the first line, fall
-        // back to parsing a complex pattern.
+          var first = match1(RE_TEXT_RUN);
+        } // If there's a placeable on the first line, parse a complex pattern.
 
 
-        switch (source[cursor]) {
-          case "{":
-          case "\\":
-            return first // Re-use the text parsed above, if possible.
-            ? parsePatternElements(first) : parsePatternElements();
+        if (source[cursor] === "{" || source[cursor] === "}") {
+          // Re-use the text parsed above, if possible.
+          return parsePatternElements(first ? [first] : [], Infinity);
         } // RE_TEXT_VALUE stops at newlines. Only continue parsing the pattern if
         // what comes after the newline is indented.
 
@@ -25006,16 +24841,22 @@ var global = arguments[3];
         let indent = parseIndent();
 
         if (indent) {
-          return first // If there's text on the first line, the blank block is part of the
-          // translation content.
-          ? parsePatternElements(first, trim(indent)) // Otherwise, we're dealing with a block pattern. The blank block is
-          // the leading whitespace; discard it.
-          : parsePatternElements();
+          if (first) {
+            // If there's text on the first line, the blank block is part of the
+            // translation content in its entirety.
+            return parsePatternElements([first, indent], indent.length);
+          } // Otherwise, we're dealing with a block pattern, i.e. a pattern which
+          // starts on a new line. Discrad the leading newlines but keep the
+          // inline indent; it will be used by the dedentation logic.
+
+
+          indent.value = trim(indent.value, RE_LEADING_NEWLINES);
+          return parsePatternElements([indent], indent.length);
         }
 
         if (first) {
           // It was just a simple inline text after all.
-          return trim(first);
+          return trim(first, RE_TRAILING_SPACES);
         }
 
         return null;
@@ -25023,17 +24864,13 @@ var global = arguments[3];
 
 
       function parsePatternElements() {
+        let elements = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+        let commonIndent = arguments.length > 1 ? arguments[1] : undefined;
         let placeableCount = 0;
-        let needsTrimming = false;
-
-        for (var _len = arguments.length, elements = new Array(_len), _key = 0; _key < _len; _key++) {
-          elements[_key] = arguments[_key];
-        }
 
         while (true) {
           if (test(RE_TEXT_RUN)) {
-            elements.push(match(RE_TEXT_RUN));
-            needsTrimming = true;
+            elements.push(match1(RE_TEXT_RUN));
             continue;
           }
 
@@ -25043,36 +24880,67 @@ var global = arguments[3];
             }
 
             elements.push(parsePlaceable());
-            needsTrimming = false;
             continue;
+          }
+
+          if (source[cursor] === "}") {
+            throw new FluentError("Unbalanced closing brace");
           }
 
           let indent = parseIndent();
 
           if (indent) {
-            elements.push(trim(indent));
-            needsTrimming = false;
-            continue;
-          }
-
-          if (source[cursor] === "\\") {
-            elements.push(parseEscapeSequence(RE_TEXT_ESCAPE));
-            needsTrimming = false;
+            elements.push(indent);
+            commonIndent = Math.min(commonIndent, indent.length);
             continue;
           }
 
           break;
         }
 
-        if (needsTrimming) {
-          // Trim the trailing whitespace of the last element if it's a
-          // TextElement. Use a flag rather than a typeof check to tell
-          // TextElements and StringLiterals apart (both are strings).
-          let lastIndex = elements.length - 1;
-          elements[lastIndex] = trim(elements[lastIndex]);
+        let lastIndex = elements.length - 1; // Trim the trailing spaces in the last element if it's a TextElement.
+
+        if (typeof elements[lastIndex] === "string") {
+          elements[lastIndex] = trim(elements[lastIndex], RE_TRAILING_SPACES);
         }
 
-        return elements;
+        let baked = [];
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = elements[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            let element = _step.value;
+
+            if (element.type === "indent") {
+              // Dedent indented lines by the maximum common indent.
+              element = element.value.slice(0, element.value.length - commonIndent);
+            } else if (element.type === "str") {
+              // Optimize StringLiterals into their value.
+              element = element.value;
+            }
+
+            if (element) {
+              baked.push(element);
+            }
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return != null) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+
+        return baked;
       }
 
       function parsePlaceable() {
@@ -25112,49 +24980,43 @@ var global = arguments[3];
           return parsePlaceable();
         }
 
-        if (consumeChar("$")) {
-          return {
-            type: "var",
-            name: match(RE_IDENTIFIER)
-          };
-        }
+        if (test(RE_REFERENCE)) {
+          let _match = match(RE_REFERENCE),
+              _match2 = _slicedToArray(_match, 4),
+              sigil = _match2[1],
+              name = _match2[2],
+              _match2$ = _match2[3],
+              attr = _match2$ === void 0 ? null : _match2$;
 
-        if (test(RE_IDENTIFIER)) {
-          let ref = {
-            type: "ref",
-            name: match(RE_IDENTIFIER)
-          };
-
-          if (consumeChar(".")) {
-            let name = match(RE_IDENTIFIER);
-            return {
-              type: "getattr",
-              ref,
-              name
-            };
-          }
+          let type = {
+            "$": "var",
+            "-": "term"
+          }[sigil] || "ref";
 
           if (source[cursor] === "[") {
+            // DEPRECATED VariantExpressions will be removed before 1.0.
             return {
-              type: "getvar",
-              ref,
+              type,
+              name,
               selector: parseVariantKey()
             };
           }
 
           if (consumeToken(TOKEN_PAREN_OPEN)) {
-            let callee = _objectSpread({}, ref, {
-              type: "func"
-            });
-
             return {
-              type: "call",
-              callee,
+              type,
+              name,
+              attr,
               args: parseArguments()
             };
           }
 
-          return ref;
+          return {
+            type,
+            name,
+            attr,
+            args: null
+          };
         }
 
         return parseLiteral();
@@ -25212,7 +25074,6 @@ var global = arguments[3];
           }
 
           let key = parseVariantKey();
-          cursor = RE_VARIANT_START.lastIndex;
           let value = parsePattern();
 
           if (value === null) {
@@ -25225,15 +25086,23 @@ var global = arguments[3];
           };
         }
 
-        return count > 0 ? {
+        if (count === 0) {
+          return null;
+        }
+
+        if (star === undefined) {
+          throw new FluentError("Expected default variant");
+        }
+
+        return {
           variants,
           star
-        } : null;
+        };
       }
 
       function parseVariantKey() {
         consumeToken(TOKEN_BRACKET_OPEN, FluentError);
-        let key = test(RE_NUMBER_LITERAL) ? parseNumberLiteral() : match(RE_IDENTIFIER);
+        let key = test(RE_NUMBER_LITERAL) ? parseNumberLiteral() : match1(RE_IDENTIFIER);
         consumeToken(TOKEN_BRACKET_CLOSE, FluentError);
         return key;
       }
@@ -25253,7 +25122,7 @@ var global = arguments[3];
       function parseNumberLiteral() {
         return {
           type: "num",
-          value: match(RE_NUMBER_LITERAL)
+          value: match1(RE_NUMBER_LITERAL)
         };
       }
 
@@ -25262,15 +25131,18 @@ var global = arguments[3];
         let value = "";
 
         while (true) {
-          value += match(RE_STRING_RUN);
+          value += match1(RE_STRING_RUN);
 
           if (source[cursor] === "\\") {
-            value += parseEscapeSequence(RE_STRING_ESCAPE);
+            value += parseEscapeSequence();
             continue;
           }
 
           if (consumeChar("\"")) {
-            return value;
+            return {
+              type: "str",
+              value
+            };
           } // We've reached an EOL of EOF.
 
 
@@ -25279,14 +25151,22 @@ var global = arguments[3];
       } // Unescape known escape sequences.
 
 
-      function parseEscapeSequence(reSpecialized) {
-        if (test(RE_UNICODE_ESCAPE)) {
-          let sequence = match(RE_UNICODE_ESCAPE);
-          return String.fromCodePoint(parseInt(sequence, 16));
+      function parseEscapeSequence() {
+        if (test(RE_STRING_ESCAPE)) {
+          return match1(RE_STRING_ESCAPE);
         }
 
-        if (test(reSpecialized)) {
-          return match(reSpecialized);
+        if (test(RE_UNICODE_ESCAPE)) {
+          let _match3 = match(RE_UNICODE_ESCAPE),
+              _match4 = _slicedToArray(_match3, 3),
+              codepoint4 = _match4[1],
+              codepoint6 = _match4[2];
+
+          let codepoint = parseInt(codepoint4 || codepoint6, 16);
+          return codepoint <= 0xD7FF || 0xE000 <= codepoint // It's a Unicode scalar value.
+          ? String.fromCodePoint(codepoint) // Lonely surrogates can cause trouble when the parsing result is
+          // saved using UTF-8. Use U+FFFD REPLACEMENT CHARACTER instead.
+          : "�";
         }
 
         throw new FluentError("Unknown escape sequence");
@@ -25311,7 +25191,7 @@ var global = arguments[3];
           case "{":
             // Placeables don't require indentation (in EBNF: block-placeable).
             // Continue the Pattern.
-            return source.slice(start, cursor).replace(RE_CRLF, "\n");
+            return makeIndent(source.slice(start, cursor));
         } // If the first character on the line is not one of the special characters
         // listed above, it's a regular text character. Check if there's at least
         // one space of indent before it.
@@ -25320,17 +25200,28 @@ var global = arguments[3];
         if (source[cursor - 1] === " ") {
           // It's an indented text character (in EBNF: indented-char). Continue
           // the Pattern.
-          return source.slice(start, cursor).replace(RE_CRLF, "\n");
+          return makeIndent(source.slice(start, cursor));
         } // A not-indented text character is likely the identifier of the next
         // message. End the Pattern.
 
 
         return false;
-      } // Trim spaces trailing on every line of text.
+      } // Trim blanks in text according to the given regex.
 
 
-      function trim(text) {
-        return text.replace(RE_TRAILING_SPACES, "");
+      function trim(text, re) {
+        return text.replace(re, "");
+      } // Normalize a blank block and extract the indent details.
+
+
+      function makeIndent(blank) {
+        let value = blank.replace(RE_BLANK_LINES, "\n");
+        let length = RE_INDENT.exec(blank)[1].length;
+        return {
+          type: "indent",
+          value,
+          length
+        };
       }
     }
 
@@ -25639,11 +25530,49 @@ var global = arguments[3];
 },{}],"../node_modules/fluent-syntax/compat.js":[function(require,module,exports) {
 var define;
 var global = arguments[3];
-/* fluent-syntax@0.9.0 */
+/* fluent-syntax@0.10.0 */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define('fluent-syntax', ['exports'], factory) : factory(global.FluentSyntax = {});
 })(this, function (exports) {
   'use strict';
+
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  }
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  }
 
   /*
    * Base class for all Fluent AST nodes.
@@ -25652,7 +25581,6 @@ var global = arguments[3];
    * Annotation.
    *
    */
-
   class BaseNode {
     constructor() {}
 
@@ -25752,9 +25680,10 @@ var global = arguments[3];
 
   class Expression extends SyntaxNode {}
   class StringLiteral extends Expression {
-    constructor(value) {
+    constructor(raw, value) {
       super();
       this.type = "StringLiteral";
+      this.raw = raw;
       this.value = value;
     }
 
@@ -25787,6 +25716,14 @@ var global = arguments[3];
     constructor(id) {
       super();
       this.type = "VariableReference";
+      this.id = id;
+    }
+
+  }
+  class FunctionReference extends Expression {
+    constructor(id) {
+      super();
+      this.type = "FunctionReference";
       this.id = id;
     }
 
@@ -25896,13 +25833,6 @@ var global = arguments[3];
     }
 
   }
-  class Function extends Identifier {
-    constructor(name) {
-      super(name);
-      this.type = "Function";
-    }
-
-  }
   class Junk extends SyntaxNode {
     constructor(content) {
       super();
@@ -25936,44 +25866,6 @@ var global = arguments[3];
       this.message = message;
     }
 
-  }
-
-  function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
-  }
-
-  function _arrayWithHoles(arr) {
-    if (Array.isArray(arr)) return arr;
-  }
-
-  function _iterableToArrayLimit(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
   class ParseError extends Error {
@@ -26029,14 +25921,14 @@ var global = arguments[3];
           const _args4 = _slicedToArray(args, 1),
                 id = _args4[0];
 
-          return `Expected term "${id}" to have a value`;
+          return `Expected term "-${id}" to have a value`;
         }
 
       case "E0007":
         return "Keyword cannot end with a whitespace";
 
       case "E0008":
-        return "The callee has to be a simple, upper-case identifier";
+        return "The callee has to be an upper-case identifier or a term";
 
       case "E0009":
         return "The key has to be a simple identifier";
@@ -26063,7 +25955,7 @@ var global = arguments[3];
         return "Message references cannot be used as selectors";
 
       case "E0017":
-        return "Variants cannot be used as selectors";
+        return "Terms cannot be used as selectors";
 
       case "E0018":
         return "Attributes of messages cannot be used as selectors";
@@ -26080,9 +25972,6 @@ var global = arguments[3];
       case "E0022":
         return "Named arguments must be unique";
 
-      case "E0023":
-        return "VariantLists are only allowed inside of other VariantLists.";
-
       case "E0024":
         return "Cannot access variants of a message.";
 
@@ -26097,10 +25986,16 @@ var global = arguments[3];
       case "E0026":
         {
           const _args6 = _slicedToArray(args, 1),
-                char = _args6[0];
+                sequence = _args6[0];
 
-          return `Invalid Unicode escape sequence: \\u${char}.`;
+          return `Invalid Unicode escape sequence: ${sequence}.`;
         }
+
+      case "E0027":
+        return "Unbalanced closing brace in TextElement.";
+
+      case "E0028":
+        return "Expected an inline expression";
 
       default:
         return code;
@@ -26175,58 +26070,61 @@ var global = arguments[3];
   const EOF = undefined;
   const SPECIAL_LINE_START_CHARS = ["}", ".", "[", "*"];
   class FluentParserStream extends ParserStream {
-    skipBlankInline() {
-      while (this.currentChar === " ") {
-        this.next();
-      }
-    }
-
     peekBlankInline() {
+      const start = this.index + this.peekOffset;
+
       while (this.currentPeek === " ") {
         this.peek();
       }
+
+      return this.string.slice(start, this.index + this.peekOffset);
     }
 
-    skipBlankBlock() {
-      let lineCount = 0;
-
-      while (true) {
-        this.peekBlankInline();
-
-        if (this.currentPeek === EOL) {
-          this.next();
-          lineCount++;
-        } else {
-          this.resetPeek();
-          return lineCount;
-        }
-      }
+    skipBlankInline() {
+      const blank = this.peekBlankInline();
+      this.skipToPeek();
+      return blank;
     }
 
     peekBlankBlock() {
+      let blank = "";
+
       while (true) {
         const lineStart = this.peekOffset;
         this.peekBlankInline();
 
         if (this.currentPeek === EOL) {
+          blank += EOL;
           this.peek();
-        } else {
-          this.resetPeek(lineStart);
-          break;
+          continue;
         }
+
+        if (this.currentPeek === EOF) {
+          // Treat the blank line at EOF as a blank block.
+          return blank;
+        } // Any other char; reset to column 1 on this line.
+
+
+        this.resetPeek(lineStart);
+        return blank;
       }
     }
 
-    skipBlank() {
-      while (this.currentChar === " " || this.currentChar === EOL) {
-        this.next();
-      }
+    skipBlankBlock() {
+      const blank = this.peekBlankBlock();
+      this.skipToPeek();
+      return blank;
     }
 
     peekBlank() {
       while (this.currentPeek === " " || this.currentPeek === EOL) {
         this.peek();
       }
+    }
+
+    skipBlank() {
+      this.peekBlank();
+      this.skipToPeek();
     }
 
     expectChar(ch) {
@@ -26268,7 +26166,7 @@ var global = arguments[3];
       return null;
     }
 
-    isCharIDStart(ch) {
+    isCharIdStart(ch) {
       if (ch === EOF) {
         return false;
       }
@@ -26279,7 +26177,7 @@ var global = arguments[3];
     }
 
     isIdentifierStart() {
-      return this.isCharIDStart(this.currentPeek);
+      return this.isCharIdStart(this.currentPeek);
     }
 
     isNumberStart() {
@@ -26305,21 +26203,31 @@ var global = arguments[3];
       return !includes(SPECIAL_LINE_START_CHARS, ch);
     }
 
-    isValueStart(_ref) {
-      let _ref$skip = _ref.skip,
-          skip = _ref$skip === void 0 ? true : _ref$skip;
-      if (skip === false) throw new Error("Unimplemented");
-      this.peekBlankInline();
-      const ch = this.currentPeek; // Inline Patterns may start with any char.
+    isValueStart() {
+      // Inline Patterns may start with any char.
+      const ch = this.currentPeek;
+      return ch !== EOL && ch !== EOF;
+    }
 
-      if (ch !== EOF && ch !== EOL) {
-        this.skipToPeek();
+    isValueContinuation() {
+      const column1 = this.peekOffset;
+      this.peekBlankInline();
+
+      if (this.currentPeek === "{") {
+        this.resetPeek(column1);
         return true;
       }
 
-      return this.isNextLineValue({
-        skip
-      });
+      if (this.peekOffset - column1 === 0) {
+        return false;
+      }
+
+      if (this.isCharPatternContinuation(this.currentPeek)) {
+        this.resetPeek(column1);
+        return true;
+      }
+
+      return false;
     } // -1 - any
     //  0 - comment
     //  1 - group comment
@@ -26329,13 +26237,7 @@ var global = arguments[3];
     isNextLineComment() {
       let level = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : -1;
 
-      let _ref2 = arguments.length > 1 ? arguments[1] : undefined,
-          _ref2$skip = _ref2.skip,
-          skip = _ref2$skip === void 0 ? false : _ref2$skip;
-
-      if (skip === true) throw new Error("Unimplemented");
-
-      if (this.currentPeek !== EOL) {
+      if (this.currentChar !== EOL) {
         return false;
       }
 
@@ -26366,76 +26268,24 @@ var global = arguments[3];
       return false;
     }
 
-    isNextLineVariantStart(_ref3) {
-      let _ref3$skip = _ref3.skip,
-          skip = _ref3$skip === void 0 ? false : _ref3$skip;
-      if (skip === true) throw new Error("Unimplemented");
-
-      if (this.currentPeek !== EOL) {
-        return false;
-      }
-
-      this.peekBlank();
+    isVariantStart() {
+      const currentPeekOffset = this.peekOffset;
 
       if (this.currentPeek === "*") {
         this.peek();
       }
 
       if (this.currentPeek === "[") {
-        this.resetPeek();
+        this.resetPeek(currentPeekOffset);
         return true;
       }
 
-      this.resetPeek();
+      this.resetPeek(currentPeekOffset);
       return false;
     }
 
-    isNextLineAttributeStart(_ref4) {
-      let _ref4$skip = _ref4.skip,
-          skip = _ref4$skip === void 0 ? true : _ref4$skip;
-      if (skip === false) throw new Error("Unimplemented");
-      this.peekBlank();
-
-      if (this.currentPeek === ".") {
-        this.skipToPeek();
-        return true;
-      }
-
-      this.resetPeek();
-      return false;
-    }
-
-    isNextLineValue(_ref5) {
-      let _ref5$skip = _ref5.skip,
-          skip = _ref5$skip === void 0 ? true : _ref5$skip;
-
-      if (this.currentPeek !== EOL) {
-        return false;
-      }
-
-      this.peekBlankBlock();
-      const ptr = this.peekOffset;
-      this.peekBlankInline();
-
-      if (this.currentPeek !== "{") {
-        if (this.peekOffset - ptr === 0) {
-          this.resetPeek();
-          return false;
-        }
-
-        if (!this.isCharPatternContinuation(this.currentPeek)) {
-          this.resetPeek();
-          return false;
-        }
-      }
-
-      if (skip) {
-        this.skipToPeek();
-      } else {
-        this.resetPeek();
-      }
-
-      return true;
+    isAttributeStart() {
+      return this.currentPeek === ".";
     }
 
     skipToNextEntryStart(junkStart) {
@@ -26457,14 +26307,14 @@ var global = arguments[3];
 
         const first = this.next();
 
-        if (this.isCharIDStart(first) || first === "-" || first === "#") {
+        if (this.isCharIdStart(first) || first === "-" || first === "#") {
           break;
         }
       }
     }
 
     takeIDStart() {
-      if (this.isCharIDStart(this.currentChar)) {
+      if (this.isCharIdStart(this.currentChar)) {
         const ret = this.currentChar;
         this.next();
         return ret;
@@ -26507,7 +26357,6 @@ var global = arguments[3];
 
   }
 
-  /*  eslint no-magic-numbers: [0]  */
   const trailingWSRe = /[ \t\n\r]+$/;
 
   function withSpan(fn) {
@@ -26521,7 +26370,7 @@ var global = arguments[3];
       }
 
       const start = ps.index;
-      const node = fn.call(this, ps, ...args); // Don't re-add the span if the node already has it.  This may happen when
+      const node = fn.call(this, ps, ...args); // Don't re-add the span if the node already has it. This may happen when
       // one decorated function calls another decorated function.
 
       if (node.span) {
@@ -26542,7 +26391,7 @@ var global = arguments[3];
 
       this.withSpans = withSpans; // Poor man's decorators.
 
-      const methodNames = ["getComment", "getMessage", "getTerm", "getAttribute", "getIdentifier", "getTermIdentifier", "getVariant", "getNumber", "getValue", "getPattern", "getVariantList", "getTextElement", "getPlaceable", "getExpression", "getSelectorExpression", "getCallArg", "getString", "getLiteral"];
+      const methodNames = ["getComment", "getMessage", "getTerm", "getAttribute", "getIdentifier", "getVariant", "getNumber", "getPattern", "getVariantList", "getTextElement", "getPlaceable", "getExpression", "getInlineExpression", "getCallArgument", "getString", "getSimpleExpression", "getLiteral"];
 
       for (var _i = 0; _i < methodNames.length; _i++) {
         const name = methodNames[_i];
@@ -26564,7 +26413,7 @@ var global = arguments[3];
         // Consequently, we only attach Comments once we know that the Message
         // or the Term parsed successfully.
 
-        if (entry.type === "Comment" && blankLines === 0 && ps.currentChar) {
+        if (entry.type === "Comment" && blankLines.length === 0 && ps.currentChar) {
           // Stash the comment and decide what to do with it in the next pass.
           lastComment = entry;
           continue;
@@ -26705,9 +26554,7 @@ var global = arguments[3];
           }
         }
 
-        if (ps.isNextLineComment(level, {
-          skip: false
-        })) {
+        if (ps.isNextLineComment(level)) {
           content += ps.currentChar;
           ps.next();
         } else {
@@ -26738,45 +26585,30 @@ var global = arguments[3];
       const id = this.getIdentifier(ps);
       ps.skipBlankInline();
       ps.expectChar("=");
+      const value = this.maybeGetPattern(ps);
+      const attrs = this.getAttributes(ps);
 
-      if (ps.isValueStart({
-        skip: true
-      })) {
-        var pattern = this.getPattern(ps);
-      }
-
-      if (ps.isNextLineAttributeStart({
-        skip: true
-      })) {
-        var attrs = this.getAttributes(ps);
-      }
-
-      if (pattern === undefined && attrs === undefined) {
+      if (value === null && attrs.length === 0) {
         throw new ParseError("E0005", id.name);
       }
 
-      return new Message(id, pattern, attrs);
+      return new Message(id, value, attrs);
     }
 
     getTerm(ps) {
-      const id = this.getTermIdentifier(ps);
+      ps.expectChar("-");
+      const id = this.getIdentifier(ps);
       ps.skipBlankInline();
-      ps.expectChar("=");
+      ps.expectChar("="); // Syntax 0.8 compat: VariantLists are supported but deprecated. They can
+      // only be found as values of Terms. Nested VariantLists are not allowed.
 
-      if (ps.isValueStart({
-        skip: true
-      })) {
-        var value = this.getValue(ps);
-      } else {
+      const value = this.maybeGetVariantList(ps) || this.maybeGetPattern(ps);
+
+      if (value === null) {
         throw new ParseError("E0006", id.name);
       }
 
-      if (ps.isNextLineAttributeStart({
-        skip: true
-      })) {
-        var attrs = this.getAttributes(ps);
-      }
-
+      const attrs = this.getAttributes(ps);
       return new Term(id, value, attrs);
     }
 
@@ -26785,29 +26617,24 @@ var global = arguments[3];
       const key = this.getIdentifier(ps);
       ps.skipBlankInline();
       ps.expectChar("=");
+      const value = this.maybeGetPattern(ps);
 
-      if (ps.isValueStart({
-        skip: true
-      })) {
-        const value = this.getPattern(ps);
-        return new Attribute(key, value);
+      if (value === null) {
+        throw new ParseError("E0012");
       }
 
-      throw new ParseError("E0012");
+      return new Attribute(key, value);
     }
 
     getAttributes(ps) {
       const attrs = [];
+      ps.peekBlank();
 
-      while (true) {
+      while (ps.isAttributeStart()) {
+        ps.skipToPeek();
         const attr = this.getAttribute(ps);
         attrs.push(attr);
-
-        if (!ps.isNextLineAttributeStart({
-          skip: true
-        })) {
-          break;
-        }
+        ps.peekBlank();
       }
 
       return attrs;
@@ -26822,12 +26649,6 @@ var global = arguments[3];
       }
 
       return new Identifier(name);
-    }
-
-    getTermIdentifier(ps) {
-      ps.expectChar("-");
-      const id = this.getIdentifier(ps);
-      return new Identifier(`-${id.name}`);
     }
 
     getVariantKey(ps) {
@@ -26847,7 +26668,8 @@ var global = arguments[3];
       return this.getIdentifier(ps);
     }
 
-    getVariant(ps, hasDefault) {
+    getVariant(ps, _ref2) {
+      let hasDefault = _ref2.hasDefault;
       let defaultIndex = false;
 
       if (ps.currentChar === "*") {
@@ -26857,7 +26679,6 @@ var global = arguments[3];
 
         ps.next();
         defaultIndex = true;
-        hasDefault = true;
       }
 
       ps.expectChar("[");
@@ -26865,37 +26686,36 @@ var global = arguments[3];
       const key = this.getVariantKey(ps);
       ps.skipBlank();
       ps.expectChar("]");
+      const value = this.maybeGetPattern(ps);
 
-      if (ps.isValueStart({
-        skip: true
-      })) {
-        const value = this.getValue(ps);
-        return new Variant(key, value, defaultIndex);
+      if (value === null) {
+        throw new ParseError("E0012");
       }
 
-      throw new ParseError("E0012");
+      return new Variant(key, value, defaultIndex);
     }
 
     getVariants(ps) {
       const variants = [];
       let hasDefault = false;
+      ps.skipBlank();
 
-      while (true) {
-        const variant = this.getVariant(ps, hasDefault);
+      while (ps.isVariantStart()) {
+        const variant = this.getVariant(ps, {
+          hasDefault
+        });
 
         if (variant.default) {
           hasDefault = true;
         }
 
         variants.push(variant);
-
-        if (!ps.isNextLineVariantStart({
-          skip: false
-        })) {
-          break;
-        }
-
+        ps.expectLineEnd();
         ps.skipBlank();
+      }
+
+      if (variants.length === 0) {
+        throw new ParseError("E0011");
       }
 
       if (!hasDefault) {
@@ -26937,71 +26757,218 @@ var global = arguments[3];
       }
 
       return new NumberLiteral(num);
-    }
+    } // maybeGetPattern distinguishes between patterns which start on the same line
+    // as the identifier (a.k.a. inline signleline patterns and inline multiline
+    // patterns) and patterns which start on a new line (a.k.a. block multiline
+    // patterns). The distinction is important for the dedentation logic: the
+    // indent of the first line of a block pattern must be taken into account when
+    // calculating the maximum common indent.
 
-    getValue(ps) {
-      if (ps.currentChar === "{") {
+
+    maybeGetPattern(ps) {
+      ps.peekBlankInline();
+
+      if (ps.isValueStart()) {
+        ps.skipToPeek();
+        return this.getPattern(ps, {
+          isBlock: false
+        });
+      }
+
+      ps.peekBlankBlock();
+
+      if (ps.isValueContinuation()) {
+        ps.skipToPeek();
+        return this.getPattern(ps, {
+          isBlock: true
+        });
+      }
+
+      return null;
+    } // Deprecated in Syntax 0.8. VariantLists are only allowed as values of Terms.
+    // Values of Messages, Attributes and Variants must be Patterns. This method
+    // is only used in getTerm.
+
+
+    maybeGetVariantList(ps) {
+      ps.peekBlank();
+
+      if (ps.currentPeek === "{") {
+        const start = ps.peekOffset;
         ps.peek();
         ps.peekBlankInline();
 
-        if (ps.isNextLineVariantStart({
-          skip: false
-        })) {
-          return this.getVariantList(ps);
-        }
+        if (ps.currentPeek === EOL) {
+          ps.peekBlank();
 
-        ps.resetPeek();
+          if (ps.isVariantStart()) {
+            ps.resetPeek(start);
+            ps.skipToPeek();
+            return this.getVariantList(ps);
+          }
+        }
       }
 
-      return this.getPattern(ps);
+      ps.resetPeek();
+      return null;
     }
 
     getVariantList(ps) {
       ps.expectChar("{");
-      ps.skipBlankInline();
-      ps.expectLineEnd();
-      ps.skipBlank();
-      const variants = this.getVariants(ps);
-      ps.expectLineEnd();
-      ps.skipBlank();
+      var variants = this.getVariants(ps);
       ps.expectChar("}");
       return new VariantList(variants);
     }
 
-    getPattern(ps) {
+    getPattern(ps, _ref3) {
+      let isBlock = _ref3.isBlock;
       const elements = [];
+
+      if (isBlock) {
+        // A block pattern is a pattern which starts on a new line. Store and
+        // measure the indent of this first line for the dedentation logic.
+        const blankStart = ps.index;
+        const firstIndent = ps.skipBlankInline();
+        elements.push(this.getIndent(ps, firstIndent, blankStart));
+        var commonIndentLength = firstIndent.length;
+      } else {
+        var commonIndentLength = Infinity;
+      }
+
       let ch;
 
-      while (ch = ps.currentChar) {
-        // The end condition for getPattern's while loop is a newline
-        // which is not followed by a valid pattern continuation.
-        if (ch === EOL && !ps.isNextLineValue({
-          skip: false
-        })) {
-          break;
+      elements: while (ch = ps.currentChar) {
+        switch (ch) {
+          case EOL:
+            {
+              const blankStart = ps.index;
+              const blankLines = ps.peekBlankBlock();
+
+              if (ps.isValueContinuation()) {
+                ps.skipToPeek();
+                const indent = ps.skipBlankInline();
+                commonIndentLength = Math.min(commonIndentLength, indent.length);
+                elements.push(this.getIndent(ps, blankLines + indent, blankStart));
+                continue elements;
+              } // The end condition for getPattern's while loop is a newline
+              // which is not followed by a valid pattern continuation.
+
+
+              ps.resetPeek();
+              break elements;
+            }
+
+          case "{":
+            elements.push(this.getPlaceable(ps));
+            continue elements;
+
+          case "}":
+            throw new ParseError("E0027");
+
+          default:
+            const element = this.getTextElement(ps);
+            elements.push(element);
         }
+      }
 
-        if (ch === "{") {
-          const element = this.getPlaceable(ps);
-          elements.push(element);
-        } else {
-          const element = this.getTextElement(ps);
-          elements.push(element);
+      const dedented = this.dedent(elements, commonIndentLength);
+      return new Pattern(dedented);
+    } // Create a token representing an indent. It's not part of the AST and it will
+    // be trimmed and merged into adjacent TextElements, or turned into a new
+    // TextElement, if it's surrounded by two Placeables.
+
+
+    getIndent(ps, value, start) {
+      return {
+        type: "Indent",
+        span: {
+          start,
+          end: ps.index
+        },
+        value
+      };
+    } // Dedent a list of elements by removing the maximum common indent from the
+    // beginning of text lines. The common indent is calculated in getPattern.
+
+
+    dedent(elements, commonIndent) {
+      const trimmed = [];
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = elements[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          let element = _step.value;
+
+          if (element.type === "Placeable") {
+            trimmed.push(element);
+            continue;
+          }
+
+          if (element.type === "Indent") {
+            // Strip common indent.
+            element.value = element.value.slice(0, element.value.length - commonIndent);
+
+            if (element.value.length === 0) {
+              continue;
+            }
+          }
+
+          let prev = trimmed[trimmed.length - 1];
+
+          if (prev && prev.type === "TextElement") {
+            // Join adjacent TextElements by replacing them with their sum.
+            const sum = new TextElement(prev.value + element.value);
+
+            if (this.withSpans) {
+              sum.addSpan(prev.span.start, element.span.end);
+            }
+
+            trimmed[trimmed.length - 1] = sum;
+            continue;
+          }
+
+          if (element.type === "Indent") {
+            // If the indent hasn't been merged into a preceding TextElement,
+            // convert it into a new TextElement.
+            const textElement = new TextElement(element.value);
+
+            if (this.withSpans) {
+              textElement.addSpan(element.span.start, element.span.end);
+            }
+
+            element = textElement;
+          }
+
+          trimmed.push(element);
+        } // Trim trailing whitespace from the Pattern.
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return != null) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
         }
-      } // Trim trailing whitespace.
+      }
 
-
-      const lastElement = elements[elements.length - 1];
+      const lastElement = trimmed[trimmed.length - 1];
 
       if (lastElement.type === "TextElement") {
         lastElement.value = lastElement.value.replace(trailingWSRe, "");
 
-        if (lastElement.value === "") {
-          elements.pop();
+        if (lastElement.value.length === 0) {
+          trimmed.pop();
         }
       }
 
-      return new Pattern(elements);
+      return trimmed;
     }
 
     getTextElement(ps) {
@@ -27009,27 +26976,12 @@ var global = arguments[3];
       let ch;
 
       while (ch = ps.currentChar) {
-        if (ch === "{") {
+        if (ch === "{" || ch === "}") {
           return new TextElement(buffer);
         }
 
         if (ch === EOL) {
-          if (!ps.isNextLineValue({
-            skip: false
-          })) {
-            return new TextElement(buffer);
-          }
-
-          ps.next();
-          ps.skipBlankInline();
-          buffer += EOL;
-          continue;
-        }
-
-        if (ch === "\\") {
-          ps.next();
-          buffer += this.getEscapeSequence(ps);
-          continue;
+          return new TextElement(buffer);
         }
 
         buffer += ch;
@@ -27040,44 +26992,58 @@ var global = arguments[3];
     }
 
     getEscapeSequence(ps) {
-      let specials = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : ["{", "\\"];
       const next = ps.currentChar;
 
-      if (specials.includes(next)) {
-        ps.next();
-        return `\\${next}`;
+      switch (next) {
+        case "\\":
+        case "\"":
+          ps.next();
+          return [`\\${next}`, next];
+
+        case "u":
+          return this.getUnicodeEscapeSequence(ps, next, 4);
+
+        case "U":
+          return this.getUnicodeEscapeSequence(ps, next, 6);
+
+        default:
+          throw new ParseError("E0025", next);
       }
+    }
 
-      if (next === "u") {
-        let sequence = "";
-        ps.next();
+    getUnicodeEscapeSequence(ps, u, digits) {
+      ps.expectChar(u);
+      let sequence = "";
 
-        for (let i = 0; i < 4; i++) {
-          const ch = ps.takeHexDigit();
+      for (let i = 0; i < digits; i++) {
+        const ch = ps.takeHexDigit();
 
-          if (!ch) {
-            throw new ParseError("E0026", sequence + ps.currentChar);
-          }
-
-          sequence += ch;
+        if (!ch) {
+          throw new ParseError("E0026", `\\${u}${sequence}${ps.currentChar}`);
         }
 
-        return `\\u${sequence}`;
+        sequence += ch;
       }
 
-      throw new ParseError("E0025", next);
+      const codepoint = parseInt(sequence, 16);
+      const unescaped = codepoint <= 0xD7FF || 0xE000 <= codepoint // It's a Unicode scalar value.
+      ? String.fromCodePoint(codepoint) // Escape sequences reresenting surrogate code points are well-formed
+      // but invalid in Fluent. Replace them with U+FFFD REPLACEMENT
+      // CHARACTER.
+      : "�";
+      return [`\\${u}${sequence}`, unescaped];
     }
 
     getPlaceable(ps) {
       ps.expectChar("{");
+      ps.skipBlank();
       const expression = this.getExpression(ps);
       ps.expectChar("}");
       return new Placeable(expression);
     }
 
     getExpression(ps) {
-      ps.skipBlank();
-      const selector = this.getSelectorExpression(ps);
+      const selector = this.getInlineExpression(ps);
       ps.skipBlank();
 
       if (ps.currentChar === "-") {
@@ -27094,7 +27060,11 @@ var global = arguments[3];
           throw new ParseError("E0018");
         }
 
-        if (selector.type === "VariantExpression") {
+        if (selector.type === "TermReference" || selector.type === "VariantExpression") {
+          throw new ParseError("E0017");
+        }
+
+        if (selector.type === "CallExpression" && selector.callee.type === "TermReference") {
           throw new ParseError("E0017");
         }
 
@@ -27102,82 +27072,118 @@ var global = arguments[3];
         ps.next();
         ps.skipBlankInline();
         ps.expectLineEnd();
-        ps.skipBlank();
         const variants = this.getVariants(ps);
-        ps.skipBlank();
-
-        if (variants.length === 0) {
-          throw new ParseError("E0011");
-        } // VariantLists are only allowed in other VariantLists.
-
-
-        if (variants.some(v => v.value.type === "VariantList")) {
-          throw new ParseError("E0023");
-        }
-
         return new SelectExpression(selector, variants);
-      } else if (selector.type === "AttributeExpression" && selector.ref.type === "TermReference") {
+      }
+
+      if (selector.type === "AttributeExpression" && selector.ref.type === "TermReference") {
         throw new ParseError("E0019");
       }
 
-      ps.skipBlank();
+      if (selector.type === "CallExpression" && selector.callee.type === "AttributeExpression") {
+        throw new ParseError("E0019");
+      }
+
       return selector;
     }
 
-    getSelectorExpression(ps) {
+    getInlineExpression(ps) {
       if (ps.currentChar === "{") {
         return this.getPlaceable(ps);
       }
 
-      const literal = this.getLiteral(ps);
+      let expr = this.getSimpleExpression(ps);
 
-      if (literal.type !== "MessageReference" && literal.type !== "TermReference") {
-        return literal;
+      switch (expr.type) {
+        case "NumberLiteral":
+        case "StringLiteral":
+        case "VariableReference":
+          return expr;
+
+        case "MessageReference":
+          {
+            if (ps.currentChar === ".") {
+              ps.next();
+              const attr = this.getIdentifier(ps);
+              return new AttributeExpression(expr, attr);
+            }
+
+            if (ps.currentChar === "(") {
+              // It's a Function. Ensure it's all upper-case.
+              if (!/^[A-Z][A-Z_?-]*$/.test(expr.id.name)) {
+                throw new ParseError("E0008");
+              }
+
+              const func = new FunctionReference(expr.id);
+
+              if (this.withSpans) {
+                func.addSpan(expr.span.start, expr.span.end);
+              }
+
+              return new CallExpression(func, ...this.getCallArguments(ps));
+            }
+
+            return expr;
+          }
+
+        case "TermReference":
+          {
+            if (ps.currentChar === "[") {
+              ps.next();
+              const key = this.getVariantKey(ps);
+              ps.expectChar("]");
+              return new VariantExpression(expr, key);
+            }
+
+            if (ps.currentChar === ".") {
+              ps.next();
+              const attr = this.getIdentifier(ps);
+              expr = new AttributeExpression(expr, attr);
+            }
+
+            if (ps.currentChar === "(") {
+              return new CallExpression(expr, ...this.getCallArguments(ps));
+            }
+
+            return expr;
+          }
+
+        default:
+          throw new ParseError("E0028");
       }
-
-      const ch = ps.currentChar;
-
-      if (ch === ".") {
-        ps.next();
-        const attr = this.getIdentifier(ps);
-        return new AttributeExpression(literal, attr);
-      }
-
-      if (ch === "[") {
-        ps.next();
-
-        if (literal.type === "MessageReference") {
-          throw new ParseError("E0024");
-        }
-
-        const key = this.getVariantKey(ps);
-        ps.expectChar("]");
-        return new VariantExpression(literal, key);
-      }
-
-      if (ch === "(") {
-        ps.next();
-
-        if (!/^[A-Z][A-Z_?-]*$/.test(literal.id.name)) {
-          throw new ParseError("E0008");
-        }
-
-        const args = this.getCallArgs(ps);
-        ps.expectChar(")");
-        const func = new Function(literal.id.name);
-
-        if (this.withSpans) {
-          func.addSpan(literal.span.start, literal.span.end);
-        }
-
-        return new CallExpression(func, args.positional, args.named);
-      }
-
-      return literal;
     }
 
-    getCallArg(ps) {
-      const exp = this.getSelectorExpression(ps);
+    getSimpleExpression(ps) {
+      if (ps.isNumberStart()) {
+        return this.getNumber(ps);
+      }
+
+      if (ps.currentChar === '"') {
+        return this.getString(ps);
+      }
+
+      if (ps.currentChar === "$") {
+        ps.next();
+        const id = this.getIdentifier(ps);
+        return new VariableReference(id);
+      }
+
+      if (ps.currentChar === "-") {
+        ps.next();
+        const id = this.getIdentifier(ps);
+        return new TermReference(id);
+      }
+
+      if (ps.isIdentifierStart()) {
+        const id = this.getIdentifier(ps);
+        return new MessageReference(id);
+      }
+
+      throw new ParseError("E0028");
+    }
+
+    getCallArgument(ps) {
+      const exp = this.getInlineExpression(ps);
       ps.skipBlank();
 
       if (ps.currentChar !== ":") {
@@ -27190,14 +27196,15 @@ var global = arguments[3];
 
       ps.next();
       ps.skipBlank();
-      const val = this.getArgVal(ps);
-      return new NamedArgument(exp.id, val);
+      const value = this.getLiteral(ps);
+      return new NamedArgument(exp.id, value);
     }
 
-    getCallArgs(ps) {
+    getCallArguments(ps) {
       const positional = [];
       const named = [];
       const argumentNames = new Set();
+      ps.expectChar("(");
       ps.skipBlank();
 
       while (true) {
@@ -27205,7 +27212,7 @@ var global = arguments[3];
           break;
         }
 
-        const arg = this.getCallArg(ps);
+        const arg = this.getCallArgument(ps);
 
         if (arg.type === "NamedArgument") {
           if (argumentNames.has(arg.name.name)) {
@@ -27226,37 +27233,33 @@ var global = arguments[3];
           ps.next();
           ps.skipBlank();
           continue;
-        } else {
-          break;
         }
+
+        break;
       }
 
-      return {
-        positional,
-        named
-      };
-    }
-
-    getArgVal(ps) {
-      if (ps.isNumberStart()) {
-        return this.getNumber(ps);
-      } else if (ps.currentChar === '"') {
-        return this.getString(ps);
-      }
-
-      throw new ParseError("E0012");
+      ps.expectChar(")");
+      return [positional, named];
     }
 
     getString(ps) {
-      let val = "";
+      let raw = "";
+      let value = "";
       ps.expectChar("\"");
       let ch;
 
       while (ch = ps.takeChar(x => x !== '"' && x !== EOL)) {
         if (ch === "\\") {
-          val += this.getEscapeSequence(ps, ["{", "\\", "\""]);
+          const _this$getEscapeSequen = this.getEscapeSequence(ps),
+                _this$getEscapeSequen2 = _slicedToArray(_this$getEscapeSequen, 2),
+                sequence = _this$getEscapeSequen2[0],
+                unescaped = _this$getEscapeSequen2[1];
+
+          raw += sequence;
+          value += unescaped;
         } else {
-          val += ch;
+          raw += ch;
+          value += ch;
         }
       }
 
@@ -27265,37 +27268,15 @@ var global = arguments[3];
       }
 
       ps.expectChar("\"");
-      return new StringLiteral(val);
+      return new StringLiteral(raw, value);
     }
 
     getLiteral(ps) {
-      const ch = ps.currentChar;
-
-      if (ch === EOF) {
-        throw new ParseError("E0014");
-      }
-
-      if (ch === "$") {
-        ps.next();
-        const id = this.getIdentifier(ps);
-        return new VariableReference(id);
-      }
-
-      if (ps.isIdentifierStart()) {
-        const id = this.getIdentifier(ps);
-        return new MessageReference(id);
-      }
-
       if (ps.isNumberStart()) {
         return this.getNumber(ps);
       }
 
-      if (ch === "-") {
-        const id = this.getTermIdentifier(ps);
-        return new TermReference(id);
-      }
-
-      if (ch === '"') {
+      if (ps.currentChar === '"') {
         return this.getString(ps);
       }
 
@@ -27373,8 +27354,10 @@ var global = arguments[3];
 
       switch (entry.type) {
         case "Message":
-        case "Term":
           return serializeMessage(entry);
+
+        case "Term":
+          return serializeTerm(entry);
 
         case "Comment":
           if (state & HAS_ENTRIES) {
@@ -27429,8 +27412,7 @@ var global = arguments[3];
       parts.push(serializeComment(message.comment));
     }
 
-    parts.push(serializeIdentifier(message.id));
-    parts.push(" =");
+    parts.push(`${message.id.name} =`);
 
     if (message.value) {
       parts.push(serializeValue(message.value));
@@ -27464,10 +27446,46 @@ var global = arguments[3];
     return parts.join("");
   }
 
+  function serializeTerm(term) {
+    const parts = [];
+
+    if (term.comment) {
+      parts.push(serializeComment(term.comment));
+    }
+
+    parts.push(`-${term.id.name} =`);
+    parts.push(serializeValue(term.value));
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
+
+    try {
+      for (var _iterator3 = term.attributes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        const attribute = _step3.value;
+        parts.push(serializeAttribute(attribute));
+      }
+    } catch (err) {
+      _didIteratorError3 = true;
+      _iteratorError3 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+          _iterator3.return();
+        }
+      } finally {
+        if (_didIteratorError3) {
+          throw _iteratorError3;
+        }
+      }
+    }
+
+    parts.push("\n");
+    return parts.join("");
+  }
+
   function serializeAttribute(attribute) {
-    const id = serializeIdentifier(attribute.id);
     const value = indent(serializeValue(attribute.value));
-    return `\n    .${id} =${value}`;
+    return `\n    .${attribute.id.name} =${value}`;
   }
 
   function serializeValue(value) {
@@ -27513,7 +27531,7 @@ var global = arguments[3];
   function serializeElement(element) {
     switch (element.type) {
       case "TextElement":
-        return serializeTextElement(element);
+        return element.value;
 
       case "Placeable":
         return serializePlaceable(element);
@@ -27521,10 +27539,6 @@ var global = arguments[3];
       default:
         throw new Error(`Unknown element type: ${element.type}`);
     }
-  }
-
-  function serializeTextElement(text) {
-    return text.value;
   }
 
   function serializePlaceable(placeable) {
@@ -27547,17 +27561,20 @@ var global = arguments[3];
   function serializeExpression(expr) {
     switch (expr.type) {
       case "StringLiteral":
-        return serializeStringLiteral(expr);
+        return `"${expr.raw}"`;
 
       case "NumberLiteral":
-        return serializeNumberLiteral(expr);
+        return expr.value;
 
       case "MessageReference":
+      case "FunctionReference":
+        return expr.id.name;
+
       case "TermReference":
-        return serializeMessageReference(expr);
+        return `-${expr.id.name}`;
 
       case "VariableReference":
-        return serializeVariableReference(expr);
+        return `$${expr.id.name}`;
 
       case "AttributeExpression":
         return serializeAttributeExpression(expr);
@@ -27579,46 +27596,30 @@ var global = arguments[3];
     }
   }
 
-  function serializeStringLiteral(expr) {
-    return `"${expr.value}"`;
-  }
-
-  function serializeNumberLiteral(expr) {
-    return expr.value;
-  }
-
-  function serializeMessageReference(expr) {
-    return serializeIdentifier(expr.id);
-  }
-
-  function serializeVariableReference(expr) {
-    return `$${serializeIdentifier(expr.id)}`;
-  }
-
   function serializeSelectExpression(expr) {
     const parts = [];
     const selector = `${serializeExpression(expr.selector)} ->`;
     parts.push(selector);
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
+    var _iteratorNormalCompletion4 = true;
+    var _didIteratorError4 = false;
+    var _iteratorError4 = undefined;
 
     try {
-      for (var _iterator3 = expr.variants[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-        const variant = _step3.value;
+      for (var _iterator4 = expr.variants[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+        const variant = _step4.value;
         parts.push(serializeVariant(variant));
       }
     } catch (err) {
-      _didIteratorError3 = true;
-      _iteratorError3 = err;
+      _didIteratorError4 = true;
+      _iteratorError4 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-          _iterator3.return();
+        if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+          _iterator4.return();
         }
       } finally {
-        if (_didIteratorError3) {
-          throw _iteratorError3;
+        if (_didIteratorError4) {
+          throw _iteratorError4;
         }
       }
     }
@@ -27629,8 +27630,7 @@ var global = arguments[3];
 
   function serializeAttributeExpression(expr) {
     const ref = serializeExpression(expr.ref);
-    const name = serializeIdentifier(expr.name);
-    return `${ref}.${name}`;
+    return `${ref}.${expr.name.name}`;
   }
 
   function serializeVariantExpression(expr) {
@@ -27640,55 +27640,30 @@ var global = arguments[3];
   }
 
   function serializeCallExpression(expr) {
-    const fun = serializeFunction(expr.callee);
+    const callee = serializeExpression(expr.callee);
     const positional = expr.positional.map(serializeExpression).join(", ");
     const named = expr.named.map(serializeNamedArgument).join(", ");
 
     if (expr.positional.length > 0 && expr.named.length > 0) {
-      return `${fun}(${positional}, ${named})`;
+      return `${callee}(${positional}, ${named})`;
     }
 
-    return `${fun}(${positional || named})`;
+    return `${callee}(${positional || named})`;
   }
 
   function serializeNamedArgument(arg) {
-    const name = serializeIdentifier(arg.name);
-    const value = serializeArgumentValue(arg.value);
-    return `${name}: ${value}`;
-  }
-
-  function serializeArgumentValue(argval) {
-    switch (argval.type) {
-      case "StringLiteral":
-        return serializeStringLiteral(argval);
-
-      case "NumberLiteral":
-        return serializeNumberLiteral(argval);
-
-      default:
-        throw new Error(`Unknown argument type: ${argval.type}`);
-    }
-  }
-
-  function serializeIdentifier(identifier) {
-    return identifier.name;
+    const value = serializeExpression(arg.value);
+    return `${arg.name.name}: ${value}`;
   }
 
   function serializeVariantKey(key) {
     switch (key.type) {
       case "Identifier":
-        return serializeIdentifier(key);
-
-      case "NumberLiteral":
-        return serializeNumberLiteral(key);
+        return key.name;
 
       default:
-        throw new Error(`Unknown variant key type: ${key.type}`);
+        return serializeExpression(key);
     }
-  }
-
-  function serializeFunction(fun) {
-    return fun.name;
   }
 
   function parse(source, opts) {
@@ -27739,6 +27714,7 @@ var global = arguments[3];
   exports.MessageReference = MessageReference;
   exports.TermReference = TermReference;
   exports.VariableReference = VariableReference;
+  exports.FunctionReference = FunctionReference;
   exports.SelectExpression = SelectExpression;
   exports.AttributeExpression = AttributeExpression;
   exports.VariantExpression = VariantExpression;
@@ -27751,7 +27727,6 @@ var global = arguments[3];
   exports.Comment = Comment;
   exports.GroupComment = GroupComment;
   exports.ResourceComment = ResourceComment;
-  exports.Function = Function;
   exports.Junk = Junk;
   exports.Span = Span;
   exports.Annotation = Annotation;
@@ -27768,7 +27743,7 @@ Object.defineProperty(exports, "__esModule", {
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 exports.parse_translations = parse_translations;
-exports.create_context = create_context;
+exports.create_bundle = create_bundle;
 exports.format_messages = format_messages;
 exports.parse_externals = parse_externals;
 
@@ -27786,13 +27761,13 @@ function annotation_display(source, junk, annot) {
           start = annot.span.start;
 
 
-    const slice = source.substring(junk.span.start, junk.span.end).trimRight();
+    const slice = source.substring(junk.span.start, junk.span.end);
     const line_offset = (0, _compat2.lineOffset)(source, start);
     const column_offset = (0, _compat2.columnOffset)(source, start);
     const span_offset = (0, _compat2.lineOffset)(source, junk.span.start);
     const head_len = line_offset - span_offset + 1;
     const lines = slice.split('\n');
-    const head = lines.slice(0, head_len).join('\n');
+    const head = lines.slice(0, head_len).join('\n') + '\n';
     const tail = lines.slice(head_len).join('\n');
 
     return {
@@ -27818,13 +27793,13 @@ function parse_translations(translations) {
     return [res, annotations];
 }
 
-function create_context(locale, translations) {
-    const context = new _compat.FluentBundle(locale);
-    context.addMessages(translations);
-    return context;
+function create_bundle(locale, translations) {
+    const bundle = new _compat.FluentBundle(locale);
+    bundle.addMessages(translations);
+    return bundle;
 }
 
-function format_messages(context, externals) {
+function format_messages(ast, bundle, externals) {
     const outputs = new Map();
     const errors = [];
     var _iteratorNormalCompletion = true;
@@ -27832,25 +27807,25 @@ function format_messages(context, externals) {
     var _iteratorError = undefined;
 
     try {
-        for (var _iterator = context.messages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            const _ref = _step.value;
+        for (var _iterator = ast.body[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            const entry = _step.value;
 
-            var _ref2 = _slicedToArray(_ref, 2);
-
-            const id = _ref2[0];
-            const message = _ref2[1];
-
+            if (entry.type !== "Message") {
+                continue;
+            }
+            const id = entry.id.name;
+            const message = bundle.getMessage(id);
             const formatted_message = {
                 id,
-                value: context.format(message, externals, errors),
-                attributes: Object.entries(message.attrs || {}).map((_ref3) => {
-                    var _ref4 = _slicedToArray(_ref3, 2);
+                value: bundle.format(message, externals, errors),
+                attributes: Object.entries(message && message.attrs || {}).map((_ref) => {
+                    var _ref2 = _slicedToArray(_ref, 2);
 
-                    let attr_id = _ref4[0],
-                        attr_value = _ref4[1];
+                    let attr_id = _ref2[0],
+                        attr_value = _ref2[1];
                     return {
                         id: attr_id,
-                        value: context.format(attr_value, externals, errors)
+                        value: bundle.format(attr_value, externals, errors)
                     };
                 })
             };
@@ -27889,12 +27864,12 @@ function parse_externals(externals) {
 
     try {
         for (var _iterator2 = Object.entries(obj)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            const _ref5 = _step2.value;
+            const _ref3 = _step2.value;
 
-            var _ref6 = _slicedToArray(_ref5, 2);
+            var _ref4 = _slicedToArray(_ref3, 2);
 
-            const key = _ref6[0];
-            const val = _ref6[1];
+            const key = _ref4[0];
+            const val = _ref4[1];
 
             if (iso_re.test(val)) {
                 obj[key] = new Date(val);
@@ -28051,9 +28026,9 @@ const ast = _parse_translations2[0],
       annotations = _parse_translations2[1];
 
 const externals_string = JSON.stringify(_defaults.externals, null, 4);
-const ctx = (0, _fluent.create_context)(locale, _defaults.translations);
+const bundle = (0, _fluent.create_bundle)(locale, _defaults.translations);
 
-var _format_messages = (0, _fluent.format_messages)(ctx, _defaults.externals),
+var _format_messages = (0, _fluent.format_messages)(ast, bundle, _defaults.externals),
     _format_messages2 = _slicedToArray(_format_messages, 2);
 
 const out = _format_messages2[0],
@@ -28069,7 +28044,7 @@ const default_state = {
     externals_errors: [],
     externals_string,
     ast,
-    ctx,
+    bundle,
     out
 };
 
@@ -28102,7 +28077,7 @@ function reducer() {
                 const locale = state.locale,
                       externals = state.externals;
 
-                const ctx = (0, _fluent.create_context)(locale, value);
+                const bundle = (0, _fluent.create_bundle)(locale, value);
 
                 var _parse_translations3 = (0, _fluent.parse_translations)(value),
                     _parse_translations4 = _slicedToArray(_parse_translations3, 2);
@@ -28110,7 +28085,7 @@ function reducer() {
                 const ast = _parse_translations4[0],
                       annotations = _parse_translations4[1];
 
-                var _format_messages3 = (0, _fluent.format_messages)(ctx, externals),
+                var _format_messages3 = (0, _fluent.format_messages)(ast, bundle, externals),
                     _format_messages4 = _slicedToArray(_format_messages3, 2);
 
                 const out = _format_messages4[0],
@@ -28122,19 +28097,20 @@ function reducer() {
                     annotations,
                     format_errors,
                     ast,
-                    ctx,
+                    bundle,
                     out
                 });
             }
         case 'CHANGE_LOCALE':
             {
                 const locale = action.value;
-                const translations = state.translations,
+                const ast = state.ast,
+                      translations = state.translations,
                       externals = state.externals;
 
-                const ctx = (0, _fluent.create_context)(locale, translations);
+                const bundle = (0, _fluent.create_bundle)(locale, translations);
 
-                var _format_messages5 = (0, _fluent.format_messages)(ctx, externals),
+                var _format_messages5 = (0, _fluent.format_messages)(ast, bundle, externals),
                     _format_messages6 = _slicedToArray(_format_messages5, 2);
 
                 const out = _format_messages6[0],
@@ -28144,7 +28120,7 @@ function reducer() {
                 return _extends({}, state, {
                     locale,
                     format_errors,
-                    ctx,
+                    bundle,
                     out
                 });
             }
@@ -28157,7 +28133,8 @@ function reducer() {
         case 'CHANGE_EXTERNALS':
             {
                 const value = action.value;
-                const ctx = state.ctx;
+                const ast = state.ast,
+                      bundle = state.bundle;
 
                 var _parse_externals = (0, _fluent.parse_externals)(value),
                     _parse_externals2 = _slicedToArray(_parse_externals, 2);
@@ -28165,7 +28142,7 @@ function reducer() {
                 const externals = _parse_externals2[0],
                       externals_errors = _parse_externals2[1];
 
-                var _format_messages7 = (0, _fluent.format_messages)(ctx, externals),
+                var _format_messages7 = (0, _fluent.format_messages)(ast, bundle, externals),
                     _format_messages8 = _slicedToArray(_format_messages7, 2);
 
                 const out = _format_messages8[0],
@@ -28221,7 +28198,7 @@ function reducer() {
                       dir = _parse_setup.dir;
 
 
-                const ctx = (0, _fluent.create_context)(locale, translations);
+                const bundle = (0, _fluent.create_bundle)(locale, translations);
 
                 var _parse_translations5 = (0, _fluent.parse_translations)(translations),
                     _parse_translations6 = _slicedToArray(_parse_translations5, 2);
@@ -28235,7 +28212,7 @@ function reducer() {
                 const externals = _parse_externals4[0],
                       externals_errors = _parse_externals4[1];
 
-                var _format_messages9 = (0, _fluent.format_messages)(ctx, externals),
+                var _format_messages9 = (0, _fluent.format_messages)(ast, bundle, externals),
                     _format_messages10 = _slicedToArray(_format_messages9, 2);
 
                 const out = _format_messages10[0],
@@ -28253,7 +28230,7 @@ function reducer() {
                     externals_string,
                     format_errors,
                     ast,
-                    ctx,
+                    bundle,
                     out
                 });
             }
@@ -50995,7 +50972,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '53779' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '54831' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
