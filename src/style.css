@@ -216,6 +216,7 @@ code, pre {
 .attribute__value,
 .junk__value {
     flex: 2;
+    white-space: pre-wrap;
 }
 
 .attribute__id {
