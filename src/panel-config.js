@@ -65,7 +65,7 @@ function ConfigPanel(props) {
             <Editor
                 className="externals__editor"
                 mode="json"
-                gutter={false}
+                showGutter={false}
                 value={externals}
                 onChange={change_externals}
             />

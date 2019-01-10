@@ -13,7 +13,7 @@ function ASTPanel(props) {
                 className="ast__editor"
                 mode="json"
                 readOnly={true}
-                gutter={false}
+                showGutter={false}
                 value={ast}
             />
         </section>

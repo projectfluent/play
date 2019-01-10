@@ -14,7 +14,7 @@ function TranslationsPanel(props) {
                 mode="fluent"
                 className="translations__editor"
                 fontSize={16}
-                gutter={true}
+                showGutter={true}
                 value={value}
                 annotations={annotations}
                 onChange={change_translations}
