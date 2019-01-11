@@ -29912,7 +29912,1859 @@ function mapDispatch(dispatch) {
 var _default = (0, _reactRedux.connect)(mapState, mapDispatch)(PanelsList);
 
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./actions":"../src/actions.js"}],"../node_modules/brace/index.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./actions":"../src/actions.js"}],"../node_modules/lodash.isequal/index.js":[function(require,module,exports) {
+var global = arguments[3];
+
+/**
+ * Lodash (Custom Build) <https://lodash.com/>
+ * Build: `lodash modularize exports="npm" -o ./`
+ * Copyright JS Foundation and other contributors <https://js.foundation/>
+ * Released under MIT license <https://lodash.com/license>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ */
+
+/** Used as the size to enable large array optimizations. */
+var LARGE_ARRAY_SIZE = 200;
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED = '__lodash_hash_undefined__';
+
+/** Used to compose bitmasks for value comparisons. */
+var COMPARE_PARTIAL_FLAG = 1,
+    COMPARE_UNORDERED_FLAG = 2;
+
+/** Used as references for various `Number` constants. */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]',
+    arrayTag = '[object Array]',
+    asyncTag = '[object AsyncFunction]',
+    boolTag = '[object Boolean]',
+    dateTag = '[object Date]',
+    errorTag = '[object Error]',
+    funcTag = '[object Function]',
+    genTag = '[object GeneratorFunction]',
+    mapTag = '[object Map]',
+    numberTag = '[object Number]',
+    nullTag = '[object Null]',
+    objectTag = '[object Object]',
+    promiseTag = '[object Promise]',
+    proxyTag = '[object Proxy]',
+    regexpTag = '[object RegExp]',
+    setTag = '[object Set]',
+    stringTag = '[object String]',
+    symbolTag = '[object Symbol]',
+    undefinedTag = '[object Undefined]',
+    weakMapTag = '[object WeakMap]';
+
+var arrayBufferTag = '[object ArrayBuffer]',
+    dataViewTag = '[object DataView]',
+    float32Tag = '[object Float32Array]',
+    float64Tag = '[object Float64Array]',
+    int8Tag = '[object Int8Array]',
+    int16Tag = '[object Int16Array]',
+    int32Tag = '[object Int32Array]',
+    uint8Tag = '[object Uint8Array]',
+    uint8ClampedTag = '[object Uint8ClampedArray]',
+    uint16Tag = '[object Uint16Array]',
+    uint32Tag = '[object Uint32Array]';
+
+/**
+ * Used to match `RegExp`
+ * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+ */
+var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+
+/** Used to detect host constructors (Safari). */
+var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+/** Used to detect unsigned integer values. */
+var reIsUint = /^(?:0|[1-9]\d*)$/;
+
+/** Used to identify `toStringTag` values of typed arrays. */
+var typedArrayTags = {};
+typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
+typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
+typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
+typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
+typedArrayTags[uint32Tag] = true;
+typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
+typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
+typedArrayTags[dataViewTag] = typedArrayTags[dateTag] =
+typedArrayTags[errorTag] = typedArrayTags[funcTag] =
+typedArrayTags[mapTag] = typedArrayTags[numberTag] =
+typedArrayTags[objectTag] = typedArrayTags[regexpTag] =
+typedArrayTags[setTag] = typedArrayTags[stringTag] =
+typedArrayTags[weakMapTag] = false;
+
+/** Detect free variable `global` from Node.js. */
+var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+
+/** Detect free variable `self`. */
+var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root = freeGlobal || freeSelf || Function('return this')();
+
+/** Detect free variable `exports`. */
+var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
+
+/** Detect free variable `module`. */
+var freeModule = freeExports && typeof module == 'object' && module && !module.nodeType && module;
+
+/** Detect the popular CommonJS extension `module.exports`. */
+var moduleExports = freeModule && freeModule.exports === freeExports;
+
+/** Detect free variable `process` from Node.js. */
+var freeProcess = moduleExports && freeGlobal.process;
+
+/** Used to access faster Node.js helpers. */
+var nodeUtil = (function() {
+  try {
+    return freeProcess && freeProcess.binding && freeProcess.binding('util');
+  } catch (e) {}
+}());
+
+/* Node.js helper references. */
+var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
+
+/**
+ * A specialized version of `_.filter` for arrays without support for
+ * iteratee shorthands.
+ *
+ * @private
+ * @param {Array} [array] The array to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {Array} Returns the new filtered array.
+ */
+function arrayFilter(array, predicate) {
+  var index = -1,
+      length = array == null ? 0 : array.length,
+      resIndex = 0,
+      result = [];
+
+  while (++index < length) {
+    var value = array[index];
+    if (predicate(value, index, array)) {
+      result[resIndex++] = value;
+    }
+  }
+  return result;
+}
+
+/**
+ * Appends the elements of `values` to `array`.
+ *
+ * @private
+ * @param {Array} array The array to modify.
+ * @param {Array} values The values to append.
+ * @returns {Array} Returns `array`.
+ */
+function arrayPush(array, values) {
+  var index = -1,
+      length = values.length,
+      offset = array.length;
+
+  while (++index < length) {
+    array[offset + index] = values[index];
+  }
+  return array;
+}
+
+/**
+ * A specialized version of `_.some` for arrays without support for iteratee
+ * shorthands.
+ *
+ * @private
+ * @param {Array} [array] The array to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {boolean} Returns `true` if any element passes the predicate check,
+ *  else `false`.
+ */
+function arraySome(array, predicate) {
+  var index = -1,
+      length = array == null ? 0 : array.length;
+
+  while (++index < length) {
+    if (predicate(array[index], index, array)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * The base implementation of `_.times` without support for iteratee shorthands
+ * or max array length checks.
+ *
+ * @private
+ * @param {number} n The number of times to invoke `iteratee`.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the array of results.
+ */
+function baseTimes(n, iteratee) {
+  var index = -1,
+      result = Array(n);
+
+  while (++index < n) {
+    result[index] = iteratee(index);
+  }
+  return result;
+}
+
+/**
+ * The base implementation of `_.unary` without support for storing metadata.
+ *
+ * @private
+ * @param {Function} func The function to cap arguments for.
+ * @returns {Function} Returns the new capped function.
+ */
+function baseUnary(func) {
+  return function(value) {
+    return func(value);
+  };
+}
+
+/**
+ * Checks if a `cache` value for `key` exists.
+ *
+ * @private
+ * @param {Object} cache The cache to query.
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function cacheHas(cache, key) {
+  return cache.has(key);
+}
+
+/**
+ * Gets the value at `key` of `object`.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {string} key The key of the property to get.
+ * @returns {*} Returns the property value.
+ */
+function getValue(object, key) {
+  return object == null ? undefined : object[key];
+}
+
+/**
+ * Converts `map` to its key-value pairs.
+ *
+ * @private
+ * @param {Object} map The map to convert.
+ * @returns {Array} Returns the key-value pairs.
+ */
+function mapToArray(map) {
+  var index = -1,
+      result = Array(map.size);
+
+  map.forEach(function(value, key) {
+    result[++index] = [key, value];
+  });
+  return result;
+}
+
+/**
+ * Creates a unary function that invokes `func` with its argument transformed.
+ *
+ * @private
+ * @param {Function} func The function to wrap.
+ * @param {Function} transform The argument transform.
+ * @returns {Function} Returns the new function.
+ */
+function overArg(func, transform) {
+  return function(arg) {
+    return func(transform(arg));
+  };
+}
+
+/**
+ * Converts `set` to an array of its values.
+ *
+ * @private
+ * @param {Object} set The set to convert.
+ * @returns {Array} Returns the values.
+ */
+function setToArray(set) {
+  var index = -1,
+      result = Array(set.size);
+
+  set.forEach(function(value) {
+    result[++index] = value;
+  });
+  return result;
+}
+
+/** Used for built-in method references. */
+var arrayProto = Array.prototype,
+    funcProto = Function.prototype,
+    objectProto = Object.prototype;
+
+/** Used to detect overreaching core-js shims. */
+var coreJsData = root['__core-js_shared__'];
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Used to detect methods masquerading as native. */
+var maskSrcKey = (function() {
+  var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+  return uid ? ('Symbol(src)_1.' + uid) : '';
+}());
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString = objectProto.toString;
+
+/** Used to detect if a method is native. */
+var reIsNative = RegExp('^' +
+  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/** Built-in value references. */
+var Buffer = moduleExports ? root.Buffer : undefined,
+    Symbol = root.Symbol,
+    Uint8Array = root.Uint8Array,
+    propertyIsEnumerable = objectProto.propertyIsEnumerable,
+    splice = arrayProto.splice,
+    symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+
+/* Built-in method references for those with the same name as other `lodash` methods. */
+var nativeGetSymbols = Object.getOwnPropertySymbols,
+    nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined,
+    nativeKeys = overArg(Object.keys, Object);
+
+/* Built-in method references that are verified to be native. */
+var DataView = getNative(root, 'DataView'),
+    Map = getNative(root, 'Map'),
+    Promise = getNative(root, 'Promise'),
+    Set = getNative(root, 'Set'),
+    WeakMap = getNative(root, 'WeakMap'),
+    nativeCreate = getNative(Object, 'create');
+
+/** Used to detect maps, sets, and weakmaps. */
+var dataViewCtorString = toSource(DataView),
+    mapCtorString = toSource(Map),
+    promiseCtorString = toSource(Promise),
+    setCtorString = toSource(Set),
+    weakMapCtorString = toSource(WeakMap);
+
+/** Used to convert symbols to primitives and strings. */
+var symbolProto = Symbol ? Symbol.prototype : undefined,
+    symbolValueOf = symbolProto ? symbolProto.valueOf : undefined;
+
+/**
+ * Creates a hash object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function Hash(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+/**
+ * Removes all key-value entries from the hash.
+ *
+ * @private
+ * @name clear
+ * @memberOf Hash
+ */
+function hashClear() {
+  this.__data__ = nativeCreate ? nativeCreate(null) : {};
+  this.size = 0;
+}
+
+/**
+ * Removes `key` and its value from the hash.
+ *
+ * @private
+ * @name delete
+ * @memberOf Hash
+ * @param {Object} hash The hash to modify.
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function hashDelete(key) {
+  var result = this.has(key) && delete this.__data__[key];
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+/**
+ * Gets the hash value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf Hash
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function hashGet(key) {
+  var data = this.__data__;
+  if (nativeCreate) {
+    var result = data[key];
+    return result === HASH_UNDEFINED ? undefined : result;
+  }
+  return hasOwnProperty.call(data, key) ? data[key] : undefined;
+}
+
+/**
+ * Checks if a hash value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf Hash
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function hashHas(key) {
+  var data = this.__data__;
+  return nativeCreate ? (data[key] !== undefined) : hasOwnProperty.call(data, key);
+}
+
+/**
+ * Sets the hash `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf Hash
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the hash instance.
+ */
+function hashSet(key, value) {
+  var data = this.__data__;
+  this.size += this.has(key) ? 0 : 1;
+  data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
+  return this;
+}
+
+// Add methods to `Hash`.
+Hash.prototype.clear = hashClear;
+Hash.prototype['delete'] = hashDelete;
+Hash.prototype.get = hashGet;
+Hash.prototype.has = hashHas;
+Hash.prototype.set = hashSet;
+
+/**
+ * Creates an list cache object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function ListCache(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+/**
+ * Removes all key-value entries from the list cache.
+ *
+ * @private
+ * @name clear
+ * @memberOf ListCache
+ */
+function listCacheClear() {
+  this.__data__ = [];
+  this.size = 0;
+}
+
+/**
+ * Removes `key` and its value from the list cache.
+ *
+ * @private
+ * @name delete
+ * @memberOf ListCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function listCacheDelete(key) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  if (index < 0) {
+    return false;
+  }
+  var lastIndex = data.length - 1;
+  if (index == lastIndex) {
+    data.pop();
+  } else {
+    splice.call(data, index, 1);
+  }
+  --this.size;
+  return true;
+}
+
+/**
+ * Gets the list cache value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf ListCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function listCacheGet(key) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  return index < 0 ? undefined : data[index][1];
+}
+
+/**
+ * Checks if a list cache value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf ListCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function listCacheHas(key) {
+  return assocIndexOf(this.__data__, key) > -1;
+}
+
+/**
+ * Sets the list cache `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf ListCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the list cache instance.
+ */
+function listCacheSet(key, value) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  if (index < 0) {
+    ++this.size;
+    data.push([key, value]);
+  } else {
+    data[index][1] = value;
+  }
+  return this;
+}
+
+// Add methods to `ListCache`.
+ListCache.prototype.clear = listCacheClear;
+ListCache.prototype['delete'] = listCacheDelete;
+ListCache.prototype.get = listCacheGet;
+ListCache.prototype.has = listCacheHas;
+ListCache.prototype.set = listCacheSet;
+
+/**
+ * Creates a map cache object to store key-value pairs.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function MapCache(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+/**
+ * Removes all key-value entries from the map.
+ *
+ * @private
+ * @name clear
+ * @memberOf MapCache
+ */
+function mapCacheClear() {
+  this.size = 0;
+  this.__data__ = {
+    'hash': new Hash,
+    'map': new (Map || ListCache),
+    'string': new Hash
+  };
+}
+
+/**
+ * Removes `key` and its value from the map.
+ *
+ * @private
+ * @name delete
+ * @memberOf MapCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function mapCacheDelete(key) {
+  var result = getMapData(this, key)['delete'](key);
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+/**
+ * Gets the map value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf MapCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function mapCacheGet(key) {
+  return getMapData(this, key).get(key);
+}
+
+/**
+ * Checks if a map value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf MapCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function mapCacheHas(key) {
+  return getMapData(this, key).has(key);
+}
+
+/**
+ * Sets the map `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf MapCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the map cache instance.
+ */
+function mapCacheSet(key, value) {
+  var data = getMapData(this, key),
+      size = data.size;
+
+  data.set(key, value);
+  this.size += data.size == size ? 0 : 1;
+  return this;
+}
+
+// Add methods to `MapCache`.
+MapCache.prototype.clear = mapCacheClear;
+MapCache.prototype['delete'] = mapCacheDelete;
+MapCache.prototype.get = mapCacheGet;
+MapCache.prototype.has = mapCacheHas;
+MapCache.prototype.set = mapCacheSet;
+
+/**
+ *
+ * Creates an array cache object to store unique values.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [values] The values to cache.
+ */
+function SetCache(values) {
+  var index = -1,
+      length = values == null ? 0 : values.length;
+
+  this.__data__ = new MapCache;
+  while (++index < length) {
+    this.add(values[index]);
+  }
+}
+
+/**
+ * Adds `value` to the array cache.
+ *
+ * @private
+ * @name add
+ * @memberOf SetCache
+ * @alias push
+ * @param {*} value The value to cache.
+ * @returns {Object} Returns the cache instance.
+ */
+function setCacheAdd(value) {
+  this.__data__.set(value, HASH_UNDEFINED);
+  return this;
+}
+
+/**
+ * Checks if `value` is in the array cache.
+ *
+ * @private
+ * @name has
+ * @memberOf SetCache
+ * @param {*} value The value to search for.
+ * @returns {number} Returns `true` if `value` is found, else `false`.
+ */
+function setCacheHas(value) {
+  return this.__data__.has(value);
+}
+
+// Add methods to `SetCache`.
+SetCache.prototype.add = SetCache.prototype.push = setCacheAdd;
+SetCache.prototype.has = setCacheHas;
+
+/**
+ * Creates a stack cache object to store key-value pairs.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function Stack(entries) {
+  var data = this.__data__ = new ListCache(entries);
+  this.size = data.size;
+}
+
+/**
+ * Removes all key-value entries from the stack.
+ *
+ * @private
+ * @name clear
+ * @memberOf Stack
+ */
+function stackClear() {
+  this.__data__ = new ListCache;
+  this.size = 0;
+}
+
+/**
+ * Removes `key` and its value from the stack.
+ *
+ * @private
+ * @name delete
+ * @memberOf Stack
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function stackDelete(key) {
+  var data = this.__data__,
+      result = data['delete'](key);
+
+  this.size = data.size;
+  return result;
+}
+
+/**
+ * Gets the stack value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf Stack
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function stackGet(key) {
+  return this.__data__.get(key);
+}
+
+/**
+ * Checks if a stack value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf Stack
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function stackHas(key) {
+  return this.__data__.has(key);
+}
+
+/**
+ * Sets the stack `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf Stack
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the stack cache instance.
+ */
+function stackSet(key, value) {
+  var data = this.__data__;
+  if (data instanceof ListCache) {
+    var pairs = data.__data__;
+    if (!Map || (pairs.length < LARGE_ARRAY_SIZE - 1)) {
+      pairs.push([key, value]);
+      this.size = ++data.size;
+      return this;
+    }
+    data = this.__data__ = new MapCache(pairs);
+  }
+  data.set(key, value);
+  this.size = data.size;
+  return this;
+}
+
+// Add methods to `Stack`.
+Stack.prototype.clear = stackClear;
+Stack.prototype['delete'] = stackDelete;
+Stack.prototype.get = stackGet;
+Stack.prototype.has = stackHas;
+Stack.prototype.set = stackSet;
+
+/**
+ * Creates an array of the enumerable property names of the array-like `value`.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @param {boolean} inherited Specify returning inherited property names.
+ * @returns {Array} Returns the array of property names.
+ */
+function arrayLikeKeys(value, inherited) {
+  var isArr = isArray(value),
+      isArg = !isArr && isArguments(value),
+      isBuff = !isArr && !isArg && isBuffer(value),
+      isType = !isArr && !isArg && !isBuff && isTypedArray(value),
+      skipIndexes = isArr || isArg || isBuff || isType,
+      result = skipIndexes ? baseTimes(value.length, String) : [],
+      length = result.length;
+
+  for (var key in value) {
+    if ((inherited || hasOwnProperty.call(value, key)) &&
+        !(skipIndexes && (
+           // Safari 9 has enumerable `arguments.length` in strict mode.
+           key == 'length' ||
+           // Node.js 0.10 has enumerable non-index properties on buffers.
+           (isBuff && (key == 'offset' || key == 'parent')) ||
+           // PhantomJS 2 has enumerable non-index properties on typed arrays.
+           (isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset')) ||
+           // Skip index properties.
+           isIndex(key, length)
+        ))) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+/**
+ * Gets the index at which the `key` is found in `array` of key-value pairs.
+ *
+ * @private
+ * @param {Array} array The array to inspect.
+ * @param {*} key The key to search for.
+ * @returns {number} Returns the index of the matched value, else `-1`.
+ */
+function assocIndexOf(array, key) {
+  var length = array.length;
+  while (length--) {
+    if (eq(array[length][0], key)) {
+      return length;
+    }
+  }
+  return -1;
+}
+
+/**
+ * The base implementation of `getAllKeys` and `getAllKeysIn` which uses
+ * `keysFunc` and `symbolsFunc` to get the enumerable property names and
+ * symbols of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {Function} keysFunc The function to get the keys of `object`.
+ * @param {Function} symbolsFunc The function to get the symbols of `object`.
+ * @returns {Array} Returns the array of property names and symbols.
+ */
+function baseGetAllKeys(object, keysFunc, symbolsFunc) {
+  var result = keysFunc(object);
+  return isArray(object) ? result : arrayPush(result, symbolsFunc(object));
+}
+
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+function baseGetTag(value) {
+  if (value == null) {
+    return value === undefined ? undefinedTag : nullTag;
+  }
+  return (symToStringTag && symToStringTag in Object(value))
+    ? getRawTag(value)
+    : objectToString(value);
+}
+
+/**
+ * The base implementation of `_.isArguments`.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+ */
+function baseIsArguments(value) {
+  return isObjectLike(value) && baseGetTag(value) == argsTag;
+}
+
+/**
+ * The base implementation of `_.isEqual` which supports partial comparisons
+ * and tracks traversed objects.
+ *
+ * @private
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @param {boolean} bitmask The bitmask flags.
+ *  1 - Unordered comparison
+ *  2 - Partial comparison
+ * @param {Function} [customizer] The function to customize comparisons.
+ * @param {Object} [stack] Tracks traversed `value` and `other` objects.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ */
+function baseIsEqual(value, other, bitmask, customizer, stack) {
+  if (value === other) {
+    return true;
+  }
+  if (value == null || other == null || (!isObjectLike(value) && !isObjectLike(other))) {
+    return value !== value && other !== other;
+  }
+  return baseIsEqualDeep(value, other, bitmask, customizer, baseIsEqual, stack);
+}
+
+/**
+ * A specialized version of `baseIsEqual` for arrays and objects which performs
+ * deep comparisons and tracks traversed objects enabling objects with circular
+ * references to be compared.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
+ * @param {Function} customizer The function to customize comparisons.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Object} [stack] Tracks traversed `object` and `other` objects.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
+  var objIsArr = isArray(object),
+      othIsArr = isArray(other),
+      objTag = objIsArr ? arrayTag : getTag(object),
+      othTag = othIsArr ? arrayTag : getTag(other);
+
+  objTag = objTag == argsTag ? objectTag : objTag;
+  othTag = othTag == argsTag ? objectTag : othTag;
+
+  var objIsObj = objTag == objectTag,
+      othIsObj = othTag == objectTag,
+      isSameTag = objTag == othTag;
+
+  if (isSameTag && isBuffer(object)) {
+    if (!isBuffer(other)) {
+      return false;
+    }
+    objIsArr = true;
+    objIsObj = false;
+  }
+  if (isSameTag && !objIsObj) {
+    stack || (stack = new Stack);
+    return (objIsArr || isTypedArray(object))
+      ? equalArrays(object, other, bitmask, customizer, equalFunc, stack)
+      : equalByTag(object, other, objTag, bitmask, customizer, equalFunc, stack);
+  }
+  if (!(bitmask & COMPARE_PARTIAL_FLAG)) {
+    var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
+        othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
+
+    if (objIsWrapped || othIsWrapped) {
+      var objUnwrapped = objIsWrapped ? object.value() : object,
+          othUnwrapped = othIsWrapped ? other.value() : other;
+
+      stack || (stack = new Stack);
+      return equalFunc(objUnwrapped, othUnwrapped, bitmask, customizer, stack);
+    }
+  }
+  if (!isSameTag) {
+    return false;
+  }
+  stack || (stack = new Stack);
+  return equalObjects(object, other, bitmask, customizer, equalFunc, stack);
+}
+
+/**
+ * The base implementation of `_.isNative` without bad shim checks.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function,
+ *  else `false`.
+ */
+function baseIsNative(value) {
+  if (!isObject(value) || isMasked(value)) {
+    return false;
+  }
+  var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
+  return pattern.test(toSource(value));
+}
+
+/**
+ * The base implementation of `_.isTypedArray` without Node.js optimizations.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
+ */
+function baseIsTypedArray(value) {
+  return isObjectLike(value) &&
+    isLength(value.length) && !!typedArrayTags[baseGetTag(value)];
+}
+
+/**
+ * The base implementation of `_.keys` which doesn't treat sparse arrays as dense.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ */
+function baseKeys(object) {
+  if (!isPrototype(object)) {
+    return nativeKeys(object);
+  }
+  var result = [];
+  for (var key in Object(object)) {
+    if (hasOwnProperty.call(object, key) && key != 'constructor') {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+/**
+ * A specialized version of `baseIsEqualDeep` for arrays with support for
+ * partial deep comparisons.
+ *
+ * @private
+ * @param {Array} array The array to compare.
+ * @param {Array} other The other array to compare.
+ * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
+ * @param {Function} customizer The function to customize comparisons.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Object} stack Tracks traversed `array` and `other` objects.
+ * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
+ */
+function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
+  var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
+      arrLength = array.length,
+      othLength = other.length;
+
+  if (arrLength != othLength && !(isPartial && othLength > arrLength)) {
+    return false;
+  }
+  // Assume cyclic values are equal.
+  var stacked = stack.get(array);
+  if (stacked && stack.get(other)) {
+    return stacked == other;
+  }
+  var index = -1,
+      result = true,
+      seen = (bitmask & COMPARE_UNORDERED_FLAG) ? new SetCache : undefined;
+
+  stack.set(array, other);
+  stack.set(other, array);
+
+  // Ignore non-index properties.
+  while (++index < arrLength) {
+    var arrValue = array[index],
+        othValue = other[index];
+
+    if (customizer) {
+      var compared = isPartial
+        ? customizer(othValue, arrValue, index, other, array, stack)
+        : customizer(arrValue, othValue, index, array, other, stack);
+    }
+    if (compared !== undefined) {
+      if (compared) {
+        continue;
+      }
+      result = false;
+      break;
+    }
+    // Recursively compare arrays (susceptible to call stack limits).
+    if (seen) {
+      if (!arraySome(other, function(othValue, othIndex) {
+            if (!cacheHas(seen, othIndex) &&
+                (arrValue === othValue || equalFunc(arrValue, othValue, bitmask, customizer, stack))) {
+              return seen.push(othIndex);
+            }
+          })) {
+        result = false;
+        break;
+      }
+    } else if (!(
+          arrValue === othValue ||
+            equalFunc(arrValue, othValue, bitmask, customizer, stack)
+        )) {
+      result = false;
+      break;
+    }
+  }
+  stack['delete'](array);
+  stack['delete'](other);
+  return result;
+}
+
+/**
+ * A specialized version of `baseIsEqualDeep` for comparing objects of
+ * the same `toStringTag`.
+ *
+ * **Note:** This function only supports comparing values with tags of
+ * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {string} tag The `toStringTag` of the objects to compare.
+ * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
+ * @param {Function} customizer The function to customize comparisons.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Object} stack Tracks traversed `object` and `other` objects.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
+  switch (tag) {
+    case dataViewTag:
+      if ((object.byteLength != other.byteLength) ||
+          (object.byteOffset != other.byteOffset)) {
+        return false;
+      }
+      object = object.buffer;
+      other = other.buffer;
+
+    case arrayBufferTag:
+      if ((object.byteLength != other.byteLength) ||
+          !equalFunc(new Uint8Array(object), new Uint8Array(other))) {
+        return false;
+      }
+      return true;
+
+    case boolTag:
+    case dateTag:
+    case numberTag:
+      // Coerce booleans to `1` or `0` and dates to milliseconds.
+      // Invalid dates are coerced to `NaN`.
+      return eq(+object, +other);
+
+    case errorTag:
+      return object.name == other.name && object.message == other.message;
+
+    case regexpTag:
+    case stringTag:
+      // Coerce regexes to strings and treat strings, primitives and objects,
+      // as equal. See http://www.ecma-international.org/ecma-262/7.0/#sec-regexp.prototype.tostring
+      // for more details.
+      return object == (other + '');
+
+    case mapTag:
+      var convert = mapToArray;
+
+    case setTag:
+      var isPartial = bitmask & COMPARE_PARTIAL_FLAG;
+      convert || (convert = setToArray);
+
+      if (object.size != other.size && !isPartial) {
+        return false;
+      }
+      // Assume cyclic values are equal.
+      var stacked = stack.get(object);
+      if (stacked) {
+        return stacked == other;
+      }
+      bitmask |= COMPARE_UNORDERED_FLAG;
+
+      // Recursively compare objects (susceptible to call stack limits).
+      stack.set(object, other);
+      var result = equalArrays(convert(object), convert(other), bitmask, customizer, equalFunc, stack);
+      stack['delete'](object);
+      return result;
+
+    case symbolTag:
+      if (symbolValueOf) {
+        return symbolValueOf.call(object) == symbolValueOf.call(other);
+      }
+  }
+  return false;
+}
+
+/**
+ * A specialized version of `baseIsEqualDeep` for objects with support for
+ * partial deep comparisons.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
+ * @param {Function} customizer The function to customize comparisons.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Object} stack Tracks traversed `object` and `other` objects.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
+  var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
+      objProps = getAllKeys(object),
+      objLength = objProps.length,
+      othProps = getAllKeys(other),
+      othLength = othProps.length;
+
+  if (objLength != othLength && !isPartial) {
+    return false;
+  }
+  var index = objLength;
+  while (index--) {
+    var key = objProps[index];
+    if (!(isPartial ? key in other : hasOwnProperty.call(other, key))) {
+      return false;
+    }
+  }
+  // Assume cyclic values are equal.
+  var stacked = stack.get(object);
+  if (stacked && stack.get(other)) {
+    return stacked == other;
+  }
+  var result = true;
+  stack.set(object, other);
+  stack.set(other, object);
+
+  var skipCtor = isPartial;
+  while (++index < objLength) {
+    key = objProps[index];
+    var objValue = object[key],
+        othValue = other[key];
+
+    if (customizer) {
+      var compared = isPartial
+        ? customizer(othValue, objValue, key, other, object, stack)
+        : customizer(objValue, othValue, key, object, other, stack);
+    }
+    // Recursively compare objects (susceptible to call stack limits).
+    if (!(compared === undefined
+          ? (objValue === othValue || equalFunc(objValue, othValue, bitmask, customizer, stack))
+          : compared
+        )) {
+      result = false;
+      break;
+    }
+    skipCtor || (skipCtor = key == 'constructor');
+  }
+  if (result && !skipCtor) {
+    var objCtor = object.constructor,
+        othCtor = other.constructor;
+
+    // Non `Object` object instances with different constructors are not equal.
+    if (objCtor != othCtor &&
+        ('constructor' in object && 'constructor' in other) &&
+        !(typeof objCtor == 'function' && objCtor instanceof objCtor &&
+          typeof othCtor == 'function' && othCtor instanceof othCtor)) {
+      result = false;
+    }
+  }
+  stack['delete'](object);
+  stack['delete'](other);
+  return result;
+}
+
+/**
+ * Creates an array of own enumerable property names and symbols of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names and symbols.
+ */
+function getAllKeys(object) {
+  return baseGetAllKeys(object, keys, getSymbols);
+}
+
+/**
+ * Gets the data for `map`.
+ *
+ * @private
+ * @param {Object} map The map to query.
+ * @param {string} key The reference key.
+ * @returns {*} Returns the map data.
+ */
+function getMapData(map, key) {
+  var data = map.__data__;
+  return isKeyable(key)
+    ? data[typeof key == 'string' ? 'string' : 'hash']
+    : data.map;
+}
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative(object, key) {
+  var value = getValue(object, key);
+  return baseIsNative(value) ? value : undefined;
+}
+
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */
+function getRawTag(value) {
+  var isOwn = hasOwnProperty.call(value, symToStringTag),
+      tag = value[symToStringTag];
+
+  try {
+    value[symToStringTag] = undefined;
+    var unmasked = true;
+  } catch (e) {}
+
+  var result = nativeObjectToString.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag] = tag;
+    } else {
+      delete value[symToStringTag];
+    }
+  }
+  return result;
+}
+
+/**
+ * Creates an array of the own enumerable symbols of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of symbols.
+ */
+var getSymbols = !nativeGetSymbols ? stubArray : function(object) {
+  if (object == null) {
+    return [];
+  }
+  object = Object(object);
+  return arrayFilter(nativeGetSymbols(object), function(symbol) {
+    return propertyIsEnumerable.call(object, symbol);
+  });
+};
+
+/**
+ * Gets the `toStringTag` of `value`.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+var getTag = baseGetTag;
+
+// Fallback for data views, maps, sets, and weak maps in IE 11 and promises in Node.js < 6.
+if ((DataView && getTag(new DataView(new ArrayBuffer(1))) != dataViewTag) ||
+    (Map && getTag(new Map) != mapTag) ||
+    (Promise && getTag(Promise.resolve()) != promiseTag) ||
+    (Set && getTag(new Set) != setTag) ||
+    (WeakMap && getTag(new WeakMap) != weakMapTag)) {
+  getTag = function(value) {
+    var result = baseGetTag(value),
+        Ctor = result == objectTag ? value.constructor : undefined,
+        ctorString = Ctor ? toSource(Ctor) : '';
+
+    if (ctorString) {
+      switch (ctorString) {
+        case dataViewCtorString: return dataViewTag;
+        case mapCtorString: return mapTag;
+        case promiseCtorString: return promiseTag;
+        case setCtorString: return setTag;
+        case weakMapCtorString: return weakMapTag;
+      }
+    }
+    return result;
+  };
+}
+
+/**
+ * Checks if `value` is a valid array-like index.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+ * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+ */
+function isIndex(value, length) {
+  length = length == null ? MAX_SAFE_INTEGER : length;
+  return !!length &&
+    (typeof value == 'number' || reIsUint.test(value)) &&
+    (value > -1 && value % 1 == 0 && value < length);
+}
+
+/**
+ * Checks if `value` is suitable for use as unique object key.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
+ */
+function isKeyable(value) {
+  var type = typeof value;
+  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
+    ? (value !== '__proto__')
+    : (value === null);
+}
+
+/**
+ * Checks if `func` has its source masked.
+ *
+ * @private
+ * @param {Function} func The function to check.
+ * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+ */
+function isMasked(func) {
+  return !!maskSrcKey && (maskSrcKey in func);
+}
+
+/**
+ * Checks if `value` is likely a prototype object.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a prototype, else `false`.
+ */
+function isPrototype(value) {
+  var Ctor = value && value.constructor,
+      proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto;
+
+  return value === proto;
+}
+
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */
+function objectToString(value) {
+  return nativeObjectToString.call(value);
+}
+
+/**
+ * Converts `func` to its source code.
+ *
+ * @private
+ * @param {Function} func The function to convert.
+ * @returns {string} Returns the source code.
+ */
+function toSource(func) {
+  if (func != null) {
+    try {
+      return funcToString.call(func);
+    } catch (e) {}
+    try {
+      return (func + '');
+    } catch (e) {}
+  }
+  return '';
+}
+
+/**
+ * Performs a
+ * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * comparison between two values to determine if they are equivalent.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ * var other = { 'a': 1 };
+ *
+ * _.eq(object, object);
+ * // => true
+ *
+ * _.eq(object, other);
+ * // => false
+ *
+ * _.eq('a', 'a');
+ * // => true
+ *
+ * _.eq('a', Object('a'));
+ * // => false
+ *
+ * _.eq(NaN, NaN);
+ * // => true
+ */
+function eq(value, other) {
+  return value === other || (value !== value && other !== other);
+}
+
+/**
+ * Checks if `value` is likely an `arguments` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+ *  else `false`.
+ * @example
+ *
+ * _.isArguments(function() { return arguments; }());
+ * // => true
+ *
+ * _.isArguments([1, 2, 3]);
+ * // => false
+ */
+var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsArguments : function(value) {
+  return isObjectLike(value) && hasOwnProperty.call(value, 'callee') &&
+    !propertyIsEnumerable.call(value, 'callee');
+};
+
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an array, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(document.body.children);
+ * // => false
+ *
+ * _.isArray('abc');
+ * // => false
+ *
+ * _.isArray(_.noop);
+ * // => false
+ */
+var isArray = Array.isArray;
+
+/**
+ * Checks if `value` is array-like. A value is considered array-like if it's
+ * not a function and has a `value.length` that's an integer greater than or
+ * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
+ * @example
+ *
+ * _.isArrayLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isArrayLike(document.body.children);
+ * // => true
+ *
+ * _.isArrayLike('abc');
+ * // => true
+ *
+ * _.isArrayLike(_.noop);
+ * // => false
+ */
+function isArrayLike(value) {
+  return value != null && isLength(value.length) && !isFunction(value);
+}
+
+/**
+ * Checks if `value` is a buffer.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.3.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
+ * @example
+ *
+ * _.isBuffer(new Buffer(2));
+ * // => true
+ *
+ * _.isBuffer(new Uint8Array(2));
+ * // => false
+ */
+var isBuffer = nativeIsBuffer || stubFalse;
+
+/**
+ * Performs a deep comparison between two values to determine if they are
+ * equivalent.
+ *
+ * **Note:** This method supports comparing arrays, array buffers, booleans,
+ * date objects, error objects, maps, numbers, `Object` objects, regexes,
+ * sets, strings, symbols, and typed arrays. `Object` objects are compared
+ * by their own, not inherited, enumerable properties. Functions and DOM
+ * nodes are compared by strict equality, i.e. `===`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ * var other = { 'a': 1 };
+ *
+ * _.isEqual(object, other);
+ * // => true
+ *
+ * object === other;
+ * // => false
+ */
+function isEqual(value, other) {
+  return baseIsEqual(value, other);
+}
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  if (!isObject(value)) {
+    return false;
+  }
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in Safari 9 which returns 'object' for typed arrays and other constructors.
+  var tag = baseGetTag(value);
+  return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+}
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This method is loosely based on
+ * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ * @example
+ *
+ * _.isLength(3);
+ * // => true
+ *
+ * _.isLength(Number.MIN_VALUE);
+ * // => false
+ *
+ * _.isLength(Infinity);
+ * // => false
+ *
+ * _.isLength('3');
+ * // => false
+ */
+function isLength(value) {
+  return typeof value == 'number' &&
+    value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject(value) {
+  var type = typeof value;
+  return value != null && (type == 'object' || type == 'function');
+}
+
+/**
+ * Checks if `value` is object-like. A value is object-like if it's not `null`
+ * and has a `typeof` result of "object".
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ * @example
+ *
+ * _.isObjectLike({});
+ * // => true
+ *
+ * _.isObjectLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isObjectLike(_.noop);
+ * // => false
+ *
+ * _.isObjectLike(null);
+ * // => false
+ */
+function isObjectLike(value) {
+  return value != null && typeof value == 'object';
+}
+
+/**
+ * Checks if `value` is classified as a typed array.
+ *
+ * @static
+ * @memberOf _
+ * @since 3.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
+ * @example
+ *
+ * _.isTypedArray(new Uint8Array);
+ * // => true
+ *
+ * _.isTypedArray([]);
+ * // => false
+ */
+var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedArray;
+
+/**
+ * Creates an array of the own enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects. See the
+ * [ES spec](http://ecma-international.org/ecma-262/7.0/#sec-object.keys)
+ * for more details.
+ *
+ * @static
+ * @since 0.1.0
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keys(new Foo);
+ * // => ['a', 'b'] (iteration order is not guaranteed)
+ *
+ * _.keys('hi');
+ * // => ['0', '1']
+ */
+function keys(object) {
+  return isArrayLike(object) ? arrayLikeKeys(object) : baseKeys(object);
+}
+
+/**
+ * This method returns a new empty array.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.13.0
+ * @category Util
+ * @returns {Array} Returns the new empty array.
+ * @example
+ *
+ * var arrays = _.times(2, _.stubArray);
+ *
+ * console.log(arrays);
+ * // => [[], []]
+ *
+ * console.log(arrays[0] === arrays[1]);
+ * // => false
+ */
+function stubArray() {
+  return [];
+}
+
+/**
+ * This method returns `false`.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.13.0
+ * @category Util
+ * @returns {boolean} Returns `false`.
+ * @example
+ *
+ * _.times(2, _.stubFalse);
+ * // => [false, false]
+ */
+function stubFalse() {
+  return false;
+}
+
+module.exports = isEqual;
+
+},{}],"../node_modules/brace/index.js":[function(require,module,exports) {
 var global = arguments[3];
 var define;
 /* ***** BEGIN LICENSE BLOCK *****
@@ -50187,7 +52039,4747 @@ exports.version = "1.2.9";
             })();
         
 module.exports = window.ace.acequire("ace/ace");
-},{}],"../node_modules/brace/worker/json.js":[function(require,module,exports) {
+},{}],"../node_modules/react-ace/lib/editorOptions.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var editorOptions = ['minLines', 'maxLines', 'readOnly', 'highlightActiveLine', 'tabSize', 'enableBasicAutocompletion', 'enableLiveAutocompletion', 'enableSnippets'];
+
+var editorEvents = ['onChange', 'onFocus', 'onInput', 'onBlur', 'onCopy', 'onPaste', 'onSelectionChange', 'onCursorChange', 'onScroll', 'handleOptions', 'updateRef'];
+var getAceInstance = function getAceInstance() {
+  var ace = void 0;
+  // Fallback for ace.require when vanilla ACE is hosted over a CDN
+  if (window.ace) {
+    ace = window.ace;
+    ace.acequire = window.ace.require || window.ace.acequire;
+  } else {
+    ace = require('brace');
+  }
+  return ace;
+};
+
+var debounce = function debounce(fn, delay) {
+  var timer = null;
+  return function () {
+    var context = this,
+        args = arguments;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      fn.apply(context, args);
+    }, delay);
+  };
+};
+exports.editorOptions = editorOptions;
+exports.editorEvents = editorEvents;
+exports.debounce = debounce;
+exports.getAceInstance = getAceInstance;
+},{"brace":"../node_modules/brace/index.js"}],"../node_modules/react-ace/lib/ace.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _lodash = require('lodash.isequal');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _editorOptions = require('./editorOptions.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ace = (0, _editorOptions.getAceInstance)();
+
+var _ace$acequire = ace.acequire('ace/range'),
+    Range = _ace$acequire.Range;
+
+var ReactAce = function (_Component) {
+  _inherits(ReactAce, _Component);
+
+  function ReactAce(props) {
+    _classCallCheck(this, ReactAce);
+
+    var _this = _possibleConstructorReturn(this, (ReactAce.__proto__ || Object.getPrototypeOf(ReactAce)).call(this, props));
+
+    _editorOptions.editorEvents.forEach(function (method) {
+      _this[method] = _this[method].bind(_this);
+    });
+    _this.debounce = _editorOptions.debounce;
+    return _this;
+  }
+
+  _createClass(ReactAce, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this2 = this;
+
+      var _props = this.props,
+          className = _props.className,
+          onBeforeLoad = _props.onBeforeLoad,
+          onValidate = _props.onValidate,
+          mode = _props.mode,
+          focus = _props.focus,
+          theme = _props.theme,
+          fontSize = _props.fontSize,
+          value = _props.value,
+          defaultValue = _props.defaultValue,
+          cursorStart = _props.cursorStart,
+          showGutter = _props.showGutter,
+          wrapEnabled = _props.wrapEnabled,
+          showPrintMargin = _props.showPrintMargin,
+          _props$scrollMargin = _props.scrollMargin,
+          scrollMargin = _props$scrollMargin === undefined ? [0, 0, 0, 0] : _props$scrollMargin,
+          keyboardHandler = _props.keyboardHandler,
+          onLoad = _props.onLoad,
+          commands = _props.commands,
+          annotations = _props.annotations,
+          markers = _props.markers;
+
+
+      this.editor = ace.edit(this.refEditor);
+
+      if (onBeforeLoad) {
+        onBeforeLoad(ace);
+      }
+
+      var editorProps = Object.keys(this.props.editorProps);
+      for (var i = 0; i < editorProps.length; i++) {
+        this.editor[editorProps[i]] = this.props.editorProps[editorProps[i]];
+      }
+      if (this.props.debounceChangePeriod) {
+        this.onChange = this.debounce(this.onChange, this.props.debounceChangePeriod);
+      }
+      this.editor.renderer.setScrollMargin(scrollMargin[0], scrollMargin[1], scrollMargin[2], scrollMargin[3]);
+      this.editor.getSession().setMode('ace/mode/' + mode);
+      this.editor.setTheme('ace/theme/' + theme);
+      this.editor.setFontSize(fontSize);
+      this.editor.getSession().setValue(!defaultValue ? value : defaultValue, cursorStart);
+      this.editor.navigateFileEnd();
+      this.editor.renderer.setShowGutter(showGutter);
+      this.editor.getSession().setUseWrapMode(wrapEnabled);
+      this.editor.setShowPrintMargin(showPrintMargin);
+      this.editor.on('focus', this.onFocus);
+      this.editor.on('blur', this.onBlur);
+      this.editor.on('copy', this.onCopy);
+      this.editor.on('paste', this.onPaste);
+      this.editor.on('change', this.onChange);
+      this.editor.on('input', this.onInput);
+      this.editor.getSession().selection.on('changeSelection', this.onSelectionChange);
+      this.editor.getSession().selection.on('changeCursor', this.onCursorChange);
+      if (onValidate) {
+        this.editor.getSession().on('changeAnnotation', function () {
+          var annotations = _this2.editor.getSession().getAnnotations();
+          _this2.props.onValidate(annotations);
+        });
+      }
+      this.editor.session.on('changeScrollTop', this.onScroll);
+      this.editor.getSession().setAnnotations(annotations || []);
+      if (markers && markers.length > 0) {
+        this.handleMarkers(markers);
+      }
+
+      // get a list of possible options to avoid 'misspelled option errors'
+      var availableOptions = this.editor.$options;
+      for (var _i = 0; _i < _editorOptions.editorOptions.length; _i++) {
+        var option = _editorOptions.editorOptions[_i];
+        if (availableOptions.hasOwnProperty(option)) {
+          this.editor.setOption(option, this.props[option]);
+        } else if (this.props[option]) {
+          console.warn('ReactAce: editor option ' + option + ' was activated but not found. Did you need to import a related tool or did you possibly mispell the option?');
+        }
+      }
+      this.handleOptions(this.props);
+
+      if (Array.isArray(commands)) {
+        commands.forEach(function (command) {
+          if (typeof command.exec == 'string') {
+            _this2.editor.commands.bindKey(command.bindKey, command.exec);
+          } else {
+            _this2.editor.commands.addCommand(command);
+          }
+        });
+      }
+
+      if (keyboardHandler) {
+        this.editor.setKeyboardHandler('ace/keyboard/' + keyboardHandler);
+      }
+
+      if (className) {
+        this.refEditor.className += ' ' + className;
+      }
+
+      if (onLoad) {
+        onLoad(this.editor);
+      }
+
+      this.editor.resize();
+
+      if (focus) {
+        this.editor.focus();
+      }
+    }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps) {
+      var oldProps = prevProps;
+      var nextProps = this.props;
+
+      for (var i = 0; i < _editorOptions.editorOptions.length; i++) {
+        var option = _editorOptions.editorOptions[i];
+        if (nextProps[option] !== oldProps[option]) {
+          this.editor.setOption(option, nextProps[option]);
+        }
+      }
+
+      if (nextProps.className !== oldProps.className) {
+        var appliedClasses = this.refEditor.className;
+        var appliedClassesArray = appliedClasses.trim().split(' ');
+        var oldClassesArray = oldProps.className.trim().split(' ');
+        oldClassesArray.forEach(function (oldClass) {
+          var index = appliedClassesArray.indexOf(oldClass);
+          appliedClassesArray.splice(index, 1);
+        });
+        this.refEditor.className = ' ' + nextProps.className + ' ' + appliedClassesArray.join(' ');
+      }
+
+      // First process editor value, as it may create a new session (see issue #300)
+      if (this.editor && this.editor.getValue() !== nextProps.value) {
+        // editor.setValue is a synchronous function call, change event is emitted before setValue return.
+        this.silent = true;
+        var pos = this.editor.session.selection.toJSON();
+        this.editor.setValue(nextProps.value, nextProps.cursorStart);
+        this.editor.session.selection.fromJSON(pos);
+        this.silent = false;
+      }
+
+      if (nextProps.mode !== oldProps.mode) {
+        this.editor.getSession().setMode('ace/mode/' + nextProps.mode);
+      }
+      if (nextProps.theme !== oldProps.theme) {
+        this.editor.setTheme('ace/theme/' + nextProps.theme);
+      }
+      if (nextProps.keyboardHandler !== oldProps.keyboardHandler) {
+        if (nextProps.keyboardHandler) {
+          this.editor.setKeyboardHandler('ace/keyboard/' + nextProps.keyboardHandler);
+        } else {
+          this.editor.setKeyboardHandler(null);
+        }
+      }
+      if (nextProps.fontSize !== oldProps.fontSize) {
+        this.editor.setFontSize(nextProps.fontSize);
+      }
+      if (nextProps.wrapEnabled !== oldProps.wrapEnabled) {
+        this.editor.getSession().setUseWrapMode(nextProps.wrapEnabled);
+      }
+      if (nextProps.showPrintMargin !== oldProps.showPrintMargin) {
+        this.editor.setShowPrintMargin(nextProps.showPrintMargin);
+      }
+      if (nextProps.showGutter !== oldProps.showGutter) {
+        this.editor.renderer.setShowGutter(nextProps.showGutter);
+      }
+      if (!(0, _lodash2.default)(nextProps.setOptions, oldProps.setOptions)) {
+        this.handleOptions(nextProps);
+      }
+      if (!(0, _lodash2.default)(nextProps.annotations, oldProps.annotations)) {
+        this.editor.getSession().setAnnotations(nextProps.annotations || []);
+      }
+      if (!(0, _lodash2.default)(nextProps.markers, oldProps.markers) && Array.isArray(nextProps.markers)) {
+        this.handleMarkers(nextProps.markers);
+      }
+
+      // this doesn't look like it works at all....
+      if (!(0, _lodash2.default)(nextProps.scrollMargin, oldProps.scrollMargin)) {
+        this.handleScrollMargins(nextProps.scrollMargin);
+      }
+
+      if (prevProps.height !== this.props.height || prevProps.width !== this.props.width) {
+        this.editor.resize();
+      }
+      if (this.props.focus && !prevProps.focus) {
+        this.editor.focus();
+      }
+    }
+  }, {
+    key: 'handleScrollMargins',
+    value: function handleScrollMargins() {
+      var margins = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [0, 0, 0, 0];
+
+      this.editor.renderer.setScrollMargins(margins[0], margins[1], margins[2], margins[3]);
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this.editor.destroy();
+      this.editor = null;
+    }
+  }, {
+    key: 'onChange',
+    value: function onChange(event) {
+      if (this.props.onChange && !this.silent) {
+        var value = this.editor.getValue();
+        this.props.onChange(value, event);
+      }
+    }
+  }, {
+    key: 'onSelectionChange',
+    value: function onSelectionChange(event) {
+      if (this.props.onSelectionChange) {
+        var value = this.editor.getSelection();
+        this.props.onSelectionChange(value, event);
+      }
+    }
+  }, {
+    key: 'onCursorChange',
+    value: function onCursorChange(event) {
+      if (this.props.onCursorChange) {
+        var value = this.editor.getSelection();
+        this.props.onCursorChange(value, event);
+      }
+    }
+  }, {
+    key: 'onInput',
+    value: function onInput(event) {
+      if (this.props.onInput) {
+        this.props.onInput(event);
+      }
+    }
+  }, {
+    key: 'onFocus',
+    value: function onFocus(event) {
+      if (this.props.onFocus) {
+        this.props.onFocus(event, this.editor);
+      }
+    }
+  }, {
+    key: 'onBlur',
+    value: function onBlur(event) {
+      if (this.props.onBlur) {
+        this.props.onBlur(event, this.editor);
+      }
+    }
+  }, {
+    key: 'onCopy',
+    value: function onCopy(text) {
+      if (this.props.onCopy) {
+        this.props.onCopy(text);
+      }
+    }
+  }, {
+    key: 'onPaste',
+    value: function onPaste(text) {
+      if (this.props.onPaste) {
+        this.props.onPaste(text);
+      }
+    }
+  }, {
+    key: 'onScroll',
+    value: function onScroll() {
+      if (this.props.onScroll) {
+        this.props.onScroll(this.editor);
+      }
+    }
+  }, {
+    key: 'handleOptions',
+    value: function handleOptions(props) {
+      var setOptions = Object.keys(props.setOptions);
+      for (var y = 0; y < setOptions.length; y++) {
+        this.editor.setOption(setOptions[y], props.setOptions[setOptions[y]]);
+      }
+    }
+  }, {
+    key: 'handleMarkers',
+    value: function handleMarkers(markers) {
+      var _this3 = this;
+
+      // remove foreground markers
+      var currentMarkers = this.editor.getSession().getMarkers(true);
+      for (var i in currentMarkers) {
+        if (currentMarkers.hasOwnProperty(i)) {
+          this.editor.getSession().removeMarker(currentMarkers[i].id);
+        }
+      }
+      // remove background markers
+      currentMarkers = this.editor.getSession().getMarkers(false);
+      for (var _i2 in currentMarkers) {
+        if (currentMarkers.hasOwnProperty(_i2)) {
+          this.editor.getSession().removeMarker(currentMarkers[_i2].id);
+        }
+      }
+      // add new markers
+      markers.forEach(function (_ref) {
+        var startRow = _ref.startRow,
+            startCol = _ref.startCol,
+            endRow = _ref.endRow,
+            endCol = _ref.endCol,
+            className = _ref.className,
+            type = _ref.type,
+            _ref$inFront = _ref.inFront,
+            inFront = _ref$inFront === undefined ? false : _ref$inFront;
+
+        var range = new Range(startRow, startCol, endRow, endCol);
+        _this3.editor.getSession().addMarker(range, className, type, inFront);
+      });
+    }
+  }, {
+    key: 'updateRef',
+    value: function updateRef(item) {
+      this.refEditor = item;
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props2 = this.props,
+          name = _props2.name,
+          width = _props2.width,
+          height = _props2.height,
+          style = _props2.style;
+
+      var divStyle = _extends({ width: width, height: height }, style);
+      return _react2.default.createElement('div', { ref: this.updateRef, id: name, style: divStyle });
+    }
+  }]);
+
+  return ReactAce;
+}(_react.Component);
+
+exports.default = ReactAce;
+
+
+ReactAce.propTypes = {
+  mode: _propTypes2.default.string,
+  focus: _propTypes2.default.bool,
+  theme: _propTypes2.default.string,
+  name: _propTypes2.default.string,
+  className: _propTypes2.default.string,
+  height: _propTypes2.default.string,
+  width: _propTypes2.default.string,
+  fontSize: _propTypes2.default.oneOfType([_propTypes2.default.number, _propTypes2.default.string]),
+  showGutter: _propTypes2.default.bool,
+  onChange: _propTypes2.default.func,
+  onCopy: _propTypes2.default.func,
+  onPaste: _propTypes2.default.func,
+  onFocus: _propTypes2.default.func,
+  onInput: _propTypes2.default.func,
+  onBlur: _propTypes2.default.func,
+  onScroll: _propTypes2.default.func,
+  value: _propTypes2.default.string,
+  defaultValue: _propTypes2.default.string,
+  onLoad: _propTypes2.default.func,
+  onSelectionChange: _propTypes2.default.func,
+  onCursorChange: _propTypes2.default.func,
+  onBeforeLoad: _propTypes2.default.func,
+  onValidate: _propTypes2.default.func,
+  minLines: _propTypes2.default.number,
+  maxLines: _propTypes2.default.number,
+  readOnly: _propTypes2.default.bool,
+  highlightActiveLine: _propTypes2.default.bool,
+  tabSize: _propTypes2.default.number,
+  showPrintMargin: _propTypes2.default.bool,
+  cursorStart: _propTypes2.default.number,
+  debounceChangePeriod: _propTypes2.default.number,
+  editorProps: _propTypes2.default.object,
+  setOptions: _propTypes2.default.object,
+  style: _propTypes2.default.object,
+  scrollMargin: _propTypes2.default.array,
+  annotations: _propTypes2.default.array,
+  markers: _propTypes2.default.array,
+  keyboardHandler: _propTypes2.default.string,
+  wrapEnabled: _propTypes2.default.bool,
+  enableBasicAutocompletion: _propTypes2.default.oneOfType([_propTypes2.default.bool, _propTypes2.default.array]),
+  enableLiveAutocompletion: _propTypes2.default.oneOfType([_propTypes2.default.bool, _propTypes2.default.array]),
+  commands: _propTypes2.default.array
+};
+
+ReactAce.defaultProps = {
+  name: 'brace-editor',
+  focus: false,
+  mode: '',
+  theme: '',
+  height: '500px',
+  width: '500px',
+  value: '',
+  fontSize: 12,
+  showGutter: true,
+  onChange: null,
+  onPaste: null,
+  onLoad: null,
+  onScroll: null,
+  minLines: null,
+  maxLines: null,
+  readOnly: false,
+  highlightActiveLine: true,
+  showPrintMargin: true,
+  tabSize: 4,
+  cursorStart: 1,
+  editorProps: {},
+  style: {},
+  scrollMargin: [0, 0, 0, 0],
+  setOptions: {},
+  wrapEnabled: false,
+  enableBasicAutocompletion: false,
+  enableLiveAutocompletion: false
+};
+},{"react":"../node_modules/react/index.js","prop-types":"../node_modules/prop-types/index.js","lodash.isequal":"../node_modules/lodash.isequal/index.js","./editorOptions.js":"../node_modules/react-ace/lib/editorOptions.js"}],"../node_modules/lodash.get/index.js":[function(require,module,exports) {
+var global = arguments[3];
+/**
+ * lodash (Custom Build) <https://lodash.com/>
+ * Build: `lodash modularize exports="npm" -o ./`
+ * Copyright jQuery Foundation and other contributors <https://jquery.org/>
+ * Released under MIT license <https://lodash.com/license>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ */
+
+/** Used as the `TypeError` message for "Functions" methods. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED = '__lodash_hash_undefined__';
+
+/** Used as references for various `Number` constants. */
+var INFINITY = 1 / 0;
+
+/** `Object#toString` result references. */
+var funcTag = '[object Function]',
+    genTag = '[object GeneratorFunction]',
+    symbolTag = '[object Symbol]';
+
+/** Used to match property names within property paths. */
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
+    reIsPlainProp = /^\w*$/,
+    reLeadingDot = /^\./,
+    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+
+/**
+ * Used to match `RegExp`
+ * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+ */
+var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+
+/** Used to match backslashes in property paths. */
+var reEscapeChar = /\\(\\)?/g;
+
+/** Used to detect host constructors (Safari). */
+var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+/** Detect free variable `global` from Node.js. */
+var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+
+/** Detect free variable `self`. */
+var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root = freeGlobal || freeSelf || Function('return this')();
+
+/**
+ * Gets the value at `key` of `object`.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {string} key The key of the property to get.
+ * @returns {*} Returns the property value.
+ */
+function getValue(object, key) {
+  return object == null ? undefined : object[key];
+}
+
+/**
+ * Checks if `value` is a host object in IE < 9.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a host object, else `false`.
+ */
+function isHostObject(value) {
+  // Many host objects are `Object` objects that can coerce to strings
+  // despite having improperly defined `toString` methods.
+  var result = false;
+  if (value != null && typeof value.toString != 'function') {
+    try {
+      result = !!(value + '');
+    } catch (e) {}
+  }
+  return result;
+}
+
+/** Used for built-in method references. */
+var arrayProto = Array.prototype,
+    funcProto = Function.prototype,
+    objectProto = Object.prototype;
+
+/** Used to detect overreaching core-js shims. */
+var coreJsData = root['__core-js_shared__'];
+
+/** Used to detect methods masquerading as native. */
+var maskSrcKey = (function() {
+  var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+  return uid ? ('Symbol(src)_1.' + uid) : '';
+}());
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objectToString = objectProto.toString;
+
+/** Used to detect if a method is native. */
+var reIsNative = RegExp('^' +
+  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/** Built-in value references. */
+var Symbol = root.Symbol,
+    splice = arrayProto.splice;
+
+/* Built-in method references that are verified to be native. */
+var Map = getNative(root, 'Map'),
+    nativeCreate = getNative(Object, 'create');
+
+/** Used to convert symbols to primitives and strings. */
+var symbolProto = Symbol ? Symbol.prototype : undefined,
+    symbolToString = symbolProto ? symbolProto.toString : undefined;
+
+/**
+ * Creates a hash object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function Hash(entries) {
+  var index = -1,
+      length = entries ? entries.length : 0;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+/**
+ * Removes all key-value entries from the hash.
+ *
+ * @private
+ * @name clear
+ * @memberOf Hash
+ */
+function hashClear() {
+  this.__data__ = nativeCreate ? nativeCreate(null) : {};
+}
+
+/**
+ * Removes `key` and its value from the hash.
+ *
+ * @private
+ * @name delete
+ * @memberOf Hash
+ * @param {Object} hash The hash to modify.
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function hashDelete(key) {
+  return this.has(key) && delete this.__data__[key];
+}
+
+/**
+ * Gets the hash value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf Hash
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function hashGet(key) {
+  var data = this.__data__;
+  if (nativeCreate) {
+    var result = data[key];
+    return result === HASH_UNDEFINED ? undefined : result;
+  }
+  return hasOwnProperty.call(data, key) ? data[key] : undefined;
+}
+
+/**
+ * Checks if a hash value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf Hash
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function hashHas(key) {
+  var data = this.__data__;
+  return nativeCreate ? data[key] !== undefined : hasOwnProperty.call(data, key);
+}
+
+/**
+ * Sets the hash `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf Hash
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the hash instance.
+ */
+function hashSet(key, value) {
+  var data = this.__data__;
+  data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
+  return this;
+}
+
+// Add methods to `Hash`.
+Hash.prototype.clear = hashClear;
+Hash.prototype['delete'] = hashDelete;
+Hash.prototype.get = hashGet;
+Hash.prototype.has = hashHas;
+Hash.prototype.set = hashSet;
+
+/**
+ * Creates an list cache object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function ListCache(entries) {
+  var index = -1,
+      length = entries ? entries.length : 0;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+/**
+ * Removes all key-value entries from the list cache.
+ *
+ * @private
+ * @name clear
+ * @memberOf ListCache
+ */
+function listCacheClear() {
+  this.__data__ = [];
+}
+
+/**
+ * Removes `key` and its value from the list cache.
+ *
+ * @private
+ * @name delete
+ * @memberOf ListCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function listCacheDelete(key) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  if (index < 0) {
+    return false;
+  }
+  var lastIndex = data.length - 1;
+  if (index == lastIndex) {
+    data.pop();
+  } else {
+    splice.call(data, index, 1);
+  }
+  return true;
+}
+
+/**
+ * Gets the list cache value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf ListCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function listCacheGet(key) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  return index < 0 ? undefined : data[index][1];
+}
+
+/**
+ * Checks if a list cache value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf ListCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function listCacheHas(key) {
+  return assocIndexOf(this.__data__, key) > -1;
+}
+
+/**
+ * Sets the list cache `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf ListCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the list cache instance.
+ */
+function listCacheSet(key, value) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  if (index < 0) {
+    data.push([key, value]);
+  } else {
+    data[index][1] = value;
+  }
+  return this;
+}
+
+// Add methods to `ListCache`.
+ListCache.prototype.clear = listCacheClear;
+ListCache.prototype['delete'] = listCacheDelete;
+ListCache.prototype.get = listCacheGet;
+ListCache.prototype.has = listCacheHas;
+ListCache.prototype.set = listCacheSet;
+
+/**
+ * Creates a map cache object to store key-value pairs.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function MapCache(entries) {
+  var index = -1,
+      length = entries ? entries.length : 0;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+/**
+ * Removes all key-value entries from the map.
+ *
+ * @private
+ * @name clear
+ * @memberOf MapCache
+ */
+function mapCacheClear() {
+  this.__data__ = {
+    'hash': new Hash,
+    'map': new (Map || ListCache),
+    'string': new Hash
+  };
+}
+
+/**
+ * Removes `key` and its value from the map.
+ *
+ * @private
+ * @name delete
+ * @memberOf MapCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function mapCacheDelete(key) {
+  return getMapData(this, key)['delete'](key);
+}
+
+/**
+ * Gets the map value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf MapCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function mapCacheGet(key) {
+  return getMapData(this, key).get(key);
+}
+
+/**
+ * Checks if a map value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf MapCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function mapCacheHas(key) {
+  return getMapData(this, key).has(key);
+}
+
+/**
+ * Sets the map `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf MapCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the map cache instance.
+ */
+function mapCacheSet(key, value) {
+  getMapData(this, key).set(key, value);
+  return this;
+}
+
+// Add methods to `MapCache`.
+MapCache.prototype.clear = mapCacheClear;
+MapCache.prototype['delete'] = mapCacheDelete;
+MapCache.prototype.get = mapCacheGet;
+MapCache.prototype.has = mapCacheHas;
+MapCache.prototype.set = mapCacheSet;
+
+/**
+ * Gets the index at which the `key` is found in `array` of key-value pairs.
+ *
+ * @private
+ * @param {Array} array The array to inspect.
+ * @param {*} key The key to search for.
+ * @returns {number} Returns the index of the matched value, else `-1`.
+ */
+function assocIndexOf(array, key) {
+  var length = array.length;
+  while (length--) {
+    if (eq(array[length][0], key)) {
+      return length;
+    }
+  }
+  return -1;
+}
+
+/**
+ * The base implementation of `_.get` without support for default values.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {Array|string} path The path of the property to get.
+ * @returns {*} Returns the resolved value.
+ */
+function baseGet(object, path) {
+  path = isKey(path, object) ? [path] : castPath(path);
+
+  var index = 0,
+      length = path.length;
+
+  while (object != null && index < length) {
+    object = object[toKey(path[index++])];
+  }
+  return (index && index == length) ? object : undefined;
+}
+
+/**
+ * The base implementation of `_.isNative` without bad shim checks.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function,
+ *  else `false`.
+ */
+function baseIsNative(value) {
+  if (!isObject(value) || isMasked(value)) {
+    return false;
+  }
+  var pattern = (isFunction(value) || isHostObject(value)) ? reIsNative : reIsHostCtor;
+  return pattern.test(toSource(value));
+}
+
+/**
+ * The base implementation of `_.toString` which doesn't convert nullish
+ * values to empty strings.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {string} Returns the string.
+ */
+function baseToString(value) {
+  // Exit early for strings to avoid a performance hit in some environments.
+  if (typeof value == 'string') {
+    return value;
+  }
+  if (isSymbol(value)) {
+    return symbolToString ? symbolToString.call(value) : '';
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+}
+
+/**
+ * Casts `value` to a path array if it's not one.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @returns {Array} Returns the cast property path array.
+ */
+function castPath(value) {
+  return isArray(value) ? value : stringToPath(value);
+}
+
+/**
+ * Gets the data for `map`.
+ *
+ * @private
+ * @param {Object} map The map to query.
+ * @param {string} key The reference key.
+ * @returns {*} Returns the map data.
+ */
+function getMapData(map, key) {
+  var data = map.__data__;
+  return isKeyable(key)
+    ? data[typeof key == 'string' ? 'string' : 'hash']
+    : data.map;
+}
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative(object, key) {
+  var value = getValue(object, key);
+  return baseIsNative(value) ? value : undefined;
+}
+
+/**
+ * Checks if `value` is a property name and not a property path.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
+ */
+function isKey(value, object) {
+  if (isArray(value)) {
+    return false;
+  }
+  var type = typeof value;
+  if (type == 'number' || type == 'symbol' || type == 'boolean' ||
+      value == null || isSymbol(value)) {
+    return true;
+  }
+  return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
+    (object != null && value in Object(object));
+}
+
+/**
+ * Checks if `value` is suitable for use as unique object key.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
+ */
+function isKeyable(value) {
+  var type = typeof value;
+  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
+    ? (value !== '__proto__')
+    : (value === null);
+}
+
+/**
+ * Checks if `func` has its source masked.
+ *
+ * @private
+ * @param {Function} func The function to check.
+ * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+ */
+function isMasked(func) {
+  return !!maskSrcKey && (maskSrcKey in func);
+}
+
+/**
+ * Converts `string` to a property path array.
+ *
+ * @private
+ * @param {string} string The string to convert.
+ * @returns {Array} Returns the property path array.
+ */
+var stringToPath = memoize(function(string) {
+  string = toString(string);
+
+  var result = [];
+  if (reLeadingDot.test(string)) {
+    result.push('');
+  }
+  string.replace(rePropName, function(match, number, quote, string) {
+    result.push(quote ? string.replace(reEscapeChar, '$1') : (number || match));
+  });
+  return result;
+});
+
+/**
+ * Converts `value` to a string key if it's not a string or symbol.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @returns {string|symbol} Returns the key.
+ */
+function toKey(value) {
+  if (typeof value == 'string' || isSymbol(value)) {
+    return value;
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+}
+
+/**
+ * Converts `func` to its source code.
+ *
+ * @private
+ * @param {Function} func The function to process.
+ * @returns {string} Returns the source code.
+ */
+function toSource(func) {
+  if (func != null) {
+    try {
+      return funcToString.call(func);
+    } catch (e) {}
+    try {
+      return (func + '');
+    } catch (e) {}
+  }
+  return '';
+}
+
+/**
+ * Creates a function that memoizes the result of `func`. If `resolver` is
+ * provided, it determines the cache key for storing the result based on the
+ * arguments provided to the memoized function. By default, the first argument
+ * provided to the memoized function is used as the map cache key. The `func`
+ * is invoked with the `this` binding of the memoized function.
+ *
+ * **Note:** The cache is exposed as the `cache` property on the memoized
+ * function. Its creation may be customized by replacing the `_.memoize.Cache`
+ * constructor with one whose instances implement the
+ * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
+ * method interface of `delete`, `get`, `has`, and `set`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to have its output memoized.
+ * @param {Function} [resolver] The function to resolve the cache key.
+ * @returns {Function} Returns the new memoized function.
+ * @example
+ *
+ * var object = { 'a': 1, 'b': 2 };
+ * var other = { 'c': 3, 'd': 4 };
+ *
+ * var values = _.memoize(_.values);
+ * values(object);
+ * // => [1, 2]
+ *
+ * values(other);
+ * // => [3, 4]
+ *
+ * object.a = 2;
+ * values(object);
+ * // => [1, 2]
+ *
+ * // Modify the result cache.
+ * values.cache.set(object, ['a', 'b']);
+ * values(object);
+ * // => ['a', 'b']
+ *
+ * // Replace `_.memoize.Cache`.
+ * _.memoize.Cache = WeakMap;
+ */
+function memoize(func, resolver) {
+  if (typeof func != 'function' || (resolver && typeof resolver != 'function')) {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  var memoized = function() {
+    var args = arguments,
+        key = resolver ? resolver.apply(this, args) : args[0],
+        cache = memoized.cache;
+
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    var result = func.apply(this, args);
+    memoized.cache = cache.set(key, result);
+    return result;
+  };
+  memoized.cache = new (memoize.Cache || MapCache);
+  return memoized;
+}
+
+// Assign cache to `_.memoize`.
+memoize.Cache = MapCache;
+
+/**
+ * Performs a
+ * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * comparison between two values to determine if they are equivalent.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ * var other = { 'a': 1 };
+ *
+ * _.eq(object, object);
+ * // => true
+ *
+ * _.eq(object, other);
+ * // => false
+ *
+ * _.eq('a', 'a');
+ * // => true
+ *
+ * _.eq('a', Object('a'));
+ * // => false
+ *
+ * _.eq(NaN, NaN);
+ * // => true
+ */
+function eq(value, other) {
+  return value === other || (value !== value && other !== other);
+}
+
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an array, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(document.body.children);
+ * // => false
+ *
+ * _.isArray('abc');
+ * // => false
+ *
+ * _.isArray(_.noop);
+ * // => false
+ */
+var isArray = Array.isArray;
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in Safari 8-9 which returns 'object' for typed array and other constructors.
+  var tag = isObject(value) ? objectToString.call(value) : '';
+  return tag == funcTag || tag == genTag;
+}
+
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject(value) {
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+/**
+ * Checks if `value` is object-like. A value is object-like if it's not `null`
+ * and has a `typeof` result of "object".
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ * @example
+ *
+ * _.isObjectLike({});
+ * // => true
+ *
+ * _.isObjectLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isObjectLike(_.noop);
+ * // => false
+ *
+ * _.isObjectLike(null);
+ * // => false
+ */
+function isObjectLike(value) {
+  return !!value && typeof value == 'object';
+}
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (isObjectLike(value) && objectToString.call(value) == symbolTag);
+}
+
+/**
+ * Converts `value` to a string. An empty string is returned for `null`
+ * and `undefined` values. The sign of `-0` is preserved.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to process.
+ * @returns {string} Returns the string.
+ * @example
+ *
+ * _.toString(null);
+ * // => ''
+ *
+ * _.toString(-0);
+ * // => '-0'
+ *
+ * _.toString([1, 2, 3]);
+ * // => '1,2,3'
+ */
+function toString(value) {
+  return value == null ? '' : baseToString(value);
+}
+
+/**
+ * Gets the value at `path` of `object`. If the resolved value is
+ * `undefined`, the `defaultValue` is returned in its place.
+ *
+ * @static
+ * @memberOf _
+ * @since 3.7.0
+ * @category Object
+ * @param {Object} object The object to query.
+ * @param {Array|string} path The path of the property to get.
+ * @param {*} [defaultValue] The value returned for `undefined` resolved values.
+ * @returns {*} Returns the resolved value.
+ * @example
+ *
+ * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+ *
+ * _.get(object, 'a[0].b.c');
+ * // => 3
+ *
+ * _.get(object, ['a', '0', 'b', 'c']);
+ * // => 3
+ *
+ * _.get(object, 'a.b.c', 'default');
+ * // => 'default'
+ */
+function get(object, path, defaultValue) {
+  var result = object == null ? undefined : baseGet(object, path);
+  return result === undefined ? defaultValue : result;
+}
+
+module.exports = get;
+
+},{}],"../node_modules/brace/ext/split.js":[function(require,module,exports) {
+ace.define("ace/split",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/lib/event_emitter","ace/editor","ace/virtual_renderer","ace/edit_session"], function(acequire, exports, module) {
+"use strict";
+
+var oop = acequire("./lib/oop");
+var lang = acequire("./lib/lang");
+var EventEmitter = acequire("./lib/event_emitter").EventEmitter;
+
+var Editor = acequire("./editor").Editor;
+var Renderer = acequire("./virtual_renderer").VirtualRenderer;
+var EditSession = acequire("./edit_session").EditSession;
+
+
+var Split = function(container, theme, splits) {
+    this.BELOW = 1;
+    this.BESIDE = 0;
+
+    this.$container = container;
+    this.$theme = theme;
+    this.$splits = 0;
+    this.$editorCSS = "";
+    this.$editors = [];
+    this.$orientation = this.BESIDE;
+
+    this.setSplits(splits || 1);
+    this.$cEditor = this.$editors[0];
+
+
+    this.on("focus", function(editor) {
+        this.$cEditor = editor;
+    }.bind(this));
+};
+
+(function(){
+
+    oop.implement(this, EventEmitter);
+
+    this.$createEditor = function() {
+        var el = document.createElement("div");
+        el.className = this.$editorCSS;
+        el.style.cssText = "position: absolute; top:0px; bottom:0px";
+        this.$container.appendChild(el);
+        var editor = new Editor(new Renderer(el, this.$theme));
+
+        editor.on("focus", function() {
+            this._emit("focus", editor);
+        }.bind(this));
+
+        this.$editors.push(editor);
+        editor.setFontSize(this.$fontSize);
+        return editor;
+    };
+
+    this.setSplits = function(splits) {
+        var editor;
+        if (splits < 1) {
+            throw "The number of splits have to be > 0!";
+        }
+
+        if (splits == this.$splits) {
+            return;
+        } else if (splits > this.$splits) {
+            while (this.$splits < this.$editors.length && this.$splits < splits) {
+                editor = this.$editors[this.$splits];
+                this.$container.appendChild(editor.container);
+                editor.setFontSize(this.$fontSize);
+                this.$splits ++;
+            }
+            while (this.$splits < splits) {
+                this.$createEditor();
+                this.$splits ++;
+            }
+        } else {
+            while (this.$splits > splits) {
+                editor = this.$editors[this.$splits - 1];
+                this.$container.removeChild(editor.container);
+                this.$splits --;
+            }
+        }
+        this.resize();
+    };
+    this.getSplits = function() {
+        return this.$splits;
+    };
+    this.getEditor = function(idx) {
+        return this.$editors[idx];
+    };
+    this.getCurrentEditor = function() {
+        return this.$cEditor;
+    };
+    this.focus = function() {
+        this.$cEditor.focus();
+    };
+    this.blur = function() {
+        this.$cEditor.blur();
+    };
+    this.setTheme = function(theme) {
+        this.$editors.forEach(function(editor) {
+            editor.setTheme(theme);
+        });
+    };
+    this.setKeyboardHandler = function(keybinding) {
+        this.$editors.forEach(function(editor) {
+            editor.setKeyboardHandler(keybinding);
+        });
+    };
+    this.forEach = function(callback, scope) {
+        this.$editors.forEach(callback, scope);
+    };
+
+
+    this.$fontSize = "";
+    this.setFontSize = function(size) {
+        this.$fontSize = size;
+        this.forEach(function(editor) {
+           editor.setFontSize(size);
+        });
+    };
+
+    this.$cloneSession = function(session) {
+        var s = new EditSession(session.getDocument(), session.getMode());
+
+        var undoManager = session.getUndoManager();
+        if (undoManager) {
+            var undoManagerProxy = new UndoManagerProxy(undoManager, s);
+            s.setUndoManager(undoManagerProxy);
+        }
+        s.$informUndoManager = lang.delayedCall(function() { s.$deltas = []; });
+        s.setTabSize(session.getTabSize());
+        s.setUseSoftTabs(session.getUseSoftTabs());
+        s.setOverwrite(session.getOverwrite());
+        s.setBreakpoints(session.getBreakpoints());
+        s.setUseWrapMode(session.getUseWrapMode());
+        s.setUseWorker(session.getUseWorker());
+        s.setWrapLimitRange(session.$wrapLimitRange.min,
+                            session.$wrapLimitRange.max);
+        s.$foldData = session.$cloneFoldData();
+
+        return s;
+    };
+    this.setSession = function(session, idx) {
+        var editor;
+        if (idx == null) {
+            editor = this.$cEditor;
+        } else {
+            editor = this.$editors[idx];
+        }
+        var isUsed = this.$editors.some(function(editor) {
+           return editor.session === session;
+        });
+
+        if (isUsed) {
+            session = this.$cloneSession(session);
+        }
+        editor.setSession(session);
+        return session;
+    };
+    this.getOrientation = function() {
+        return this.$orientation;
+    };
+    this.setOrientation = function(orientation) {
+        if (this.$orientation == orientation) {
+            return;
+        }
+        this.$orientation = orientation;
+        this.resize();
+    };
+    this.resize = function() {
+        var width = this.$container.clientWidth;
+        var height = this.$container.clientHeight;
+        var editor;
+
+        if (this.$orientation == this.BESIDE) {
+            var editorWidth = width / this.$splits;
+            for (var i = 0; i < this.$splits; i++) {
+                editor = this.$editors[i];
+                editor.container.style.width = editorWidth + "px";
+                editor.container.style.top = "0px";
+                editor.container.style.left = i * editorWidth + "px";
+                editor.container.style.height = height + "px";
+                editor.resize();
+            }
+        } else {
+            var editorHeight = height / this.$splits;
+            for (var i = 0; i < this.$splits; i++) {
+                editor = this.$editors[i];
+                editor.container.style.width = width + "px";
+                editor.container.style.top = i * editorHeight + "px";
+                editor.container.style.left = "0px";
+                editor.container.style.height = editorHeight + "px";
+                editor.resize();
+            }
+        }
+    };
+
+}).call(Split.prototype);
+
+ 
+function UndoManagerProxy(undoManager, session) {
+    this.$u = undoManager;
+    this.$doc = session;
+}
+
+(function() {
+    this.execute = function(options) {
+        this.$u.execute(options);
+    };
+
+    this.undo = function() {
+        var selectionRange = this.$u.undo(true);
+        if (selectionRange) {
+            this.$doc.selection.setSelectionRange(selectionRange);
+        }
+    };
+
+    this.redo = function() {
+        var selectionRange = this.$u.redo(true);
+        if (selectionRange) {
+            this.$doc.selection.setSelectionRange(selectionRange);
+        }
+    };
+
+    this.reset = function() {
+        this.$u.reset();
+    };
+
+    this.hasUndo = function() {
+        return this.$u.hasUndo();
+    };
+
+    this.hasRedo = function() {
+        return this.$u.hasRedo();
+    };
+}).call(UndoManagerProxy.prototype);
+
+exports.Split = Split;
+});
+
+ace.define("ace/ext/split",["require","exports","module","ace/split"], function(acequire, exports, module) {
+"use strict";
+module.exports = acequire("../split");
+
+});
+                (function() {
+                    ace.acequire(["ace/ext/split"], function() {});
+                })();
+            
+},{}],"../node_modules/react-ace/lib/split.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _editorOptions = require('./editorOptions.js');
+
+require('brace');
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _lodash = require('lodash.isequal');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _lodash3 = require('lodash.get');
+
+var _lodash4 = _interopRequireDefault(_lodash3);
+
+require('brace/ext/split');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ace = (0, _editorOptions.getAceInstance)();
+
+var _ace$acequire = ace.acequire('ace/range'),
+    Range = _ace$acequire.Range;
+
+var _ace$acequire2 = ace.acequire('ace/split'),
+    Split = _ace$acequire2.Split;
+
+var SplitComponent = function (_Component) {
+  _inherits(SplitComponent, _Component);
+
+  function SplitComponent(props) {
+    _classCallCheck(this, SplitComponent);
+
+    var _this = _possibleConstructorReturn(this, (SplitComponent.__proto__ || Object.getPrototypeOf(SplitComponent)).call(this, props));
+
+    _editorOptions.editorEvents.forEach(function (method) {
+      _this[method] = _this[method].bind(_this);
+    });
+    _this.debounce = _editorOptions.debounce;
+    return _this;
+  }
+
+  _createClass(SplitComponent, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this2 = this;
+
+      var _props = this.props,
+          className = _props.className,
+          onBeforeLoad = _props.onBeforeLoad,
+          mode = _props.mode,
+          focus = _props.focus,
+          theme = _props.theme,
+          fontSize = _props.fontSize,
+          value = _props.value,
+          defaultValue = _props.defaultValue,
+          cursorStart = _props.cursorStart,
+          showGutter = _props.showGutter,
+          wrapEnabled = _props.wrapEnabled,
+          showPrintMargin = _props.showPrintMargin,
+          _props$scrollMargin = _props.scrollMargin,
+          scrollMargin = _props$scrollMargin === undefined ? [0, 0, 0, 0] : _props$scrollMargin,
+          keyboardHandler = _props.keyboardHandler,
+          onLoad = _props.onLoad,
+          commands = _props.commands,
+          annotations = _props.annotations,
+          markers = _props.markers,
+          splits = _props.splits;
+
+
+      this.editor = ace.edit(this.refEditor);
+
+      if (onBeforeLoad) {
+        onBeforeLoad(ace);
+      }
+
+      var editorProps = Object.keys(this.props.editorProps);
+
+      var split = new Split(this.editor.container, 'ace/theme/' + theme, splits);
+      this.editor.env.split = split;
+
+      this.splitEditor = split.getEditor(0);
+      this.split = split;
+      // in a split scenario we don't want a print margin for the entire application
+      this.editor.setShowPrintMargin(false);
+      this.editor.renderer.setShowGutter(false);
+      // get a list of possible options to avoid 'misspelled option errors'
+      var availableOptions = this.splitEditor.$options;
+      if (this.props.debounceChangePeriod) {
+        this.onChange = this.debounce(this.onChange, this.props.debounceChangePeriod);
+      }
+      split.forEach(function (editor, index) {
+        for (var i = 0; i < editorProps.length; i++) {
+          editor[editorProps[i]] = _this2.props.editorProps[editorProps[i]];
+        }
+        var defaultValueForEditor = (0, _lodash4.default)(defaultValue, index);
+        var valueForEditor = (0, _lodash4.default)(value, index, '');
+        editor.session.setUndoManager(new ace.UndoManager());
+        editor.setTheme('ace/theme/' + theme);
+        editor.renderer.setScrollMargin(scrollMargin[0], scrollMargin[1], scrollMargin[2], scrollMargin[3]);
+        editor.getSession().setMode('ace/mode/' + mode);
+        editor.setFontSize(fontSize);
+        editor.renderer.setShowGutter(showGutter);
+        editor.getSession().setUseWrapMode(wrapEnabled);
+        editor.setShowPrintMargin(showPrintMargin);
+        editor.on('focus', _this2.onFocus);
+        editor.on('blur', _this2.onBlur);
+        editor.on('input', _this2.onInput);
+        editor.on('copy', _this2.onCopy);
+        editor.on('paste', _this2.onPaste);
+        editor.on('change', _this2.onChange);
+        editor.getSession().selection.on('changeSelection', _this2.onSelectionChange);
+        editor.getSession().selection.on('changeCursor', _this2.onCursorChange);
+        editor.session.on('changeScrollTop', _this2.onScroll);
+        editor.setValue(defaultValueForEditor === undefined ? valueForEditor : defaultValueForEditor, cursorStart);
+        var newAnnotations = (0, _lodash4.default)(annotations, index, []);
+        var newMarkers = (0, _lodash4.default)(markers, index, []);
+        editor.getSession().setAnnotations(newAnnotations);
+        if (newMarkers && newMarkers.length > 0) {
+          _this2.handleMarkers(newMarkers, editor);
+        }
+
+        for (var _i = 0; _i < _editorOptions.editorOptions.length; _i++) {
+          var option = _editorOptions.editorOptions[_i];
+          if (availableOptions.hasOwnProperty(option)) {
+            editor.setOption(option, _this2.props[option]);
+          } else if (_this2.props[option]) {
+            console.warn('ReaceAce: editor option ' + option + ' was activated but not found. Did you need to import a related tool or did you possibly mispell the option?');
+          }
+        }
+        _this2.handleOptions(_this2.props, editor);
+
+        if (Array.isArray(commands)) {
+          commands.forEach(function (command) {
+            if (typeof command.exec == 'string') {
+              editor.commands.bindKey(command.bindKey, command.exec);
+            } else {
+              editor.commands.addCommand(command);
+            }
+          });
+        }
+
+        if (keyboardHandler) {
+          editor.setKeyboardHandler('ace/keyboard/' + keyboardHandler);
+        }
+      });
+
+      if (className) {
+        this.refEditor.className += ' ' + className;
+      }
+
+      if (focus) {
+        this.splitEditor.focus();
+      }
+
+      var sp = this.editor.env.split;
+      sp.setOrientation(this.props.orientation === 'below' ? sp.BELOW : sp.BESIDE);
+      sp.resize(true);
+      if (onLoad) {
+        onLoad(sp);
+      }
+    }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps) {
+      var _this3 = this;
+
+      var oldProps = prevProps;
+      var nextProps = this.props;
+
+      var split = this.editor.env.split;
+
+      if (nextProps.splits !== oldProps.splits) {
+        split.setSplits(nextProps.splits);
+      }
+
+      if (nextProps.orientation !== oldProps.orientation) {
+        split.setOrientation(nextProps.orientation === 'below' ? split.BELOW : split.BESIDE);
+      }
+
+      split.forEach(function (editor, index) {
+        if (nextProps.mode !== oldProps.mode) {
+          editor.getSession().setMode('ace/mode/' + nextProps.mode);
+        }
+        if (nextProps.keyboardHandler !== oldProps.keyboardHandler) {
+          if (nextProps.keyboardHandler) {
+            editor.setKeyboardHandler('ace/keyboard/' + nextProps.keyboardHandler);
+          } else {
+            editor.setKeyboardHandler(null);
+          }
+        }
+        if (nextProps.fontSize !== oldProps.fontSize) {
+          editor.setFontSize(nextProps.fontSize);
+        }
+        if (nextProps.wrapEnabled !== oldProps.wrapEnabled) {
+          editor.getSession().setUseWrapMode(nextProps.wrapEnabled);
+        }
+        if (nextProps.showPrintMargin !== oldProps.showPrintMargin) {
+          editor.setShowPrintMargin(nextProps.showPrintMargin);
+        }
+        if (nextProps.showGutter !== oldProps.showGutter) {
+          editor.renderer.setShowGutter(nextProps.showGutter);
+        }
+
+        for (var i = 0; i < _editorOptions.editorOptions.length; i++) {
+          var option = _editorOptions.editorOptions[i];
+          if (nextProps[option] !== oldProps[option]) {
+            editor.setOption(option, nextProps[option]);
+          }
+        }
+        if (!(0, _lodash2.default)(nextProps.setOptions, oldProps.setOptions)) {
+          _this3.handleOptions(nextProps, editor);
+        }
+        var nextValue = (0, _lodash4.default)(nextProps.value, index, '');
+        if (editor.getValue() !== nextValue) {
+          // editor.setValue is a synchronous function call, change event is emitted before setValue return.
+          _this3.silent = true;
+          var pos = editor.session.selection.toJSON();
+          editor.setValue(nextValue, nextProps.cursorStart);
+          editor.session.selection.fromJSON(pos);
+          _this3.silent = false;
+        }
+        var newAnnotations = (0, _lodash4.default)(nextProps.annotations, index, []);
+        var oldAnnotations = (0, _lodash4.default)(oldProps.annotations, index, []);
+        if (!(0, _lodash2.default)(newAnnotations, oldAnnotations)) {
+          editor.getSession().setAnnotations(newAnnotations);
+        }
+
+        var newMarkers = (0, _lodash4.default)(nextProps.markers, index, []);
+        var oldMarkers = (0, _lodash4.default)(oldProps.markers, index, []);
+        if (!(0, _lodash2.default)(newMarkers, oldMarkers) && Array.isArray(newMarkers)) {
+          _this3.handleMarkers(newMarkers, editor);
+        }
+      });
+
+      if (nextProps.className !== oldProps.className) {
+        var appliedClasses = this.refEditor.className;
+        var appliedClassesArray = appliedClasses.trim().split(' ');
+        var oldClassesArray = oldProps.className.trim().split(' ');
+        oldClassesArray.forEach(function (oldClass) {
+          var index = appliedClassesArray.indexOf(oldClass);
+          appliedClassesArray.splice(index, 1);
+        });
+        this.refEditor.className = ' ' + nextProps.className + ' ' + appliedClassesArray.join(' ');
+      }
+
+      if (nextProps.theme !== oldProps.theme) {
+        split.setTheme('ace/theme/' + nextProps.theme);
+      }
+
+      if (nextProps.focus && !oldProps.focus) {
+        this.splitEditor.focus();
+      }
+      if (nextProps.height !== this.props.height || nextProps.width !== this.props.width) {
+        this.editor.resize();
+      }
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this.editor.destroy();
+      this.editor = null;
+    }
+  }, {
+    key: 'onChange',
+    value: function onChange(event) {
+      if (this.props.onChange && !this.silent) {
+        var value = [];
+        this.editor.env.split.forEach(function (editor) {
+          value.push(editor.getValue());
+        });
+        this.props.onChange(value, event);
+      }
+    }
+  }, {
+    key: 'onSelectionChange',
+    value: function onSelectionChange(event) {
+      if (this.props.onSelectionChange) {
+        var value = [];
+        this.editor.env.split.forEach(function (editor) {
+          value.push(editor.getSelection());
+        });
+        this.props.onSelectionChange(value, event);
+      }
+    }
+  }, {
+    key: 'onCursorChange',
+    value: function onCursorChange(event) {
+      if (this.props.onCursorChange) {
+        var value = [];
+        this.editor.env.split.forEach(function (editor) {
+          value.push(editor.getSelection());
+        });
+        this.props.onCursorChange(value, event);
+      }
+    }
+  }, {
+    key: 'onFocus',
+    value: function onFocus(event) {
+      if (this.props.onFocus) {
+        this.props.onFocus(event);
+      }
+    }
+  }, {
+    key: 'onInput',
+    value: function onInput(event) {
+      if (this.props.onInput) {
+        this.props.onInput(event);
+      }
+    }
+  }, {
+    key: 'onBlur',
+    value: function onBlur(event) {
+      if (this.props.onBlur) {
+        this.props.onBlur(event);
+      }
+    }
+  }, {
+    key: 'onCopy',
+    value: function onCopy(text) {
+      if (this.props.onCopy) {
+        this.props.onCopy(text);
+      }
+    }
+  }, {
+    key: 'onPaste',
+    value: function onPaste(text) {
+      if (this.props.onPaste) {
+        this.props.onPaste(text);
+      }
+    }
+  }, {
+    key: 'onScroll',
+    value: function onScroll() {
+      if (this.props.onScroll) {
+        this.props.onScroll(this.editor);
+      }
+    }
+  }, {
+    key: 'handleOptions',
+    value: function handleOptions(props, editor) {
+      var setOptions = Object.keys(props.setOptions);
+      for (var y = 0; y < setOptions.length; y++) {
+        editor.setOption(setOptions[y], props.setOptions[setOptions[y]]);
+      }
+    }
+  }, {
+    key: 'handleMarkers',
+    value: function handleMarkers(markers, editor) {
+      // remove foreground markers
+      var currentMarkers = editor.getSession().getMarkers(true);
+      for (var i in currentMarkers) {
+        if (currentMarkers.hasOwnProperty(i)) {
+          editor.getSession().removeMarker(currentMarkers[i].id);
+        }
+      }
+      // remove background markers
+      currentMarkers = editor.getSession().getMarkers(false);
+      for (var _i2 in currentMarkers) {
+        if (currentMarkers.hasOwnProperty(_i2)) {
+          editor.getSession().removeMarker(currentMarkers[_i2].id);
+        }
+      }
+      // add new markers
+      markers.forEach(function (_ref) {
+        var startRow = _ref.startRow,
+            startCol = _ref.startCol,
+            endRow = _ref.endRow,
+            endCol = _ref.endCol,
+            className = _ref.className,
+            type = _ref.type,
+            _ref$inFront = _ref.inFront,
+            inFront = _ref$inFront === undefined ? false : _ref$inFront;
+
+        var range = new Range(startRow, startCol, endRow, endCol);
+        editor.getSession().addMarker(range, className, type, inFront);
+      });
+    }
+  }, {
+    key: 'updateRef',
+    value: function updateRef(item) {
+      this.refEditor = item;
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props2 = this.props,
+          name = _props2.name,
+          width = _props2.width,
+          height = _props2.height,
+          style = _props2.style;
+
+      var divStyle = _extends({ width: width, height: height }, style);
+      return _react2.default.createElement('div', { ref: this.updateRef, id: name, style: divStyle });
+    }
+  }]);
+
+  return SplitComponent;
+}(_react.Component);
+
+exports.default = SplitComponent;
+
+
+SplitComponent.propTypes = {
+  mode: _propTypes2.default.string,
+  splits: _propTypes2.default.number,
+  orientation: _propTypes2.default.string,
+  focus: _propTypes2.default.bool,
+  theme: _propTypes2.default.string,
+  name: _propTypes2.default.string,
+  className: _propTypes2.default.string,
+  height: _propTypes2.default.string,
+  width: _propTypes2.default.string,
+  fontSize: _propTypes2.default.oneOfType([_propTypes2.default.number, _propTypes2.default.string]),
+  showGutter: _propTypes2.default.bool,
+  onChange: _propTypes2.default.func,
+  onCopy: _propTypes2.default.func,
+  onPaste: _propTypes2.default.func,
+  onFocus: _propTypes2.default.func,
+  onInput: _propTypes2.default.func,
+  onBlur: _propTypes2.default.func,
+  onScroll: _propTypes2.default.func,
+  value: _propTypes2.default.arrayOf(_propTypes2.default.string),
+  defaultValue: _propTypes2.default.arrayOf(_propTypes2.default.string),
+  debounceChangePeriod: _propTypes2.default.number,
+  onLoad: _propTypes2.default.func,
+  onSelectionChange: _propTypes2.default.func,
+  onCursorChange: _propTypes2.default.func,
+  onBeforeLoad: _propTypes2.default.func,
+  minLines: _propTypes2.default.number,
+  maxLines: _propTypes2.default.number,
+  readOnly: _propTypes2.default.bool,
+  highlightActiveLine: _propTypes2.default.bool,
+  tabSize: _propTypes2.default.number,
+  showPrintMargin: _propTypes2.default.bool,
+  cursorStart: _propTypes2.default.number,
+  editorProps: _propTypes2.default.object,
+  setOptions: _propTypes2.default.object,
+  style: _propTypes2.default.object,
+  scrollMargin: _propTypes2.default.array,
+  annotations: _propTypes2.default.array,
+  markers: _propTypes2.default.array,
+  keyboardHandler: _propTypes2.default.string,
+  wrapEnabled: _propTypes2.default.bool,
+  enableBasicAutocompletion: _propTypes2.default.oneOfType([_propTypes2.default.bool, _propTypes2.default.array]),
+  enableLiveAutocompletion: _propTypes2.default.oneOfType([_propTypes2.default.bool, _propTypes2.default.array]),
+  commands: _propTypes2.default.array
+};
+
+SplitComponent.defaultProps = {
+  name: 'brace-editor',
+  focus: false,
+  orientation: 'beside',
+  splits: 2,
+  mode: '',
+  theme: '',
+  height: '500px',
+  width: '500px',
+  value: [],
+  fontSize: 12,
+  showGutter: true,
+  onChange: null,
+  onPaste: null,
+  onLoad: null,
+  onScroll: null,
+  minLines: null,
+  maxLines: null,
+  readOnly: false,
+  highlightActiveLine: true,
+  showPrintMargin: true,
+  tabSize: 4,
+  cursorStart: 1,
+  editorProps: {},
+  style: {},
+  scrollMargin: [0, 0, 0, 0],
+  setOptions: {},
+  wrapEnabled: false,
+  enableBasicAutocompletion: false,
+  enableLiveAutocompletion: false
+};
+},{"./editorOptions.js":"../node_modules/react-ace/lib/editorOptions.js","brace":"../node_modules/brace/index.js","react":"../node_modules/react/index.js","prop-types":"../node_modules/prop-types/index.js","lodash.isequal":"../node_modules/lodash.isequal/index.js","lodash.get":"../node_modules/lodash.get/index.js","brace/ext/split":"../node_modules/brace/ext/split.js"}],"../node_modules/diff-match-patch/index.js":[function(require,module,exports) {
+/**
+ * Diff Match and Patch
+ * Copyright 2018 The diff-match-patch Authors.
+ * https://github.com/google/diff-match-patch
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * @fileoverview Computes the difference between two texts to create a patch.
+ * Applies the patch onto another text, allowing for errors.
+ * @author fraser@google.com (Neil Fraser)
+ */
+
+/**
+ * Class containing the diff, match and patch methods.
+ * @constructor
+ */
+function diff_match_patch() {
+
+  // Defaults.
+  // Redefine these in your program to override the defaults.
+
+  // Number of seconds to map a diff before giving up (0 for infinity).
+  this.Diff_Timeout = 1.0;
+  // Cost of an empty edit operation in terms of edit characters.
+  this.Diff_EditCost = 4;
+  // At what point is no match declared (0.0 = perfection, 1.0 = very loose).
+  this.Match_Threshold = 0.5;
+  // How far to search for a match (0 = exact location, 1000+ = broad match).
+  // A match this many characters away from the expected location will add
+  // 1.0 to the score (0.0 is a perfect match).
+  this.Match_Distance = 1000;
+  // When deleting a large block of text (over ~64 characters), how close do
+  // the contents have to be to match the expected contents. (0.0 = perfection,
+  // 1.0 = very loose).  Note that Match_Threshold controls how closely the
+  // end points of a delete need to match.
+  this.Patch_DeleteThreshold = 0.5;
+  // Chunk size for context length.
+  this.Patch_Margin = 4;
+
+  // The number of bits in an int.
+  this.Match_MaxBits = 32;
+}
+
+
+//  DIFF FUNCTIONS
+
+
+/**
+ * The data structure representing a diff is an array of tuples:
+ * [[DIFF_DELETE, 'Hello'], [DIFF_INSERT, 'Goodbye'], [DIFF_EQUAL, ' world.']]
+ * which means: delete 'Hello', add 'Goodbye' and keep ' world.'
+ */
+var DIFF_DELETE = -1;
+var DIFF_INSERT = 1;
+var DIFF_EQUAL = 0;
+
+/** @typedef {{0: number, 1: string}} */
+diff_match_patch.Diff;
+
+
+/**
+ * Find the differences between two texts.  Simplifies the problem by stripping
+ * any common prefix or suffix off the texts before diffing.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @param {boolean=} opt_checklines Optional speedup flag. If present and false,
+ *     then don't run a line-level diff first to identify the changed areas.
+ *     Defaults to true, which does a faster, slightly less optimal diff.
+ * @param {number} opt_deadline Optional time when the diff should be complete
+ *     by.  Used internally for recursive calls.  Users should set DiffTimeout
+ *     instead.
+ * @return {!Array.<!diff_match_patch.Diff>} Array of diff tuples.
+ */
+diff_match_patch.prototype.diff_main = function(text1, text2, opt_checklines,
+    opt_deadline) {
+  // Set a deadline by which time the diff must be complete.
+  if (typeof opt_deadline == 'undefined') {
+    if (this.Diff_Timeout <= 0) {
+      opt_deadline = Number.MAX_VALUE;
+    } else {
+      opt_deadline = (new Date).getTime() + this.Diff_Timeout * 1000;
+    }
+  }
+  var deadline = opt_deadline;
+
+  // Check for null inputs.
+  if (text1 == null || text2 == null) {
+    throw new Error('Null input. (diff_main)');
+  }
+
+  // Check for equality (speedup).
+  if (text1 == text2) {
+    if (text1) {
+      return [[DIFF_EQUAL, text1]];
+    }
+    return [];
+  }
+
+  if (typeof opt_checklines == 'undefined') {
+    opt_checklines = true;
+  }
+  var checklines = opt_checklines;
+
+  // Trim off common prefix (speedup).
+  var commonlength = this.diff_commonPrefix(text1, text2);
+  var commonprefix = text1.substring(0, commonlength);
+  text1 = text1.substring(commonlength);
+  text2 = text2.substring(commonlength);
+
+  // Trim off common suffix (speedup).
+  commonlength = this.diff_commonSuffix(text1, text2);
+  var commonsuffix = text1.substring(text1.length - commonlength);
+  text1 = text1.substring(0, text1.length - commonlength);
+  text2 = text2.substring(0, text2.length - commonlength);
+
+  // Compute the diff on the middle block.
+  var diffs = this.diff_compute_(text1, text2, checklines, deadline);
+
+  // Restore the prefix and suffix.
+  if (commonprefix) {
+    diffs.unshift([DIFF_EQUAL, commonprefix]);
+  }
+  if (commonsuffix) {
+    diffs.push([DIFF_EQUAL, commonsuffix]);
+  }
+  this.diff_cleanupMerge(diffs);
+  return diffs;
+};
+
+
+/**
+ * Find the differences between two texts.  Assumes that the texts do not
+ * have any common prefix or suffix.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @param {boolean} checklines Speedup flag.  If false, then don't run a
+ *     line-level diff first to identify the changed areas.
+ *     If true, then run a faster, slightly less optimal diff.
+ * @param {number} deadline Time when the diff should be complete by.
+ * @return {!Array.<!diff_match_patch.Diff>} Array of diff tuples.
+ * @private
+ */
+diff_match_patch.prototype.diff_compute_ = function(text1, text2, checklines,
+    deadline) {
+  var diffs;
+
+  if (!text1) {
+    // Just add some text (speedup).
+    return [[DIFF_INSERT, text2]];
+  }
+
+  if (!text2) {
+    // Just delete some text (speedup).
+    return [[DIFF_DELETE, text1]];
+  }
+
+  var longtext = text1.length > text2.length ? text1 : text2;
+  var shorttext = text1.length > text2.length ? text2 : text1;
+  var i = longtext.indexOf(shorttext);
+  if (i != -1) {
+    // Shorter text is inside the longer text (speedup).
+    diffs = [[DIFF_INSERT, longtext.substring(0, i)],
+             [DIFF_EQUAL, shorttext],
+             [DIFF_INSERT, longtext.substring(i + shorttext.length)]];
+    // Swap insertions for deletions if diff is reversed.
+    if (text1.length > text2.length) {
+      diffs[0][0] = diffs[2][0] = DIFF_DELETE;
+    }
+    return diffs;
+  }
+
+  if (shorttext.length == 1) {
+    // Single character string.
+    // After the previous speedup, the character can't be an equality.
+    return [[DIFF_DELETE, text1], [DIFF_INSERT, text2]];
+  }
+
+  // Check to see if the problem can be split in two.
+  var hm = this.diff_halfMatch_(text1, text2);
+  if (hm) {
+    // A half-match was found, sort out the return data.
+    var text1_a = hm[0];
+    var text1_b = hm[1];
+    var text2_a = hm[2];
+    var text2_b = hm[3];
+    var mid_common = hm[4];
+    // Send both pairs off for separate processing.
+    var diffs_a = this.diff_main(text1_a, text2_a, checklines, deadline);
+    var diffs_b = this.diff_main(text1_b, text2_b, checklines, deadline);
+    // Merge the results.
+    return diffs_a.concat([[DIFF_EQUAL, mid_common]], diffs_b);
+  }
+
+  if (checklines && text1.length > 100 && text2.length > 100) {
+    return this.diff_lineMode_(text1, text2, deadline);
+  }
+
+  return this.diff_bisect_(text1, text2, deadline);
+};
+
+
+/**
+ * Do a quick line-level diff on both strings, then rediff the parts for
+ * greater accuracy.
+ * This speedup can produce non-minimal diffs.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @param {number} deadline Time when the diff should be complete by.
+ * @return {!Array.<!diff_match_patch.Diff>} Array of diff tuples.
+ * @private
+ */
+diff_match_patch.prototype.diff_lineMode_ = function(text1, text2, deadline) {
+  // Scan the text on a line-by-line basis first.
+  var a = this.diff_linesToChars_(text1, text2);
+  text1 = a.chars1;
+  text2 = a.chars2;
+  var linearray = a.lineArray;
+
+  var diffs = this.diff_main(text1, text2, false, deadline);
+
+  // Convert the diff back to original text.
+  this.diff_charsToLines_(diffs, linearray);
+  // Eliminate freak matches (e.g. blank lines)
+  this.diff_cleanupSemantic(diffs);
+
+  // Rediff any replacement blocks, this time character-by-character.
+  // Add a dummy entry at the end.
+  diffs.push([DIFF_EQUAL, '']);
+  var pointer = 0;
+  var count_delete = 0;
+  var count_insert = 0;
+  var text_delete = '';
+  var text_insert = '';
+  while (pointer < diffs.length) {
+    switch (diffs[pointer][0]) {
+      case DIFF_INSERT:
+        count_insert++;
+        text_insert += diffs[pointer][1];
+        break;
+      case DIFF_DELETE:
+        count_delete++;
+        text_delete += diffs[pointer][1];
+        break;
+      case DIFF_EQUAL:
+        // Upon reaching an equality, check for prior redundancies.
+        if (count_delete >= 1 && count_insert >= 1) {
+          // Delete the offending records and add the merged ones.
+          diffs.splice(pointer - count_delete - count_insert,
+                       count_delete + count_insert);
+          pointer = pointer - count_delete - count_insert;
+          var a = this.diff_main(text_delete, text_insert, false, deadline);
+          for (var j = a.length - 1; j >= 0; j--) {
+            diffs.splice(pointer, 0, a[j]);
+          }
+          pointer = pointer + a.length;
+        }
+        count_insert = 0;
+        count_delete = 0;
+        text_delete = '';
+        text_insert = '';
+        break;
+    }
+    pointer++;
+  }
+  diffs.pop();  // Remove the dummy entry at the end.
+
+  return diffs;
+};
+
+
+/**
+ * Find the 'middle snake' of a diff, split the problem in two
+ * and return the recursively constructed diff.
+ * See Myers 1986 paper: An O(ND) Difference Algorithm and Its Variations.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @param {number} deadline Time at which to bail if not yet complete.
+ * @return {!Array.<!diff_match_patch.Diff>} Array of diff tuples.
+ * @private
+ */
+diff_match_patch.prototype.diff_bisect_ = function(text1, text2, deadline) {
+  // Cache the text lengths to prevent multiple calls.
+  var text1_length = text1.length;
+  var text2_length = text2.length;
+  var max_d = Math.ceil((text1_length + text2_length) / 2);
+  var v_offset = max_d;
+  var v_length = 2 * max_d;
+  var v1 = new Array(v_length);
+  var v2 = new Array(v_length);
+  // Setting all elements to -1 is faster in Chrome & Firefox than mixing
+  // integers and undefined.
+  for (var x = 0; x < v_length; x++) {
+    v1[x] = -1;
+    v2[x] = -1;
+  }
+  v1[v_offset + 1] = 0;
+  v2[v_offset + 1] = 0;
+  var delta = text1_length - text2_length;
+  // If the total number of characters is odd, then the front path will collide
+  // with the reverse path.
+  var front = (delta % 2 != 0);
+  // Offsets for start and end of k loop.
+  // Prevents mapping of space beyond the grid.
+  var k1start = 0;
+  var k1end = 0;
+  var k2start = 0;
+  var k2end = 0;
+  for (var d = 0; d < max_d; d++) {
+    // Bail out if deadline is reached.
+    if ((new Date()).getTime() > deadline) {
+      break;
+    }
+
+    // Walk the front path one step.
+    for (var k1 = -d + k1start; k1 <= d - k1end; k1 += 2) {
+      var k1_offset = v_offset + k1;
+      var x1;
+      if (k1 == -d || (k1 != d && v1[k1_offset - 1] < v1[k1_offset + 1])) {
+        x1 = v1[k1_offset + 1];
+      } else {
+        x1 = v1[k1_offset - 1] + 1;
+      }
+      var y1 = x1 - k1;
+      while (x1 < text1_length && y1 < text2_length &&
+             text1.charAt(x1) == text2.charAt(y1)) {
+        x1++;
+        y1++;
+      }
+      v1[k1_offset] = x1;
+      if (x1 > text1_length) {
+        // Ran off the right of the graph.
+        k1end += 2;
+      } else if (y1 > text2_length) {
+        // Ran off the bottom of the graph.
+        k1start += 2;
+      } else if (front) {
+        var k2_offset = v_offset + delta - k1;
+        if (k2_offset >= 0 && k2_offset < v_length && v2[k2_offset] != -1) {
+          // Mirror x2 onto top-left coordinate system.
+          var x2 = text1_length - v2[k2_offset];
+          if (x1 >= x2) {
+            // Overlap detected.
+            return this.diff_bisectSplit_(text1, text2, x1, y1, deadline);
+          }
+        }
+      }
+    }
+
+    // Walk the reverse path one step.
+    for (var k2 = -d + k2start; k2 <= d - k2end; k2 += 2) {
+      var k2_offset = v_offset + k2;
+      var x2;
+      if (k2 == -d || (k2 != d && v2[k2_offset - 1] < v2[k2_offset + 1])) {
+        x2 = v2[k2_offset + 1];
+      } else {
+        x2 = v2[k2_offset - 1] + 1;
+      }
+      var y2 = x2 - k2;
+      while (x2 < text1_length && y2 < text2_length &&
+             text1.charAt(text1_length - x2 - 1) ==
+             text2.charAt(text2_length - y2 - 1)) {
+        x2++;
+        y2++;
+      }
+      v2[k2_offset] = x2;
+      if (x2 > text1_length) {
+        // Ran off the left of the graph.
+        k2end += 2;
+      } else if (y2 > text2_length) {
+        // Ran off the top of the graph.
+        k2start += 2;
+      } else if (!front) {
+        var k1_offset = v_offset + delta - k2;
+        if (k1_offset >= 0 && k1_offset < v_length && v1[k1_offset] != -1) {
+          var x1 = v1[k1_offset];
+          var y1 = v_offset + x1 - k1_offset;
+          // Mirror x2 onto top-left coordinate system.
+          x2 = text1_length - x2;
+          if (x1 >= x2) {
+            // Overlap detected.
+            return this.diff_bisectSplit_(text1, text2, x1, y1, deadline);
+          }
+        }
+      }
+    }
+  }
+  // Diff took too long and hit the deadline or
+  // number of diffs equals number of characters, no commonality at all.
+  return [[DIFF_DELETE, text1], [DIFF_INSERT, text2]];
+};
+
+
+/**
+ * Given the location of the 'middle snake', split the diff in two parts
+ * and recurse.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @param {number} x Index of split point in text1.
+ * @param {number} y Index of split point in text2.
+ * @param {number} deadline Time at which to bail if not yet complete.
+ * @return {!Array.<!diff_match_patch.Diff>} Array of diff tuples.
+ * @private
+ */
+diff_match_patch.prototype.diff_bisectSplit_ = function(text1, text2, x, y,
+    deadline) {
+  var text1a = text1.substring(0, x);
+  var text2a = text2.substring(0, y);
+  var text1b = text1.substring(x);
+  var text2b = text2.substring(y);
+
+  // Compute both diffs serially.
+  var diffs = this.diff_main(text1a, text2a, false, deadline);
+  var diffsb = this.diff_main(text1b, text2b, false, deadline);
+
+  return diffs.concat(diffsb);
+};
+
+
+/**
+ * Split two texts into an array of strings.  Reduce the texts to a string of
+ * hashes where each Unicode character represents one line.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {{chars1: string, chars2: string, lineArray: !Array.<string>}}
+ *     An object containing the encoded text1, the encoded text2 and
+ *     the array of unique strings.
+ *     The zeroth element of the array of unique strings is intentionally blank.
+ * @private
+ */
+diff_match_patch.prototype.diff_linesToChars_ = function(text1, text2) {
+  var lineArray = [];  // e.g. lineArray[4] == 'Hello\n'
+  var lineHash = {};   // e.g. lineHash['Hello\n'] == 4
+
+  // '\x00' is a valid character, but various debuggers don't like it.
+  // So we'll insert a junk entry to avoid generating a null character.
+  lineArray[0] = '';
+
+  /**
+   * Split a text into an array of strings.  Reduce the texts to a string of
+   * hashes where each Unicode character represents one line.
+   * Modifies linearray and linehash through being a closure.
+   * @param {string} text String to encode.
+   * @return {string} Encoded string.
+   * @private
+   */
+  function diff_linesToCharsMunge_(text) {
+    var chars = '';
+    // Walk the text, pulling out a substring for each line.
+    // text.split('\n') would would temporarily double our memory footprint.
+    // Modifying text would create many large strings to garbage collect.
+    var lineStart = 0;
+    var lineEnd = -1;
+    // Keeping our own length variable is faster than looking it up.
+    var lineArrayLength = lineArray.length;
+    while (lineEnd < text.length - 1) {
+      lineEnd = text.indexOf('\n', lineStart);
+      if (lineEnd == -1) {
+        lineEnd = text.length - 1;
+      }
+      var line = text.substring(lineStart, lineEnd + 1);
+      lineStart = lineEnd + 1;
+
+      if (lineHash.hasOwnProperty ? lineHash.hasOwnProperty(line) :
+          (lineHash[line] !== undefined)) {
+        chars += String.fromCharCode(lineHash[line]);
+      } else {
+        chars += String.fromCharCode(lineArrayLength);
+        lineHash[line] = lineArrayLength;
+        lineArray[lineArrayLength++] = line;
+      }
+    }
+    return chars;
+  }
+
+  var chars1 = diff_linesToCharsMunge_(text1);
+  var chars2 = diff_linesToCharsMunge_(text2);
+  return {chars1: chars1, chars2: chars2, lineArray: lineArray};
+};
+
+
+/**
+ * Rehydrate the text in a diff from a string of line hashes to real lines of
+ * text.
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ * @param {!Array.<string>} lineArray Array of unique strings.
+ * @private
+ */
+diff_match_patch.prototype.diff_charsToLines_ = function(diffs, lineArray) {
+  for (var x = 0; x < diffs.length; x++) {
+    var chars = diffs[x][1];
+    var text = [];
+    for (var y = 0; y < chars.length; y++) {
+      text[y] = lineArray[chars.charCodeAt(y)];
+    }
+    diffs[x][1] = text.join('');
+  }
+};
+
+
+/**
+ * Determine the common prefix of two strings.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {number} The number of characters common to the start of each
+ *     string.
+ */
+diff_match_patch.prototype.diff_commonPrefix = function(text1, text2) {
+  // Quick check for common null cases.
+  if (!text1 || !text2 || text1.charAt(0) != text2.charAt(0)) {
+    return 0;
+  }
+  // Binary search.
+  // Performance analysis: http://neil.fraser.name/news/2007/10/09/
+  var pointermin = 0;
+  var pointermax = Math.min(text1.length, text2.length);
+  var pointermid = pointermax;
+  var pointerstart = 0;
+  while (pointermin < pointermid) {
+    if (text1.substring(pointerstart, pointermid) ==
+        text2.substring(pointerstart, pointermid)) {
+      pointermin = pointermid;
+      pointerstart = pointermin;
+    } else {
+      pointermax = pointermid;
+    }
+    pointermid = Math.floor((pointermax - pointermin) / 2 + pointermin);
+  }
+  return pointermid;
+};
+
+
+/**
+ * Determine the common suffix of two strings.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {number} The number of characters common to the end of each string.
+ */
+diff_match_patch.prototype.diff_commonSuffix = function(text1, text2) {
+  // Quick check for common null cases.
+  if (!text1 || !text2 ||
+      text1.charAt(text1.length - 1) != text2.charAt(text2.length - 1)) {
+    return 0;
+  }
+  // Binary search.
+  // Performance analysis: http://neil.fraser.name/news/2007/10/09/
+  var pointermin = 0;
+  var pointermax = Math.min(text1.length, text2.length);
+  var pointermid = pointermax;
+  var pointerend = 0;
+  while (pointermin < pointermid) {
+    if (text1.substring(text1.length - pointermid, text1.length - pointerend) ==
+        text2.substring(text2.length - pointermid, text2.length - pointerend)) {
+      pointermin = pointermid;
+      pointerend = pointermin;
+    } else {
+      pointermax = pointermid;
+    }
+    pointermid = Math.floor((pointermax - pointermin) / 2 + pointermin);
+  }
+  return pointermid;
+};
+
+
+/**
+ * Determine if the suffix of one string is the prefix of another.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {number} The number of characters common to the end of the first
+ *     string and the start of the second string.
+ * @private
+ */
+diff_match_patch.prototype.diff_commonOverlap_ = function(text1, text2) {
+  // Cache the text lengths to prevent multiple calls.
+  var text1_length = text1.length;
+  var text2_length = text2.length;
+  // Eliminate the null case.
+  if (text1_length == 0 || text2_length == 0) {
+    return 0;
+  }
+  // Truncate the longer string.
+  if (text1_length > text2_length) {
+    text1 = text1.substring(text1_length - text2_length);
+  } else if (text1_length < text2_length) {
+    text2 = text2.substring(0, text1_length);
+  }
+  var text_length = Math.min(text1_length, text2_length);
+  // Quick check for the worst case.
+  if (text1 == text2) {
+    return text_length;
+  }
+
+  // Start by looking for a single character match
+  // and increase length until no match is found.
+  // Performance analysis: http://neil.fraser.name/news/2010/11/04/
+  var best = 0;
+  var length = 1;
+  while (true) {
+    var pattern = text1.substring(text_length - length);
+    var found = text2.indexOf(pattern);
+    if (found == -1) {
+      return best;
+    }
+    length += found;
+    if (found == 0 || text1.substring(text_length - length) ==
+        text2.substring(0, length)) {
+      best = length;
+      length++;
+    }
+  }
+};
+
+
+/**
+ * Do the two texts share a substring which is at least half the length of the
+ * longer text?
+ * This speedup can produce non-minimal diffs.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {Array.<string>} Five element Array, containing the prefix of
+ *     text1, the suffix of text1, the prefix of text2, the suffix of
+ *     text2 and the common middle.  Or null if there was no match.
+ * @private
+ */
+diff_match_patch.prototype.diff_halfMatch_ = function(text1, text2) {
+  if (this.Diff_Timeout <= 0) {
+    // Don't risk returning a non-optimal diff if we have unlimited time.
+    return null;
+  }
+  var longtext = text1.length > text2.length ? text1 : text2;
+  var shorttext = text1.length > text2.length ? text2 : text1;
+  if (longtext.length < 4 || shorttext.length * 2 < longtext.length) {
+    return null;  // Pointless.
+  }
+  var dmp = this;  // 'this' becomes 'window' in a closure.
+
+  /**
+   * Does a substring of shorttext exist within longtext such that the substring
+   * is at least half the length of longtext?
+   * Closure, but does not reference any external variables.
+   * @param {string} longtext Longer string.
+   * @param {string} shorttext Shorter string.
+   * @param {number} i Start index of quarter length substring within longtext.
+   * @return {Array.<string>} Five element Array, containing the prefix of
+   *     longtext, the suffix of longtext, the prefix of shorttext, the suffix
+   *     of shorttext and the common middle.  Or null if there was no match.
+   * @private
+   */
+  function diff_halfMatchI_(longtext, shorttext, i) {
+    // Start with a 1/4 length substring at position i as a seed.
+    var seed = longtext.substring(i, i + Math.floor(longtext.length / 4));
+    var j = -1;
+    var best_common = '';
+    var best_longtext_a, best_longtext_b, best_shorttext_a, best_shorttext_b;
+    while ((j = shorttext.indexOf(seed, j + 1)) != -1) {
+      var prefixLength = dmp.diff_commonPrefix(longtext.substring(i),
+                                               shorttext.substring(j));
+      var suffixLength = dmp.diff_commonSuffix(longtext.substring(0, i),
+                                               shorttext.substring(0, j));
+      if (best_common.length < suffixLength + prefixLength) {
+        best_common = shorttext.substring(j - suffixLength, j) +
+            shorttext.substring(j, j + prefixLength);
+        best_longtext_a = longtext.substring(0, i - suffixLength);
+        best_longtext_b = longtext.substring(i + prefixLength);
+        best_shorttext_a = shorttext.substring(0, j - suffixLength);
+        best_shorttext_b = shorttext.substring(j + prefixLength);
+      }
+    }
+    if (best_common.length * 2 >= longtext.length) {
+      return [best_longtext_a, best_longtext_b,
+              best_shorttext_a, best_shorttext_b, best_common];
+    } else {
+      return null;
+    }
+  }
+
+  // First check if the second quarter is the seed for a half-match.
+  var hm1 = diff_halfMatchI_(longtext, shorttext,
+                             Math.ceil(longtext.length / 4));
+  // Check again based on the third quarter.
+  var hm2 = diff_halfMatchI_(longtext, shorttext,
+                             Math.ceil(longtext.length / 2));
+  var hm;
+  if (!hm1 && !hm2) {
+    return null;
+  } else if (!hm2) {
+    hm = hm1;
+  } else if (!hm1) {
+    hm = hm2;
+  } else {
+    // Both matched.  Select the longest.
+    hm = hm1[4].length > hm2[4].length ? hm1 : hm2;
+  }
+
+  // A half-match was found, sort out the return data.
+  var text1_a, text1_b, text2_a, text2_b;
+  if (text1.length > text2.length) {
+    text1_a = hm[0];
+    text1_b = hm[1];
+    text2_a = hm[2];
+    text2_b = hm[3];
+  } else {
+    text2_a = hm[0];
+    text2_b = hm[1];
+    text1_a = hm[2];
+    text1_b = hm[3];
+  }
+  var mid_common = hm[4];
+  return [text1_a, text1_b, text2_a, text2_b, mid_common];
+};
+
+
+/**
+ * Reduce the number of edits by eliminating semantically trivial equalities.
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ */
+diff_match_patch.prototype.diff_cleanupSemantic = function(diffs) {
+  var changes = false;
+  var equalities = [];  // Stack of indices where equalities are found.
+  var equalitiesLength = 0;  // Keeping our own length var is faster in JS.
+  /** @type {?string} */
+  var lastequality = null;
+  // Always equal to diffs[equalities[equalitiesLength - 1]][1]
+  var pointer = 0;  // Index of current position.
+  // Number of characters that changed prior to the equality.
+  var length_insertions1 = 0;
+  var length_deletions1 = 0;
+  // Number of characters that changed after the equality.
+  var length_insertions2 = 0;
+  var length_deletions2 = 0;
+  while (pointer < diffs.length) {
+    if (diffs[pointer][0] == DIFF_EQUAL) {  // Equality found.
+      equalities[equalitiesLength++] = pointer;
+      length_insertions1 = length_insertions2;
+      length_deletions1 = length_deletions2;
+      length_insertions2 = 0;
+      length_deletions2 = 0;
+      lastequality = diffs[pointer][1];
+    } else {  // An insertion or deletion.
+      if (diffs[pointer][0] == DIFF_INSERT) {
+        length_insertions2 += diffs[pointer][1].length;
+      } else {
+        length_deletions2 += diffs[pointer][1].length;
+      }
+      // Eliminate an equality that is smaller or equal to the edits on both
+      // sides of it.
+      if (lastequality && (lastequality.length <=
+          Math.max(length_insertions1, length_deletions1)) &&
+          (lastequality.length <= Math.max(length_insertions2,
+                                           length_deletions2))) {
+        // Duplicate record.
+        diffs.splice(equalities[equalitiesLength - 1], 0,
+                     [DIFF_DELETE, lastequality]);
+        // Change second copy to insert.
+        diffs[equalities[equalitiesLength - 1] + 1][0] = DIFF_INSERT;
+        // Throw away the equality we just deleted.
+        equalitiesLength--;
+        // Throw away the previous equality (it needs to be reevaluated).
+        equalitiesLength--;
+        pointer = equalitiesLength > 0 ? equalities[equalitiesLength - 1] : -1;
+        length_insertions1 = 0;  // Reset the counters.
+        length_deletions1 = 0;
+        length_insertions2 = 0;
+        length_deletions2 = 0;
+        lastequality = null;
+        changes = true;
+      }
+    }
+    pointer++;
+  }
+
+  // Normalize the diff.
+  if (changes) {
+    this.diff_cleanupMerge(diffs);
+  }
+  this.diff_cleanupSemanticLossless(diffs);
+
+  // Find any overlaps between deletions and insertions.
+  // e.g: <del>abcxxx</del><ins>xxxdef</ins>
+  //   -> <del>abc</del>xxx<ins>def</ins>
+  // e.g: <del>xxxabc</del><ins>defxxx</ins>
+  //   -> <ins>def</ins>xxx<del>abc</del>
+  // Only extract an overlap if it is as big as the edit ahead or behind it.
+  pointer = 1;
+  while (pointer < diffs.length) {
+    if (diffs[pointer - 1][0] == DIFF_DELETE &&
+        diffs[pointer][0] == DIFF_INSERT) {
+      var deletion = diffs[pointer - 1][1];
+      var insertion = diffs[pointer][1];
+      var overlap_length1 = this.diff_commonOverlap_(deletion, insertion);
+      var overlap_length2 = this.diff_commonOverlap_(insertion, deletion);
+      if (overlap_length1 >= overlap_length2) {
+        if (overlap_length1 >= deletion.length / 2 ||
+            overlap_length1 >= insertion.length / 2) {
+          // Overlap found.  Insert an equality and trim the surrounding edits.
+          diffs.splice(pointer, 0,
+              [DIFF_EQUAL, insertion.substring(0, overlap_length1)]);
+          diffs[pointer - 1][1] =
+              deletion.substring(0, deletion.length - overlap_length1);
+          diffs[pointer + 1][1] = insertion.substring(overlap_length1);
+          pointer++;
+        }
+      } else {
+        if (overlap_length2 >= deletion.length / 2 ||
+            overlap_length2 >= insertion.length / 2) {
+          // Reverse overlap found.
+          // Insert an equality and swap and trim the surrounding edits.
+          diffs.splice(pointer, 0,
+              [DIFF_EQUAL, deletion.substring(0, overlap_length2)]);
+          diffs[pointer - 1][0] = DIFF_INSERT;
+          diffs[pointer - 1][1] =
+              insertion.substring(0, insertion.length - overlap_length2);
+          diffs[pointer + 1][0] = DIFF_DELETE;
+          diffs[pointer + 1][1] =
+              deletion.substring(overlap_length2);
+          pointer++;
+        }
+      }
+      pointer++;
+    }
+    pointer++;
+  }
+};
+
+
+/**
+ * Look for single edits surrounded on both sides by equalities
+ * which can be shifted sideways to align the edit to a word boundary.
+ * e.g: The c<ins>at c</ins>ame. -> The <ins>cat </ins>came.
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ */
+diff_match_patch.prototype.diff_cleanupSemanticLossless = function(diffs) {
+  /**
+   * Given two strings, compute a score representing whether the internal
+   * boundary falls on logical boundaries.
+   * Scores range from 6 (best) to 0 (worst).
+   * Closure, but does not reference any external variables.
+   * @param {string} one First string.
+   * @param {string} two Second string.
+   * @return {number} The score.
+   * @private
+   */
+  function diff_cleanupSemanticScore_(one, two) {
+    if (!one || !two) {
+      // Edges are the best.
+      return 6;
+    }
+
+    // Each port of this function behaves slightly differently due to
+    // subtle differences in each language's definition of things like
+    // 'whitespace'.  Since this function's purpose is largely cosmetic,
+    // the choice has been made to use each language's native features
+    // rather than force total conformity.
+    var char1 = one.charAt(one.length - 1);
+    var char2 = two.charAt(0);
+    var nonAlphaNumeric1 = char1.match(diff_match_patch.nonAlphaNumericRegex_);
+    var nonAlphaNumeric2 = char2.match(diff_match_patch.nonAlphaNumericRegex_);
+    var whitespace1 = nonAlphaNumeric1 &&
+        char1.match(diff_match_patch.whitespaceRegex_);
+    var whitespace2 = nonAlphaNumeric2 &&
+        char2.match(diff_match_patch.whitespaceRegex_);
+    var lineBreak1 = whitespace1 &&
+        char1.match(diff_match_patch.linebreakRegex_);
+    var lineBreak2 = whitespace2 &&
+        char2.match(diff_match_patch.linebreakRegex_);
+    var blankLine1 = lineBreak1 &&
+        one.match(diff_match_patch.blanklineEndRegex_);
+    var blankLine2 = lineBreak2 &&
+        two.match(diff_match_patch.blanklineStartRegex_);
+
+    if (blankLine1 || blankLine2) {
+      // Five points for blank lines.
+      return 5;
+    } else if (lineBreak1 || lineBreak2) {
+      // Four points for line breaks.
+      return 4;
+    } else if (nonAlphaNumeric1 && !whitespace1 && whitespace2) {
+      // Three points for end of sentences.
+      return 3;
+    } else if (whitespace1 || whitespace2) {
+      // Two points for whitespace.
+      return 2;
+    } else if (nonAlphaNumeric1 || nonAlphaNumeric2) {
+      // One point for non-alphanumeric.
+      return 1;
+    }
+    return 0;
+  }
+
+  var pointer = 1;
+  // Intentionally ignore the first and last element (don't need checking).
+  while (pointer < diffs.length - 1) {
+    if (diffs[pointer - 1][0] == DIFF_EQUAL &&
+        diffs[pointer + 1][0] == DIFF_EQUAL) {
+      // This is a single edit surrounded by equalities.
+      var equality1 = diffs[pointer - 1][1];
+      var edit = diffs[pointer][1];
+      var equality2 = diffs[pointer + 1][1];
+
+      // First, shift the edit as far left as possible.
+      var commonOffset = this.diff_commonSuffix(equality1, edit);
+      if (commonOffset) {
+        var commonString = edit.substring(edit.length - commonOffset);
+        equality1 = equality1.substring(0, equality1.length - commonOffset);
+        edit = commonString + edit.substring(0, edit.length - commonOffset);
+        equality2 = commonString + equality2;
+      }
+
+      // Second, step character by character right, looking for the best fit.
+      var bestEquality1 = equality1;
+      var bestEdit = edit;
+      var bestEquality2 = equality2;
+      var bestScore = diff_cleanupSemanticScore_(equality1, edit) +
+          diff_cleanupSemanticScore_(edit, equality2);
+      while (edit.charAt(0) === equality2.charAt(0)) {
+        equality1 += edit.charAt(0);
+        edit = edit.substring(1) + equality2.charAt(0);
+        equality2 = equality2.substring(1);
+        var score = diff_cleanupSemanticScore_(equality1, edit) +
+            diff_cleanupSemanticScore_(edit, equality2);
+        // The >= encourages trailing rather than leading whitespace on edits.
+        if (score >= bestScore) {
+          bestScore = score;
+          bestEquality1 = equality1;
+          bestEdit = edit;
+          bestEquality2 = equality2;
+        }
+      }
+
+      if (diffs[pointer - 1][1] != bestEquality1) {
+        // We have an improvement, save it back to the diff.
+        if (bestEquality1) {
+          diffs[pointer - 1][1] = bestEquality1;
+        } else {
+          diffs.splice(pointer - 1, 1);
+          pointer--;
+        }
+        diffs[pointer][1] = bestEdit;
+        if (bestEquality2) {
+          diffs[pointer + 1][1] = bestEquality2;
+        } else {
+          diffs.splice(pointer + 1, 1);
+          pointer--;
+        }
+      }
+    }
+    pointer++;
+  }
+};
+
+// Define some regex patterns for matching boundaries.
+diff_match_patch.nonAlphaNumericRegex_ = /[^a-zA-Z0-9]/;
+diff_match_patch.whitespaceRegex_ = /\s/;
+diff_match_patch.linebreakRegex_ = /[\r\n]/;
+diff_match_patch.blanklineEndRegex_ = /\n\r?\n$/;
+diff_match_patch.blanklineStartRegex_ = /^\r?\n\r?\n/;
+
+/**
+ * Reduce the number of edits by eliminating operationally trivial equalities.
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ */
+diff_match_patch.prototype.diff_cleanupEfficiency = function(diffs) {
+  var changes = false;
+  var equalities = [];  // Stack of indices where equalities are found.
+  var equalitiesLength = 0;  // Keeping our own length var is faster in JS.
+  /** @type {?string} */
+  var lastequality = null;
+  // Always equal to diffs[equalities[equalitiesLength - 1]][1]
+  var pointer = 0;  // Index of current position.
+  // Is there an insertion operation before the last equality.
+  var pre_ins = false;
+  // Is there a deletion operation before the last equality.
+  var pre_del = false;
+  // Is there an insertion operation after the last equality.
+  var post_ins = false;
+  // Is there a deletion operation after the last equality.
+  var post_del = false;
+  while (pointer < diffs.length) {
+    if (diffs[pointer][0] == DIFF_EQUAL) {  // Equality found.
+      if (diffs[pointer][1].length < this.Diff_EditCost &&
+          (post_ins || post_del)) {
+        // Candidate found.
+        equalities[equalitiesLength++] = pointer;
+        pre_ins = post_ins;
+        pre_del = post_del;
+        lastequality = diffs[pointer][1];
+      } else {
+        // Not a candidate, and can never become one.
+        equalitiesLength = 0;
+        lastequality = null;
+      }
+      post_ins = post_del = false;
+    } else {  // An insertion or deletion.
+      if (diffs[pointer][0] == DIFF_DELETE) {
+        post_del = true;
+      } else {
+        post_ins = true;
+      }
+      /*
+       * Five types to be split:
+       * <ins>A</ins><del>B</del>XY<ins>C</ins><del>D</del>
+       * <ins>A</ins>X<ins>C</ins><del>D</del>
+       * <ins>A</ins><del>B</del>X<ins>C</ins>
+       * <ins>A</del>X<ins>C</ins><del>D</del>
+       * <ins>A</ins><del>B</del>X<del>C</del>
+       */
+      if (lastequality && ((pre_ins && pre_del && post_ins && post_del) ||
+                           ((lastequality.length < this.Diff_EditCost / 2) &&
+                            (pre_ins + pre_del + post_ins + post_del) == 3))) {
+        // Duplicate record.
+        diffs.splice(equalities[equalitiesLength - 1], 0,
+                     [DIFF_DELETE, lastequality]);
+        // Change second copy to insert.
+        diffs[equalities[equalitiesLength - 1] + 1][0] = DIFF_INSERT;
+        equalitiesLength--;  // Throw away the equality we just deleted;
+        lastequality = null;
+        if (pre_ins && pre_del) {
+          // No changes made which could affect previous entry, keep going.
+          post_ins = post_del = true;
+          equalitiesLength = 0;
+        } else {
+          equalitiesLength--;  // Throw away the previous equality.
+          pointer = equalitiesLength > 0 ?
+              equalities[equalitiesLength - 1] : -1;
+          post_ins = post_del = false;
+        }
+        changes = true;
+      }
+    }
+    pointer++;
+  }
+
+  if (changes) {
+    this.diff_cleanupMerge(diffs);
+  }
+};
+
+
+/**
+ * Reorder and merge like edit sections.  Merge equalities.
+ * Any edit section can move as long as it doesn't cross an equality.
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ */
+diff_match_patch.prototype.diff_cleanupMerge = function(diffs) {
+  diffs.push([DIFF_EQUAL, '']);  // Add a dummy entry at the end.
+  var pointer = 0;
+  var count_delete = 0;
+  var count_insert = 0;
+  var text_delete = '';
+  var text_insert = '';
+  var commonlength;
+  while (pointer < diffs.length) {
+    switch (diffs[pointer][0]) {
+      case DIFF_INSERT:
+        count_insert++;
+        text_insert += diffs[pointer][1];
+        pointer++;
+        break;
+      case DIFF_DELETE:
+        count_delete++;
+        text_delete += diffs[pointer][1];
+        pointer++;
+        break;
+      case DIFF_EQUAL:
+        // Upon reaching an equality, check for prior redundancies.
+        if (count_delete + count_insert > 1) {
+          if (count_delete !== 0 && count_insert !== 0) {
+            // Factor out any common prefixies.
+            commonlength = this.diff_commonPrefix(text_insert, text_delete);
+            if (commonlength !== 0) {
+              if ((pointer - count_delete - count_insert) > 0 &&
+                  diffs[pointer - count_delete - count_insert - 1][0] ==
+                  DIFF_EQUAL) {
+                diffs[pointer - count_delete - count_insert - 1][1] +=
+                    text_insert.substring(0, commonlength);
+              } else {
+                diffs.splice(0, 0, [DIFF_EQUAL,
+                                    text_insert.substring(0, commonlength)]);
+                pointer++;
+              }
+              text_insert = text_insert.substring(commonlength);
+              text_delete = text_delete.substring(commonlength);
+            }
+            // Factor out any common suffixies.
+            commonlength = this.diff_commonSuffix(text_insert, text_delete);
+            if (commonlength !== 0) {
+              diffs[pointer][1] = text_insert.substring(text_insert.length -
+                  commonlength) + diffs[pointer][1];
+              text_insert = text_insert.substring(0, text_insert.length -
+                  commonlength);
+              text_delete = text_delete.substring(0, text_delete.length -
+                  commonlength);
+            }
+          }
+          // Delete the offending records and add the merged ones.
+          if (count_delete === 0) {
+            diffs.splice(pointer - count_insert,
+                count_delete + count_insert, [DIFF_INSERT, text_insert]);
+          } else if (count_insert === 0) {
+            diffs.splice(pointer - count_delete,
+                count_delete + count_insert, [DIFF_DELETE, text_delete]);
+          } else {
+            diffs.splice(pointer - count_delete - count_insert,
+                count_delete + count_insert, [DIFF_DELETE, text_delete],
+                [DIFF_INSERT, text_insert]);
+          }
+          pointer = pointer - count_delete - count_insert +
+                    (count_delete ? 1 : 0) + (count_insert ? 1 : 0) + 1;
+        } else if (pointer !== 0 && diffs[pointer - 1][0] == DIFF_EQUAL) {
+          // Merge this equality with the previous one.
+          diffs[pointer - 1][1] += diffs[pointer][1];
+          diffs.splice(pointer, 1);
+        } else {
+          pointer++;
+        }
+        count_insert = 0;
+        count_delete = 0;
+        text_delete = '';
+        text_insert = '';
+        break;
+    }
+  }
+  if (diffs[diffs.length - 1][1] === '') {
+    diffs.pop();  // Remove the dummy entry at the end.
+  }
+
+  // Second pass: look for single edits surrounded on both sides by equalities
+  // which can be shifted sideways to eliminate an equality.
+  // e.g: A<ins>BA</ins>C -> <ins>AB</ins>AC
+  var changes = false;
+  pointer = 1;
+  // Intentionally ignore the first and last element (don't need checking).
+  while (pointer < diffs.length - 1) {
+    if (diffs[pointer - 1][0] == DIFF_EQUAL &&
+        diffs[pointer + 1][0] == DIFF_EQUAL) {
+      // This is a single edit surrounded by equalities.
+      if (diffs[pointer][1].substring(diffs[pointer][1].length -
+          diffs[pointer - 1][1].length) == diffs[pointer - 1][1]) {
+        // Shift the edit over the previous equality.
+        diffs[pointer][1] = diffs[pointer - 1][1] +
+            diffs[pointer][1].substring(0, diffs[pointer][1].length -
+                                        diffs[pointer - 1][1].length);
+        diffs[pointer + 1][1] = diffs[pointer - 1][1] + diffs[pointer + 1][1];
+        diffs.splice(pointer - 1, 1);
+        changes = true;
+      } else if (diffs[pointer][1].substring(0, diffs[pointer + 1][1].length) ==
+          diffs[pointer + 1][1]) {
+        // Shift the edit over the next equality.
+        diffs[pointer - 1][1] += diffs[pointer + 1][1];
+        diffs[pointer][1] =
+            diffs[pointer][1].substring(diffs[pointer + 1][1].length) +
+            diffs[pointer + 1][1];
+        diffs.splice(pointer + 1, 1);
+        changes = true;
+      }
+    }
+    pointer++;
+  }
+  // If shifts were made, the diff needs reordering and another shift sweep.
+  if (changes) {
+    this.diff_cleanupMerge(diffs);
+  }
+};
+
+
+/**
+ * loc is a location in text1, compute and return the equivalent location in
+ * text2.
+ * e.g. 'The cat' vs 'The big cat', 1->1, 5->8
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ * @param {number} loc Location within text1.
+ * @return {number} Location within text2.
+ */
+diff_match_patch.prototype.diff_xIndex = function(diffs, loc) {
+  var chars1 = 0;
+  var chars2 = 0;
+  var last_chars1 = 0;
+  var last_chars2 = 0;
+  var x;
+  for (x = 0; x < diffs.length; x++) {
+    if (diffs[x][0] !== DIFF_INSERT) {  // Equality or deletion.
+      chars1 += diffs[x][1].length;
+    }
+    if (diffs[x][0] !== DIFF_DELETE) {  // Equality or insertion.
+      chars2 += diffs[x][1].length;
+    }
+    if (chars1 > loc) {  // Overshot the location.
+      break;
+    }
+    last_chars1 = chars1;
+    last_chars2 = chars2;
+  }
+  // Was the location was deleted?
+  if (diffs.length != x && diffs[x][0] === DIFF_DELETE) {
+    return last_chars2;
+  }
+  // Add the remaining character length.
+  return last_chars2 + (loc - last_chars1);
+};
+
+
+/**
+ * Convert a diff array into a pretty HTML report.
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ * @return {string} HTML representation.
+ */
+diff_match_patch.prototype.diff_prettyHtml = function(diffs) {
+  var html = [];
+  var pattern_amp = /&/g;
+  var pattern_lt = /</g;
+  var pattern_gt = />/g;
+  var pattern_para = /\n/g;
+  for (var x = 0; x < diffs.length; x++) {
+    var op = diffs[x][0];    // Operation (insert, delete, equal)
+    var data = diffs[x][1];  // Text of change.
+    var text = data.replace(pattern_amp, '&amp;').replace(pattern_lt, '&lt;')
+        .replace(pattern_gt, '&gt;').replace(pattern_para, '&para;<br>');
+    switch (op) {
+      case DIFF_INSERT:
+        html[x] = '<ins style="background:#e6ffe6;">' + text + '</ins>';
+        break;
+      case DIFF_DELETE:
+        html[x] = '<del style="background:#ffe6e6;">' + text + '</del>';
+        break;
+      case DIFF_EQUAL:
+        html[x] = '<span>' + text + '</span>';
+        break;
+    }
+  }
+  return html.join('');
+};
+
+
+/**
+ * Compute and return the source text (all equalities and deletions).
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ * @return {string} Source text.
+ */
+diff_match_patch.prototype.diff_text1 = function(diffs) {
+  var text = [];
+  for (var x = 0; x < diffs.length; x++) {
+    if (diffs[x][0] !== DIFF_INSERT) {
+      text[x] = diffs[x][1];
+    }
+  }
+  return text.join('');
+};
+
+
+/**
+ * Compute and return the destination text (all equalities and insertions).
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ * @return {string} Destination text.
+ */
+diff_match_patch.prototype.diff_text2 = function(diffs) {
+  var text = [];
+  for (var x = 0; x < diffs.length; x++) {
+    if (diffs[x][0] !== DIFF_DELETE) {
+      text[x] = diffs[x][1];
+    }
+  }
+  return text.join('');
+};
+
+
+/**
+ * Compute the Levenshtein distance; the number of inserted, deleted or
+ * substituted characters.
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ * @return {number} Number of changes.
+ */
+diff_match_patch.prototype.diff_levenshtein = function(diffs) {
+  var levenshtein = 0;
+  var insertions = 0;
+  var deletions = 0;
+  for (var x = 0; x < diffs.length; x++) {
+    var op = diffs[x][0];
+    var data = diffs[x][1];
+    switch (op) {
+      case DIFF_INSERT:
+        insertions += data.length;
+        break;
+      case DIFF_DELETE:
+        deletions += data.length;
+        break;
+      case DIFF_EQUAL:
+        // A deletion and an insertion is one substitution.
+        levenshtein += Math.max(insertions, deletions);
+        insertions = 0;
+        deletions = 0;
+        break;
+    }
+  }
+  levenshtein += Math.max(insertions, deletions);
+  return levenshtein;
+};
+
+
+/**
+ * Crush the diff into an encoded string which describes the operations
+ * required to transform text1 into text2.
+ * E.g. =3\t-2\t+ing  -> Keep 3 chars, delete 2 chars, insert 'ing'.
+ * Operations are tab-separated.  Inserted text is escaped using %xx notation.
+ * @param {!Array.<!diff_match_patch.Diff>} diffs Array of diff tuples.
+ * @return {string} Delta text.
+ */
+diff_match_patch.prototype.diff_toDelta = function(diffs) {
+  var text = [];
+  for (var x = 0; x < diffs.length; x++) {
+    switch (diffs[x][0]) {
+      case DIFF_INSERT:
+        text[x] = '+' + encodeURI(diffs[x][1]);
+        break;
+      case DIFF_DELETE:
+        text[x] = '-' + diffs[x][1].length;
+        break;
+      case DIFF_EQUAL:
+        text[x] = '=' + diffs[x][1].length;
+        break;
+    }
+  }
+  return text.join('\t').replace(/%20/g, ' ');
+};
+
+
+/**
+ * Given the original text1, and an encoded string which describes the
+ * operations required to transform text1 into text2, compute the full diff.
+ * @param {string} text1 Source string for the diff.
+ * @param {string} delta Delta text.
+ * @return {!Array.<!diff_match_patch.Diff>} Array of diff tuples.
+ * @throws {!Error} If invalid input.
+ */
+diff_match_patch.prototype.diff_fromDelta = function(text1, delta) {
+  var diffs = [];
+  var diffsLength = 0;  // Keeping our own length var is faster in JS.
+  var pointer = 0;  // Cursor in text1
+  var tokens = delta.split(/\t/g);
+  for (var x = 0; x < tokens.length; x++) {
+    // Each token begins with a one character parameter which specifies the
+    // operation of this token (delete, insert, equality).
+    var param = tokens[x].substring(1);
+    switch (tokens[x].charAt(0)) {
+      case '+':
+        try {
+          diffs[diffsLength++] = [DIFF_INSERT, decodeURI(param)];
+        } catch (ex) {
+          // Malformed URI sequence.
+          throw new Error('Illegal escape in diff_fromDelta: ' + param);
+        }
+        break;
+      case '-':
+        // Fall through.
+      case '=':
+        var n = parseInt(param, 10);
+        if (isNaN(n) || n < 0) {
+          throw new Error('Invalid number in diff_fromDelta: ' + param);
+        }
+        var text = text1.substring(pointer, pointer += n);
+        if (tokens[x].charAt(0) == '=') {
+          diffs[diffsLength++] = [DIFF_EQUAL, text];
+        } else {
+          diffs[diffsLength++] = [DIFF_DELETE, text];
+        }
+        break;
+      default:
+        // Blank tokens are ok (from a trailing \t).
+        // Anything else is an error.
+        if (tokens[x]) {
+          throw new Error('Invalid diff operation in diff_fromDelta: ' +
+                          tokens[x]);
+        }
+    }
+  }
+  if (pointer != text1.length) {
+    throw new Error('Delta length (' + pointer +
+        ') does not equal source text length (' + text1.length + ').');
+  }
+  return diffs;
+};
+
+
+//  MATCH FUNCTIONS
+
+
+/**
+ * Locate the best instance of 'pattern' in 'text' near 'loc'.
+ * @param {string} text The text to search.
+ * @param {string} pattern The pattern to search for.
+ * @param {number} loc The location to search around.
+ * @return {number} Best match index or -1.
+ */
+diff_match_patch.prototype.match_main = function(text, pattern, loc) {
+  // Check for null inputs.
+  if (text == null || pattern == null || loc == null) {
+    throw new Error('Null input. (match_main)');
+  }
+
+  loc = Math.max(0, Math.min(loc, text.length));
+  if (text == pattern) {
+    // Shortcut (potentially not guaranteed by the algorithm)
+    return 0;
+  } else if (!text.length) {
+    // Nothing to match.
+    return -1;
+  } else if (text.substring(loc, loc + pattern.length) == pattern) {
+    // Perfect match at the perfect spot!  (Includes case of null pattern)
+    return loc;
+  } else {
+    // Do a fuzzy compare.
+    return this.match_bitap_(text, pattern, loc);
+  }
+};
+
+
+/**
+ * Locate the best instance of 'pattern' in 'text' near 'loc' using the
+ * Bitap algorithm.
+ * @param {string} text The text to search.
+ * @param {string} pattern The pattern to search for.
+ * @param {number} loc The location to search around.
+ * @return {number} Best match index or -1.
+ * @private
+ */
+diff_match_patch.prototype.match_bitap_ = function(text, pattern, loc) {
+  if (pattern.length > this.Match_MaxBits) {
+    throw new Error('Pattern too long for this browser.');
+  }
+
+  // Initialise the alphabet.
+  var s = this.match_alphabet_(pattern);
+
+  var dmp = this;  // 'this' becomes 'window' in a closure.
+
+  /**
+   * Compute and return the score for a match with e errors and x location.
+   * Accesses loc and pattern through being a closure.
+   * @param {number} e Number of errors in match.
+   * @param {number} x Location of match.
+   * @return {number} Overall score for match (0.0 = good, 1.0 = bad).
+   * @private
+   */
+  function match_bitapScore_(e, x) {
+    var accuracy = e / pattern.length;
+    var proximity = Math.abs(loc - x);
+    if (!dmp.Match_Distance) {
+      // Dodge divide by zero error.
+      return proximity ? 1.0 : accuracy;
+    }
+    return accuracy + (proximity / dmp.Match_Distance);
+  }
+
+  // Highest score beyond which we give up.
+  var score_threshold = this.Match_Threshold;
+  // Is there a nearby exact match? (speedup)
+  var best_loc = text.indexOf(pattern, loc);
+  if (best_loc != -1) {
+    score_threshold = Math.min(match_bitapScore_(0, best_loc), score_threshold);
+    // What about in the other direction? (speedup)
+    best_loc = text.lastIndexOf(pattern, loc + pattern.length);
+    if (best_loc != -1) {
+      score_threshold =
+          Math.min(match_bitapScore_(0, best_loc), score_threshold);
+    }
+  }
+
+  // Initialise the bit arrays.
+  var matchmask = 1 << (pattern.length - 1);
+  best_loc = -1;
+
+  var bin_min, bin_mid;
+  var bin_max = pattern.length + text.length;
+  var last_rd;
+  for (var d = 0; d < pattern.length; d++) {
+    // Scan for the best match; each iteration allows for one more error.
+    // Run a binary search to determine how far from 'loc' we can stray at this
+    // error level.
+    bin_min = 0;
+    bin_mid = bin_max;
+    while (bin_min < bin_mid) {
+      if (match_bitapScore_(d, loc + bin_mid) <= score_threshold) {
+        bin_min = bin_mid;
+      } else {
+        bin_max = bin_mid;
+      }
+      bin_mid = Math.floor((bin_max - bin_min) / 2 + bin_min);
+    }
+    // Use the result from this iteration as the maximum for the next.
+    bin_max = bin_mid;
+    var start = Math.max(1, loc - bin_mid + 1);
+    var finish = Math.min(loc + bin_mid, text.length) + pattern.length;
+
+    var rd = Array(finish + 2);
+    rd[finish + 1] = (1 << d) - 1;
+    for (var j = finish; j >= start; j--) {
+      // The alphabet (s) is a sparse hash, so the following line generates
+      // warnings.
+      var charMatch = s[text.charAt(j - 1)];
+      if (d === 0) {  // First pass: exact match.
+        rd[j] = ((rd[j + 1] << 1) | 1) & charMatch;
+      } else {  // Subsequent passes: fuzzy match.
+        rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) |
+                (((last_rd[j + 1] | last_rd[j]) << 1) | 1) |
+                last_rd[j + 1];
+      }
+      if (rd[j] & matchmask) {
+        var score = match_bitapScore_(d, j - 1);
+        // This match will almost certainly be better than any existing match.
+        // But check anyway.
+        if (score <= score_threshold) {
+          // Told you so.
+          score_threshold = score;
+          best_loc = j - 1;
+          if (best_loc > loc) {
+            // When passing loc, don't exceed our current distance from loc.
+            start = Math.max(1, 2 * loc - best_loc);
+          } else {
+            // Already passed loc, downhill from here on in.
+            break;
+          }
+        }
+      }
+    }
+    // No hope for a (better) match at greater error levels.
+    if (match_bitapScore_(d + 1, loc) > score_threshold) {
+      break;
+    }
+    last_rd = rd;
+  }
+  return best_loc;
+};
+
+
+/**
+ * Initialise the alphabet for the Bitap algorithm.
+ * @param {string} pattern The text to encode.
+ * @return {!Object} Hash of character locations.
+ * @private
+ */
+diff_match_patch.prototype.match_alphabet_ = function(pattern) {
+  var s = {};
+  for (var i = 0; i < pattern.length; i++) {
+    s[pattern.charAt(i)] = 0;
+  }
+  for (var i = 0; i < pattern.length; i++) {
+    s[pattern.charAt(i)] |= 1 << (pattern.length - i - 1);
+  }
+  return s;
+};
+
+
+//  PATCH FUNCTIONS
+
+
+/**
+ * Increase the context until it is unique,
+ * but don't let the pattern expand beyond Match_MaxBits.
+ * @param {!diff_match_patch.patch_obj} patch The patch to grow.
+ * @param {string} text Source text.
+ * @private
+ */
+diff_match_patch.prototype.patch_addContext_ = function(patch, text) {
+  if (text.length == 0) {
+    return;
+  }
+  var pattern = text.substring(patch.start2, patch.start2 + patch.length1);
+  var padding = 0;
+
+  // Look for the first and last matches of pattern in text.  If two different
+  // matches are found, increase the pattern length.
+  while (text.indexOf(pattern) != text.lastIndexOf(pattern) &&
+         pattern.length < this.Match_MaxBits - this.Patch_Margin -
+         this.Patch_Margin) {
+    padding += this.Patch_Margin;
+    pattern = text.substring(patch.start2 - padding,
+                             patch.start2 + patch.length1 + padding);
+  }
+  // Add one chunk for good luck.
+  padding += this.Patch_Margin;
+
+  // Add the prefix.
+  var prefix = text.substring(patch.start2 - padding, patch.start2);
+  if (prefix) {
+    patch.diffs.unshift([DIFF_EQUAL, prefix]);
+  }
+  // Add the suffix.
+  var suffix = text.substring(patch.start2 + patch.length1,
+                              patch.start2 + patch.length1 + padding);
+  if (suffix) {
+    patch.diffs.push([DIFF_EQUAL, suffix]);
+  }
+
+  // Roll back the start points.
+  patch.start1 -= prefix.length;
+  patch.start2 -= prefix.length;
+  // Extend the lengths.
+  patch.length1 += prefix.length + suffix.length;
+  patch.length2 += prefix.length + suffix.length;
+};
+
+
+/**
+ * Compute a list of patches to turn text1 into text2.
+ * Use diffs if provided, otherwise compute it ourselves.
+ * There are four ways to call this function, depending on what data is
+ * available to the caller:
+ * Method 1:
+ * a = text1, b = text2
+ * Method 2:
+ * a = diffs
+ * Method 3 (optimal):
+ * a = text1, b = diffs
+ * Method 4 (deprecated, use method 3):
+ * a = text1, b = text2, c = diffs
+ *
+ * @param {string|!Array.<!diff_match_patch.Diff>} a text1 (methods 1,3,4) or
+ * Array of diff tuples for text1 to text2 (method 2).
+ * @param {string|!Array.<!diff_match_patch.Diff>} opt_b text2 (methods 1,4) or
+ * Array of diff tuples for text1 to text2 (method 3) or undefined (method 2).
+ * @param {string|!Array.<!diff_match_patch.Diff>} opt_c Array of diff tuples
+ * for text1 to text2 (method 4) or undefined (methods 1,2,3).
+ * @return {!Array.<!diff_match_patch.patch_obj>} Array of Patch objects.
+ */
+diff_match_patch.prototype.patch_make = function(a, opt_b, opt_c) {
+  var text1, diffs;
+  if (typeof a == 'string' && typeof opt_b == 'string' &&
+      typeof opt_c == 'undefined') {
+    // Method 1: text1, text2
+    // Compute diffs from text1 and text2.
+    text1 = /** @type {string} */(a);
+    diffs = this.diff_main(text1, /** @type {string} */(opt_b), true);
+    if (diffs.length > 2) {
+      this.diff_cleanupSemantic(diffs);
+      this.diff_cleanupEfficiency(diffs);
+    }
+  } else if (a && typeof a == 'object' && typeof opt_b == 'undefined' &&
+      typeof opt_c == 'undefined') {
+    // Method 2: diffs
+    // Compute text1 from diffs.
+    diffs = /** @type {!Array.<!diff_match_patch.Diff>} */(a);
+    text1 = this.diff_text1(diffs);
+  } else if (typeof a == 'string' && opt_b && typeof opt_b == 'object' &&
+      typeof opt_c == 'undefined') {
+    // Method 3: text1, diffs
+    text1 = /** @type {string} */(a);
+    diffs = /** @type {!Array.<!diff_match_patch.Diff>} */(opt_b);
+  } else if (typeof a == 'string' && typeof opt_b == 'string' &&
+      opt_c && typeof opt_c == 'object') {
+    // Method 4: text1, text2, diffs
+    // text2 is not used.
+    text1 = /** @type {string} */(a);
+    diffs = /** @type {!Array.<!diff_match_patch.Diff>} */(opt_c);
+  } else {
+    throw new Error('Unknown call format to patch_make.');
+  }
+
+  if (diffs.length === 0) {
+    return [];  // Get rid of the null case.
+  }
+  var patches = [];
+  var patch = new diff_match_patch.patch_obj();
+  var patchDiffLength = 0;  // Keeping our own length var is faster in JS.
+  var char_count1 = 0;  // Number of characters into the text1 string.
+  var char_count2 = 0;  // Number of characters into the text2 string.
+  // Start with text1 (prepatch_text) and apply the diffs until we arrive at
+  // text2 (postpatch_text).  We recreate the patches one by one to determine
+  // context info.
+  var prepatch_text = text1;
+  var postpatch_text = text1;
+  for (var x = 0; x < diffs.length; x++) {
+    var diff_type = diffs[x][0];
+    var diff_text = diffs[x][1];
+
+    if (!patchDiffLength && diff_type !== DIFF_EQUAL) {
+      // A new patch starts here.
+      patch.start1 = char_count1;
+      patch.start2 = char_count2;
+    }
+
+    switch (diff_type) {
+      case DIFF_INSERT:
+        patch.diffs[patchDiffLength++] = diffs[x];
+        patch.length2 += diff_text.length;
+        postpatch_text = postpatch_text.substring(0, char_count2) + diff_text +
+                         postpatch_text.substring(char_count2);
+        break;
+      case DIFF_DELETE:
+        patch.length1 += diff_text.length;
+        patch.diffs[patchDiffLength++] = diffs[x];
+        postpatch_text = postpatch_text.substring(0, char_count2) +
+                         postpatch_text.substring(char_count2 +
+                             diff_text.length);
+        break;
+      case DIFF_EQUAL:
+        if (diff_text.length <= 2 * this.Patch_Margin &&
+            patchDiffLength && diffs.length != x + 1) {
+          // Small equality inside a patch.
+          patch.diffs[patchDiffLength++] = diffs[x];
+          patch.length1 += diff_text.length;
+          patch.length2 += diff_text.length;
+        } else if (diff_text.length >= 2 * this.Patch_Margin) {
+          // Time for a new patch.
+          if (patchDiffLength) {
+            this.patch_addContext_(patch, prepatch_text);
+            patches.push(patch);
+            patch = new diff_match_patch.patch_obj();
+            patchDiffLength = 0;
+            // Unlike Unidiff, our patch lists have a rolling context.
+            // http://code.google.com/p/google-diff-match-patch/wiki/Unidiff
+            // Update prepatch text & pos to reflect the application of the
+            // just completed patch.
+            prepatch_text = postpatch_text;
+            char_count1 = char_count2;
+          }
+        }
+        break;
+    }
+
+    // Update the current character count.
+    if (diff_type !== DIFF_INSERT) {
+      char_count1 += diff_text.length;
+    }
+    if (diff_type !== DIFF_DELETE) {
+      char_count2 += diff_text.length;
+    }
+  }
+  // Pick up the leftover patch if not empty.
+  if (patchDiffLength) {
+    this.patch_addContext_(patch, prepatch_text);
+    patches.push(patch);
+  }
+
+  return patches;
+};
+
+
+/**
+ * Given an array of patches, return another array that is identical.
+ * @param {!Array.<!diff_match_patch.patch_obj>} patches Array of Patch objects.
+ * @return {!Array.<!diff_match_patch.patch_obj>} Array of Patch objects.
+ */
+diff_match_patch.prototype.patch_deepCopy = function(patches) {
+  // Making deep copies is hard in JavaScript.
+  var patchesCopy = [];
+  for (var x = 0; x < patches.length; x++) {
+    var patch = patches[x];
+    var patchCopy = new diff_match_patch.patch_obj();
+    patchCopy.diffs = [];
+    for (var y = 0; y < patch.diffs.length; y++) {
+      patchCopy.diffs[y] = patch.diffs[y].slice();
+    }
+    patchCopy.start1 = patch.start1;
+    patchCopy.start2 = patch.start2;
+    patchCopy.length1 = patch.length1;
+    patchCopy.length2 = patch.length2;
+    patchesCopy[x] = patchCopy;
+  }
+  return patchesCopy;
+};
+
+
+/**
+ * Merge a set of patches onto the text.  Return a patched text, as well
+ * as a list of true/false values indicating which patches were applied.
+ * @param {!Array.<!diff_match_patch.patch_obj>} patches Array of Patch objects.
+ * @param {string} text Old text.
+ * @return {!Array.<string|!Array.<boolean>>} Two element Array, containing the
+ *      new text and an array of boolean values.
+ */
+diff_match_patch.prototype.patch_apply = function(patches, text) {
+  if (patches.length == 0) {
+    return [text, []];
+  }
+
+  // Deep copy the patches so that no changes are made to originals.
+  patches = this.patch_deepCopy(patches);
+
+  var nullPadding = this.patch_addPadding(patches);
+  text = nullPadding + text + nullPadding;
+
+  this.patch_splitMax(patches);
+  // delta keeps track of the offset between the expected and actual location
+  // of the previous patch.  If there are patches expected at positions 10 and
+  // 20, but the first patch was found at 12, delta is 2 and the second patch
+  // has an effective expected position of 22.
+  var delta = 0;
+  var results = [];
+  for (var x = 0; x < patches.length; x++) {
+    var expected_loc = patches[x].start2 + delta;
+    var text1 = this.diff_text1(patches[x].diffs);
+    var start_loc;
+    var end_loc = -1;
+    if (text1.length > this.Match_MaxBits) {
+      // patch_splitMax will only provide an oversized pattern in the case of
+      // a monster delete.
+      start_loc = this.match_main(text, text1.substring(0, this.Match_MaxBits),
+                                  expected_loc);
+      if (start_loc != -1) {
+        end_loc = this.match_main(text,
+            text1.substring(text1.length - this.Match_MaxBits),
+            expected_loc + text1.length - this.Match_MaxBits);
+        if (end_loc == -1 || start_loc >= end_loc) {
+          // Can't find valid trailing context.  Drop this patch.
+          start_loc = -1;
+        }
+      }
+    } else {
+      start_loc = this.match_main(text, text1, expected_loc);
+    }
+    if (start_loc == -1) {
+      // No match found.  :(
+      results[x] = false;
+      // Subtract the delta for this failed patch from subsequent patches.
+      delta -= patches[x].length2 - patches[x].length1;
+    } else {
+      // Found a match.  :)
+      results[x] = true;
+      delta = start_loc - expected_loc;
+      var text2;
+      if (end_loc == -1) {
+        text2 = text.substring(start_loc, start_loc + text1.length);
+      } else {
+        text2 = text.substring(start_loc, end_loc + this.Match_MaxBits);
+      }
+      if (text1 == text2) {
+        // Perfect match, just shove the replacement text in.
+        text = text.substring(0, start_loc) +
+               this.diff_text2(patches[x].diffs) +
+               text.substring(start_loc + text1.length);
+      } else {
+        // Imperfect match.  Run a diff to get a framework of equivalent
+        // indices.
+        var diffs = this.diff_main(text1, text2, false);
+        if (text1.length > this.Match_MaxBits &&
+            this.diff_levenshtein(diffs) / text1.length >
+            this.Patch_DeleteThreshold) {
+          // The end points match, but the content is unacceptably bad.
+          results[x] = false;
+        } else {
+          this.diff_cleanupSemanticLossless(diffs);
+          var index1 = 0;
+          var index2;
+          for (var y = 0; y < patches[x].diffs.length; y++) {
+            var mod = patches[x].diffs[y];
+            if (mod[0] !== DIFF_EQUAL) {
+              index2 = this.diff_xIndex(diffs, index1);
+            }
+            if (mod[0] === DIFF_INSERT) {  // Insertion
+              text = text.substring(0, start_loc + index2) + mod[1] +
+                     text.substring(start_loc + index2);
+            } else if (mod[0] === DIFF_DELETE) {  // Deletion
+              text = text.substring(0, start_loc + index2) +
+                     text.substring(start_loc + this.diff_xIndex(diffs,
+                         index1 + mod[1].length));
+            }
+            if (mod[0] !== DIFF_DELETE) {
+              index1 += mod[1].length;
+            }
+          }
+        }
+      }
+    }
+  }
+  // Strip the padding off.
+  text = text.substring(nullPadding.length, text.length - nullPadding.length);
+  return [text, results];
+};
+
+
+/**
+ * Add some padding on text start and end so that edges can match something.
+ * Intended to be called only from within patch_apply.
+ * @param {!Array.<!diff_match_patch.patch_obj>} patches Array of Patch objects.
+ * @return {string} The padding string added to each side.
+ */
+diff_match_patch.prototype.patch_addPadding = function(patches) {
+  var paddingLength = this.Patch_Margin;
+  var nullPadding = '';
+  for (var x = 1; x <= paddingLength; x++) {
+    nullPadding += String.fromCharCode(x);
+  }
+
+  // Bump all the patches forward.
+  for (var x = 0; x < patches.length; x++) {
+    patches[x].start1 += paddingLength;
+    patches[x].start2 += paddingLength;
+  }
+
+  // Add some padding on start of first diff.
+  var patch = patches[0];
+  var diffs = patch.diffs;
+  if (diffs.length == 0 || diffs[0][0] != DIFF_EQUAL) {
+    // Add nullPadding equality.
+    diffs.unshift([DIFF_EQUAL, nullPadding]);
+    patch.start1 -= paddingLength;  // Should be 0.
+    patch.start2 -= paddingLength;  // Should be 0.
+    patch.length1 += paddingLength;
+    patch.length2 += paddingLength;
+  } else if (paddingLength > diffs[0][1].length) {
+    // Grow first equality.
+    var extraLength = paddingLength - diffs[0][1].length;
+    diffs[0][1] = nullPadding.substring(diffs[0][1].length) + diffs[0][1];
+    patch.start1 -= extraLength;
+    patch.start2 -= extraLength;
+    patch.length1 += extraLength;
+    patch.length2 += extraLength;
+  }
+
+  // Add some padding on end of last diff.
+  patch = patches[patches.length - 1];
+  diffs = patch.diffs;
+  if (diffs.length == 0 || diffs[diffs.length - 1][0] != DIFF_EQUAL) {
+    // Add nullPadding equality.
+    diffs.push([DIFF_EQUAL, nullPadding]);
+    patch.length1 += paddingLength;
+    patch.length2 += paddingLength;
+  } else if (paddingLength > diffs[diffs.length - 1][1].length) {
+    // Grow last equality.
+    var extraLength = paddingLength - diffs[diffs.length - 1][1].length;
+    diffs[diffs.length - 1][1] += nullPadding.substring(0, extraLength);
+    patch.length1 += extraLength;
+    patch.length2 += extraLength;
+  }
+
+  return nullPadding;
+};
+
+
+/**
+ * Look through the patches and break up any which are longer than the maximum
+ * limit of the match algorithm.
+ * Intended to be called only from within patch_apply.
+ * @param {!Array.<!diff_match_patch.patch_obj>} patches Array of Patch objects.
+ */
+diff_match_patch.prototype.patch_splitMax = function(patches) {
+  var patch_size = this.Match_MaxBits;
+  for (var x = 0; x < patches.length; x++) {
+    if (patches[x].length1 <= patch_size) {
+      continue;
+    }
+    var bigpatch = patches[x];
+    // Remove the big old patch.
+    patches.splice(x--, 1);
+    var start1 = bigpatch.start1;
+    var start2 = bigpatch.start2;
+    var precontext = '';
+    while (bigpatch.diffs.length !== 0) {
+      // Create one of several smaller patches.
+      var patch = new diff_match_patch.patch_obj();
+      var empty = true;
+      patch.start1 = start1 - precontext.length;
+      patch.start2 = start2 - precontext.length;
+      if (precontext !== '') {
+        patch.length1 = patch.length2 = precontext.length;
+        patch.diffs.push([DIFF_EQUAL, precontext]);
+      }
+      while (bigpatch.diffs.length !== 0 &&
+             patch.length1 < patch_size - this.Patch_Margin) {
+        var diff_type = bigpatch.diffs[0][0];
+        var diff_text = bigpatch.diffs[0][1];
+        if (diff_type === DIFF_INSERT) {
+          // Insertions are harmless.
+          patch.length2 += diff_text.length;
+          start2 += diff_text.length;
+          patch.diffs.push(bigpatch.diffs.shift());
+          empty = false;
+        } else if (diff_type === DIFF_DELETE && patch.diffs.length == 1 &&
+                   patch.diffs[0][0] == DIFF_EQUAL &&
+                   diff_text.length > 2 * patch_size) {
+          // This is a large deletion.  Let it pass in one chunk.
+          patch.length1 += diff_text.length;
+          start1 += diff_text.length;
+          empty = false;
+          patch.diffs.push([diff_type, diff_text]);
+          bigpatch.diffs.shift();
+        } else {
+          // Deletion or equality.  Only take as much as we can stomach.
+          diff_text = diff_text.substring(0,
+              patch_size - patch.length1 - this.Patch_Margin);
+          patch.length1 += diff_text.length;
+          start1 += diff_text.length;
+          if (diff_type === DIFF_EQUAL) {
+            patch.length2 += diff_text.length;
+            start2 += diff_text.length;
+          } else {
+            empty = false;
+          }
+          patch.diffs.push([diff_type, diff_text]);
+          if (diff_text == bigpatch.diffs[0][1]) {
+            bigpatch.diffs.shift();
+          } else {
+            bigpatch.diffs[0][1] =
+                bigpatch.diffs[0][1].substring(diff_text.length);
+          }
+        }
+      }
+      // Compute the head context for the next patch.
+      precontext = this.diff_text2(patch.diffs);
+      precontext =
+          precontext.substring(precontext.length - this.Patch_Margin);
+      // Append the end context for this patch.
+      var postcontext = this.diff_text1(bigpatch.diffs)
+                            .substring(0, this.Patch_Margin);
+      if (postcontext !== '') {
+        patch.length1 += postcontext.length;
+        patch.length2 += postcontext.length;
+        if (patch.diffs.length !== 0 &&
+            patch.diffs[patch.diffs.length - 1][0] === DIFF_EQUAL) {
+          patch.diffs[patch.diffs.length - 1][1] += postcontext;
+        } else {
+          patch.diffs.push([DIFF_EQUAL, postcontext]);
+        }
+      }
+      if (!empty) {
+        patches.splice(++x, 0, patch);
+      }
+    }
+  }
+};
+
+
+/**
+ * Take a list of patches and return a textual representation.
+ * @param {!Array.<!diff_match_patch.patch_obj>} patches Array of Patch objects.
+ * @return {string} Text representation of patches.
+ */
+diff_match_patch.prototype.patch_toText = function(patches) {
+  var text = [];
+  for (var x = 0; x < patches.length; x++) {
+    text[x] = patches[x];
+  }
+  return text.join('');
+};
+
+
+/**
+ * Parse a textual representation of patches and return a list of Patch objects.
+ * @param {string} textline Text representation of patches.
+ * @return {!Array.<!diff_match_patch.patch_obj>} Array of Patch objects.
+ * @throws {!Error} If invalid input.
+ */
+diff_match_patch.prototype.patch_fromText = function(textline) {
+  var patches = [];
+  if (!textline) {
+    return patches;
+  }
+  var text = textline.split('\n');
+  var textPointer = 0;
+  var patchHeader = /^@@ -(\d+),?(\d*) \+(\d+),?(\d*) @@$/;
+  while (textPointer < text.length) {
+    var m = text[textPointer].match(patchHeader);
+    if (!m) {
+      throw new Error('Invalid patch string: ' + text[textPointer]);
+    }
+    var patch = new diff_match_patch.patch_obj();
+    patches.push(patch);
+    patch.start1 = parseInt(m[1], 10);
+    if (m[2] === '') {
+      patch.start1--;
+      patch.length1 = 1;
+    } else if (m[2] == '0') {
+      patch.length1 = 0;
+    } else {
+      patch.start1--;
+      patch.length1 = parseInt(m[2], 10);
+    }
+
+    patch.start2 = parseInt(m[3], 10);
+    if (m[4] === '') {
+      patch.start2--;
+      patch.length2 = 1;
+    } else if (m[4] == '0') {
+      patch.length2 = 0;
+    } else {
+      patch.start2--;
+      patch.length2 = parseInt(m[4], 10);
+    }
+    textPointer++;
+
+    while (textPointer < text.length) {
+      var sign = text[textPointer].charAt(0);
+      try {
+        var line = decodeURI(text[textPointer].substring(1));
+      } catch (ex) {
+        // Malformed URI sequence.
+        throw new Error('Illegal escape in patch_fromText: ' + line);
+      }
+      if (sign == '-') {
+        // Deletion.
+        patch.diffs.push([DIFF_DELETE, line]);
+      } else if (sign == '+') {
+        // Insertion.
+        patch.diffs.push([DIFF_INSERT, line]);
+      } else if (sign == ' ') {
+        // Minor equality.
+        patch.diffs.push([DIFF_EQUAL, line]);
+      } else if (sign == '@') {
+        // Start of next patch.
+        break;
+      } else if (sign === '') {
+        // Blank line?  Whatever.
+      } else {
+        // WTF?
+        throw new Error('Invalid patch mode "' + sign + '" in: ' + line);
+      }
+      textPointer++;
+    }
+  }
+  return patches;
+};
+
+
+/**
+ * Class representing one patch operation.
+ * @constructor
+ */
+diff_match_patch.patch_obj = function() {
+  /** @type {!Array.<!diff_match_patch.Diff>} */
+  this.diffs = [];
+  /** @type {?number} */
+  this.start1 = null;
+  /** @type {?number} */
+  this.start2 = null;
+  /** @type {number} */
+  this.length1 = 0;
+  /** @type {number} */
+  this.length2 = 0;
+};
+
+
+/**
+ * Emmulate GNU diff's format.
+ * Header: @@ -382,8 +481,9 @@
+ * Indicies are printed as 1-based, not 0-based.
+ * @return {string} The GNU diff string.
+ */
+diff_match_patch.patch_obj.prototype.toString = function() {
+  var coords1, coords2;
+  if (this.length1 === 0) {
+    coords1 = this.start1 + ',0';
+  } else if (this.length1 == 1) {
+    coords1 = this.start1 + 1;
+  } else {
+    coords1 = (this.start1 + 1) + ',' + this.length1;
+  }
+  if (this.length2 === 0) {
+    coords2 = this.start2 + ',0';
+  } else if (this.length2 == 1) {
+    coords2 = this.start2 + 1;
+  } else {
+    coords2 = (this.start2 + 1) + ',' + this.length2;
+  }
+  var text = ['@@ -' + coords1 + ' +' + coords2 + ' @@\n'];
+  var op;
+  // Escape the body of the patch with %xx notation.
+  for (var x = 0; x < this.diffs.length; x++) {
+    switch (this.diffs[x][0]) {
+      case DIFF_INSERT:
+        op = '+';
+        break;
+      case DIFF_DELETE:
+        op = '-';
+        break;
+      case DIFF_EQUAL:
+        op = ' ';
+        break;
+    }
+    text[x + 1] = op + encodeURI(this.diffs[x][1]) + '\n';
+  }
+  return text.join('').replace(/%20/g, ' ');
+};
+
+
+// The following export code was added by @ForbesLindesay
+module.exports = diff_match_patch;
+module.exports['diff_match_patch'] = diff_match_patch;
+module.exports['DIFF_DELETE'] = DIFF_DELETE;
+module.exports['DIFF_INSERT'] = DIFF_INSERT;
+module.exports['DIFF_EQUAL'] = DIFF_EQUAL;
+},{}],"../node_modules/react-ace/lib/diff.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _split = require('./split.js');
+
+var _split2 = _interopRequireDefault(_split);
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _diffMatchPatch = require('diff-match-patch');
+
+var _diffMatchPatch2 = _interopRequireDefault(_diffMatchPatch);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var DiffComponent = function (_Component) {
+  _inherits(DiffComponent, _Component);
+
+  function DiffComponent(props) {
+    _classCallCheck(this, DiffComponent);
+
+    var _this = _possibleConstructorReturn(this, (DiffComponent.__proto__ || Object.getPrototypeOf(DiffComponent)).call(this, props));
+
+    _this.state = {
+      value: _this.props.value
+    };
+    _this.onChange = _this.onChange.bind(_this);
+    _this.diff = _this.diff.bind(_this);
+    return _this;
+  }
+
+  _createClass(DiffComponent, [{
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate() {
+      var value = this.props.value;
+
+
+      if (value !== this.state.value) {
+        this.setState({ value: value });
+      }
+    }
+  }, {
+    key: 'onChange',
+    value: function onChange(value) {
+      this.setState({
+        value: value
+      });
+      if (this.props.onChange) {
+        this.props.onChange(value);
+      }
+    }
+  }, {
+    key: 'diff',
+    value: function diff() {
+      var dmp = new _diffMatchPatch2.default();
+      var lhString = this.state.value[0];
+      var rhString = this.state.value[1];
+
+      if (lhString.length === 0 && rhString.length === 0) {
+        return [];
+      }
+
+      var diff = dmp.diff_main(lhString, rhString);
+      dmp.diff_cleanupSemantic(diff);
+
+      var diffedLines = this.generateDiffedLines(diff);
+      var codeEditorSettings = this.setCodeMarkers(diffedLines);
+      return codeEditorSettings;
+    }
+  }, {
+    key: 'generateDiffedLines',
+    value: function generateDiffedLines(diff) {
+      var C = {
+        DIFF_EQUAL: 0,
+        DIFF_DELETE: -1,
+        DIFF_INSERT: 1
+      };
+
+      var diffedLines = {
+        left: [],
+        right: []
+      };
+
+      var cursor = {
+        left: 1,
+        right: 1
+      };
+
+      diff.forEach(function (chunk) {
+        var chunkType = chunk[0];
+        var text = chunk[1];
+        var lines = text.split('\n').length - 1;
+
+        // diff-match-patch sometimes returns empty strings at random
+        if (text.length === 0) {
+          return;
+        }
+
+        var firstChar = text[0];
+        var lastChar = text[text.length - 1];
+        var linesToHighlight = 0;
+
+        switch (chunkType) {
+          case C.DIFF_EQUAL:
+            cursor.left += lines;
+            cursor.right += lines;
+
+            break;
+          case C.DIFF_DELETE:
+            // If the deletion starts with a newline, push the cursor down to that line
+            if (firstChar === '\n') {
+              cursor.left++;
+              lines--;
+            }
+
+            linesToHighlight = lines;
+
+            // If the deletion does not include a newline, highlight the same line on the right
+            if (linesToHighlight === 0) {
+              diffedLines.right.push({
+                startLine: cursor.right,
+                endLine: cursor.right
+              });
+            }
+
+            // If the last character is a newline, we don't want to highlight that line
+            if (lastChar === '\n') {
+              linesToHighlight -= 1;
+            }
+
+            diffedLines.left.push({
+              startLine: cursor.left,
+              endLine: cursor.left + linesToHighlight
+            });
+
+            cursor.left += lines;
+            break;
+          case C.DIFF_INSERT:
+            // If the insertion starts with a newline, push the cursor down to that line
+            if (firstChar === '\n') {
+              cursor.right++;
+              lines--;
+            }
+
+            linesToHighlight = lines;
+
+            // If the insertion does not include a newline, highlight the same line on the left
+            if (linesToHighlight === 0) {
+              diffedLines.left.push({
+                startLine: cursor.left,
+                endLine: cursor.left
+              });
+            }
+
+            // If the last character is a newline, we don't want to highlight that line
+            if (lastChar === '\n') {
+              linesToHighlight -= 1;
+            }
+
+            diffedLines.right.push({
+              startLine: cursor.right,
+              endLine: cursor.right + linesToHighlight
+            });
+
+            cursor.right += lines;
+            break;
+          default:
+            throw new Error('Diff type was not defined.');
+        }
+      });
+      return diffedLines;
+    }
+
+    // Receives a collection of line numbers and iterates through them to highlight appropriately
+    // Returns an object that tells the render() method how to display the code editors
+
+  }, {
+    key: 'setCodeMarkers',
+    value: function setCodeMarkers() {
+      var diffedLines = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { left: [], right: [] };
+
+      var codeEditorSettings = [];
+
+      var newMarkerSet = {
+        left: [],
+        right: []
+      };
+
+      for (var i = 0; i < diffedLines.left.length; i++) {
+        var markerObj = {
+          startRow: diffedLines.left[i].startLine - 1,
+          endRow: diffedLines.left[i].endLine,
+          type: 'text',
+          className: 'codeMarker'
+        };
+        newMarkerSet.left.push(markerObj);
+      }
+
+      for (var _i = 0; _i < diffedLines.right.length; _i++) {
+        var _markerObj = {
+          startRow: diffedLines.right[_i].startLine - 1,
+          endRow: diffedLines.right[_i].endLine,
+          type: 'text',
+          className: 'codeMarker'
+        };
+        newMarkerSet.right.push(_markerObj);
+      }
+
+      codeEditorSettings[0] = newMarkerSet.left;
+      codeEditorSettings[1] = newMarkerSet.right;
+
+      return codeEditorSettings;
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var markers = this.diff();
+      return _react2.default.createElement(_split2.default, {
+        name: this.props.name,
+        className: this.props.className,
+        focus: this.props.focus,
+        orientation: this.props.orientation,
+        splits: this.props.splits,
+        mode: this.props.mode,
+        theme: this.props.theme,
+        height: this.props.height,
+        width: this.props.width,
+        fontSize: this.props.fontSize,
+        showGutter: this.props.showGutter,
+        onChange: this.onChange,
+        onPaste: this.props.onPaste,
+        onLoad: this.props.onLoad,
+        onScroll: this.props.onScroll,
+        minLines: this.props.minLines,
+        maxLines: this.props.maxLines,
+        readOnly: this.props.readOnly,
+        highlightActiveLine: this.props.highlightActiveLine,
+        showPrintMargin: this.props.showPrintMargin,
+        tabSize: this.props.tabSize,
+        cursorStart: this.props.cursorStart,
+        editorProps: this.props.editorProps,
+        style: this.props.style,
+        scrollMargin: this.props.scrollMargin,
+        setOptions: this.props.setOptions,
+        wrapEnabled: this.props.wrapEnabled,
+        enableBasicAutocompletion: this.props.enableBasicAutocompletion,
+        enableLiveAutocompletion: this.props.enableLiveAutocompletion,
+        value: this.state.value,
+        markers: markers
+      });
+    }
+  }]);
+
+  return DiffComponent;
+}(_react.Component);
+
+exports.default = DiffComponent;
+
+
+DiffComponent.propTypes = {
+  cursorStart: _propTypes2.default.number,
+  editorProps: _propTypes2.default.object,
+  enableBasicAutocompletion: _propTypes2.default.bool,
+  enableLiveAutocompletion: _propTypes2.default.bool,
+  focus: _propTypes2.default.bool,
+  fontSize: _propTypes2.default.number,
+  height: _propTypes2.default.string,
+  highlightActiveLine: _propTypes2.default.bool,
+  maxLines: _propTypes2.default.func,
+  minLines: _propTypes2.default.func,
+  mode: _propTypes2.default.string,
+  name: _propTypes2.default.string,
+  className: _propTypes2.default.string,
+  onLoad: _propTypes2.default.func,
+  onPaste: _propTypes2.default.func,
+  onScroll: _propTypes2.default.func,
+  onChange: _propTypes2.default.func,
+  orientation: _propTypes2.default.string,
+  readOnly: _propTypes2.default.bool,
+  scrollMargin: _propTypes2.default.array,
+  setOptions: _propTypes2.default.object,
+  showGutter: _propTypes2.default.bool,
+  showPrintMargin: _propTypes2.default.bool,
+  splits: _propTypes2.default.number,
+  style: _propTypes2.default.object,
+  tabSize: _propTypes2.default.number,
+  theme: _propTypes2.default.string,
+  value: _propTypes2.default.array,
+  width: _propTypes2.default.string,
+  wrapEnabled: _propTypes2.default.bool
+};
+
+DiffComponent.defaultProps = {
+  cursorStart: 1,
+  editorProps: {},
+  enableBasicAutocompletion: false,
+  enableLiveAutocompletion: false,
+  focus: false,
+  fontSize: 12,
+  height: '500px',
+  highlightActiveLine: true,
+  maxLines: null,
+  minLines: null,
+  mode: '',
+  name: 'brace-editor',
+  onLoad: null,
+  onScroll: null,
+  onPaste: null,
+  onChange: null,
+  orientation: 'beside',
+  readOnly: false,
+  scrollMargin: [0, 0, 0, 0],
+  setOptions: {},
+  showGutter: true,
+  showPrintMargin: true,
+  splits: 2,
+  style: {},
+  tabSize: 4,
+  theme: 'github',
+  value: ['', ''],
+  width: '500px',
+  wrapEnabled: true
+};
+},{"./split.js":"../node_modules/react-ace/lib/split.js","react":"../node_modules/react/index.js","prop-types":"../node_modules/prop-types/index.js","diff-match-patch":"../node_modules/diff-match-patch/index.js"}],"../node_modules/react-ace/lib/index.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.diff = exports.split = undefined;
+
+var _ace = require('./ace.js');
+
+var _ace2 = _interopRequireDefault(_ace);
+
+var _split = require('./split.js');
+
+var _split2 = _interopRequireDefault(_split);
+
+var _diff = require('./diff.js');
+
+var _diff2 = _interopRequireDefault(_diff);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.split = _split2.default;
+exports.diff = _diff2.default;
+exports.default = _ace2.default;
+},{"./ace.js":"../node_modules/react-ace/lib/ace.js","./split.js":"../node_modules/react-ace/lib/split.js","./diff.js":"../node_modules/react-ace/lib/diff.js"}],"../node_modules/brace/worker/json.js":[function(require,module,exports) {
 module.exports.id = 'ace/mode/json_worker';
 module.exports.src = "\"no use strict\";!function(window){function resolveModuleId(id,paths){for(var testPath=id,tail=\"\";testPath;){var alias=paths[testPath];if(\"string\"==typeof alias)return alias+tail;if(alias)return alias.location.replace(/\\/*$/,\"/\")+(tail||alias.main||alias.name);if(alias===!1)return\"\";var i=testPath.lastIndexOf(\"/\");if(-1===i)break;tail=testPath.substr(i)+tail,testPath=testPath.slice(0,i)}return id}if(!(void 0!==window.window&&window.document||window.acequire&&window.define)){window.console||(window.console=function(){var msgs=Array.prototype.slice.call(arguments,0);postMessage({type:\"log\",data:msgs})},window.console.error=window.console.warn=window.console.log=window.console.trace=window.console),window.window=window,window.ace=window,window.onerror=function(message,file,line,col,err){postMessage({type:\"error\",data:{message:message,data:err.data,file:file,line:line,col:col,stack:err.stack}})},window.normalizeModule=function(parentId,moduleName){if(-1!==moduleName.indexOf(\"!\")){var chunks=moduleName.split(\"!\");return window.normalizeModule(parentId,chunks[0])+\"!\"+window.normalizeModule(parentId,chunks[1])}if(\".\"==moduleName.charAt(0)){var base=parentId.split(\"/\").slice(0,-1).join(\"/\");for(moduleName=(base?base+\"/\":\"\")+moduleName;-1!==moduleName.indexOf(\".\")&&previous!=moduleName;){var previous=moduleName;moduleName=moduleName.replace(/^\\.\\//,\"\").replace(/\\/\\.\\//,\"/\").replace(/[^\\/]+\\/\\.\\.\\//,\"\")}}return moduleName},window.acequire=function acequire(parentId,id){if(id||(id=parentId,parentId=null),!id.charAt)throw Error(\"worker.js acequire() accepts only (parentId, id) as arguments\");id=window.normalizeModule(parentId,id);var module=window.acequire.modules[id];if(module)return module.initialized||(module.initialized=!0,module.exports=module.factory().exports),module.exports;if(!window.acequire.tlns)return console.log(\"unable to load \"+id);var path=resolveModuleId(id,window.acequire.tlns);return\".js\"!=path.slice(-3)&&(path+=\".js\"),window.acequire.id=id,window.acequire.modules[id]={},importScripts(path),window.acequire(parentId,id)},window.acequire.modules={},window.acequire.tlns={},window.define=function(id,deps,factory){if(2==arguments.length?(factory=deps,\"string\"!=typeof id&&(deps=id,id=window.acequire.id)):1==arguments.length&&(factory=id,deps=[],id=window.acequire.id),\"function\"!=typeof factory)return window.acequire.modules[id]={exports:factory,initialized:!0},void 0;deps.length||(deps=[\"require\",\"exports\",\"module\"]);var req=function(childId){return window.acequire(id,childId)};window.acequire.modules[id]={exports:{},factory:function(){var module=this,returnExports=factory.apply(this,deps.map(function(dep){switch(dep){case\"require\":return req;case\"exports\":return module.exports;case\"module\":return module;default:return req(dep)}}));return returnExports&&(module.exports=returnExports),module}}},window.define.amd={},acequire.tlns={},window.initBaseUrls=function(topLevelNamespaces){for(var i in topLevelNamespaces)acequire.tlns[i]=topLevelNamespaces[i]},window.initSender=function(){var EventEmitter=window.acequire(\"ace/lib/event_emitter\").EventEmitter,oop=window.acequire(\"ace/lib/oop\"),Sender=function(){};return function(){oop.implement(this,EventEmitter),this.callback=function(data,callbackId){postMessage({type:\"call\",id:callbackId,data:data})},this.emit=function(name,data){postMessage({type:\"event\",name:name,data:data})}}.call(Sender.prototype),new Sender};var main=window.main=null,sender=window.sender=null;window.onmessage=function(e){var msg=e.data;if(msg.event&&sender)sender._signal(msg.event,msg.data);else if(msg.command)if(main[msg.command])main[msg.command].apply(main,msg.args);else{if(!window[msg.command])throw Error(\"Unknown command:\"+msg.command);window[msg.command].apply(window,msg.args)}else if(msg.init){window.initBaseUrls(msg.tlns),acequire(\"ace/lib/es5-shim\"),sender=window.sender=window.initSender();var clazz=acequire(msg.module)[msg.classname];main=window.main=new clazz(sender)}}}}(this),ace.define(\"ace/lib/oop\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.inherits=function(ctor,superCtor){ctor.super_=superCtor,ctor.prototype=Object.create(superCtor.prototype,{constructor:{value:ctor,enumerable:!1,writable:!0,configurable:!0}})},exports.mixin=function(obj,mixin){for(var key in mixin)obj[key]=mixin[key];return obj},exports.implement=function(proto,mixin){exports.mixin(proto,mixin)}}),ace.define(\"ace/range\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},Range=function(startRow,startColumn,endRow,endColumn){this.start={row:startRow,column:startColumn},this.end={row:endRow,column:endColumn}};(function(){this.isEqual=function(range){return this.start.row===range.start.row&&this.end.row===range.end.row&&this.start.column===range.start.column&&this.end.column===range.end.column},this.toString=function(){return\"Range: [\"+this.start.row+\"/\"+this.start.column+\"] -> [\"+this.end.row+\"/\"+this.end.column+\"]\"},this.contains=function(row,column){return 0==this.compare(row,column)},this.compareRange=function(range){var cmp,end=range.end,start=range.start;return cmp=this.compare(end.row,end.column),1==cmp?(cmp=this.compare(start.row,start.column),1==cmp?2:0==cmp?1:0):-1==cmp?-2:(cmp=this.compare(start.row,start.column),-1==cmp?-1:1==cmp?42:0)},this.comparePoint=function(p){return this.compare(p.row,p.column)},this.containsRange=function(range){return 0==this.comparePoint(range.start)&&0==this.comparePoint(range.end)},this.intersects=function(range){var cmp=this.compareRange(range);return-1==cmp||0==cmp||1==cmp},this.isEnd=function(row,column){return this.end.row==row&&this.end.column==column},this.isStart=function(row,column){return this.start.row==row&&this.start.column==column},this.setStart=function(row,column){\"object\"==typeof row?(this.start.column=row.column,this.start.row=row.row):(this.start.row=row,this.start.column=column)},this.setEnd=function(row,column){\"object\"==typeof row?(this.end.column=row.column,this.end.row=row.row):(this.end.row=row,this.end.column=column)},this.inside=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)||this.isStart(row,column)?!1:!0:!1},this.insideStart=function(row,column){return 0==this.compare(row,column)?this.isEnd(row,column)?!1:!0:!1},this.insideEnd=function(row,column){return 0==this.compare(row,column)?this.isStart(row,column)?!1:!0:!1},this.compare=function(row,column){return this.isMultiLine()||row!==this.start.row?this.start.row>row?-1:row>this.end.row?1:this.start.row===row?column>=this.start.column?0:-1:this.end.row===row?this.end.column>=column?0:1:0:this.start.column>column?-1:column>this.end.column?1:0},this.compareStart=function(row,column){return this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.compareEnd=function(row,column){return this.end.row==row&&this.end.column==column?1:this.compare(row,column)},this.compareInside=function(row,column){return this.end.row==row&&this.end.column==column?1:this.start.row==row&&this.start.column==column?-1:this.compare(row,column)},this.clipRows=function(firstRow,lastRow){if(this.end.row>lastRow)var end={row:lastRow+1,column:0};else if(firstRow>this.end.row)var end={row:firstRow,column:0};if(this.start.row>lastRow)var start={row:lastRow+1,column:0};else if(firstRow>this.start.row)var start={row:firstRow,column:0};return Range.fromPoints(start||this.start,end||this.end)},this.extend=function(row,column){var cmp=this.compare(row,column);if(0==cmp)return this;if(-1==cmp)var start={row:row,column:column};else var end={row:row,column:column};return Range.fromPoints(start||this.start,end||this.end)},this.isEmpty=function(){return this.start.row===this.end.row&&this.start.column===this.end.column},this.isMultiLine=function(){return this.start.row!==this.end.row},this.clone=function(){return Range.fromPoints(this.start,this.end)},this.collapseRows=function(){return 0==this.end.column?new Range(this.start.row,0,Math.max(this.start.row,this.end.row-1),0):new Range(this.start.row,0,this.end.row,0)},this.toScreenRange=function(session){var screenPosStart=session.documentToScreenPosition(this.start),screenPosEnd=session.documentToScreenPosition(this.end);return new Range(screenPosStart.row,screenPosStart.column,screenPosEnd.row,screenPosEnd.column)},this.moveBy=function(row,column){this.start.row+=row,this.start.column+=column,this.end.row+=row,this.end.column+=column}}).call(Range.prototype),Range.fromPoints=function(start,end){return new Range(start.row,start.column,end.row,end.column)},Range.comparePoints=comparePoints,Range.comparePoints=function(p1,p2){return p1.row-p2.row||p1.column-p2.column},exports.Range=Range}),ace.define(\"ace/apply_delta\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.applyDelta=function(docLines,delta){var row=delta.start.row,startColumn=delta.start.column,line=docLines[row]||\"\";switch(delta.action){case\"insert\":var lines=delta.lines;if(1===lines.length)docLines[row]=line.substring(0,startColumn)+delta.lines[0]+line.substring(startColumn);else{var args=[row,1].concat(delta.lines);docLines.splice.apply(docLines,args),docLines[row]=line.substring(0,startColumn)+docLines[row],docLines[row+delta.lines.length-1]+=line.substring(startColumn)}break;case\"remove\":var endColumn=delta.end.column,endRow=delta.end.row;row===endRow?docLines[row]=line.substring(0,startColumn)+line.substring(endColumn):docLines.splice(row,endRow-row+1,line.substring(0,startColumn)+docLines[endRow].substring(endColumn))}}}),ace.define(\"ace/lib/event_emitter\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";var EventEmitter={},stopPropagation=function(){this.propagationStopped=!0},preventDefault=function(){this.defaultPrevented=!0};EventEmitter._emit=EventEmitter._dispatchEvent=function(eventName,e){this._eventRegistry||(this._eventRegistry={}),this._defaultHandlers||(this._defaultHandlers={});var listeners=this._eventRegistry[eventName]||[],defaultHandler=this._defaultHandlers[eventName];if(listeners.length||defaultHandler){\"object\"==typeof e&&e||(e={}),e.type||(e.type=eventName),e.stopPropagation||(e.stopPropagation=stopPropagation),e.preventDefault||(e.preventDefault=preventDefault),listeners=listeners.slice();for(var i=0;listeners.length>i&&(listeners[i](e,this),!e.propagationStopped);i++);return defaultHandler&&!e.defaultPrevented?defaultHandler(e,this):void 0}},EventEmitter._signal=function(eventName,e){var listeners=(this._eventRegistry||{})[eventName];if(listeners){listeners=listeners.slice();for(var i=0;listeners.length>i;i++)listeners[i](e,this)}},EventEmitter.once=function(eventName,callback){var _self=this;callback&&this.addEventListener(eventName,function newCallback(){_self.removeEventListener(eventName,newCallback),callback.apply(null,arguments)})},EventEmitter.setDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers||(handlers=this._defaultHandlers={_disabled_:{}}),handlers[eventName]){var old=handlers[eventName],disabled=handlers._disabled_[eventName];disabled||(handlers._disabled_[eventName]=disabled=[]),disabled.push(old);var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}handlers[eventName]=callback},EventEmitter.removeDefaultHandler=function(eventName,callback){var handlers=this._defaultHandlers;if(handlers){var disabled=handlers._disabled_[eventName];if(handlers[eventName]==callback)handlers[eventName],disabled&&this.setDefaultHandler(eventName,disabled.pop());else if(disabled){var i=disabled.indexOf(callback);-1!=i&&disabled.splice(i,1)}}},EventEmitter.on=EventEmitter.addEventListener=function(eventName,callback,capturing){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];return listeners||(listeners=this._eventRegistry[eventName]=[]),-1==listeners.indexOf(callback)&&listeners[capturing?\"unshift\":\"push\"](callback),callback},EventEmitter.off=EventEmitter.removeListener=EventEmitter.removeEventListener=function(eventName,callback){this._eventRegistry=this._eventRegistry||{};var listeners=this._eventRegistry[eventName];if(listeners){var index=listeners.indexOf(callback);-1!==index&&listeners.splice(index,1)}},EventEmitter.removeAllListeners=function(eventName){this._eventRegistry&&(this._eventRegistry[eventName]=[])},exports.EventEmitter=EventEmitter}),ace.define(\"ace/anchor\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/lib/event_emitter\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Anchor=exports.Anchor=function(doc,row,column){this.$onChange=this.onChange.bind(this),this.attach(doc),column===void 0?this.setPosition(row.row,row.column):this.setPosition(row,column)};(function(){function $pointsInOrder(point1,point2,equalPointsInOrder){var bColIsAfter=equalPointsInOrder?point1.column<=point2.column:point1.column<point2.column;return point1.row<point2.row||point1.row==point2.row&&bColIsAfter}function $getTransformedPoint(delta,point,moveIfEqual){var deltaIsInsert=\"insert\"==delta.action,deltaRowShift=(deltaIsInsert?1:-1)*(delta.end.row-delta.start.row),deltaColShift=(deltaIsInsert?1:-1)*(delta.end.column-delta.start.column),deltaStart=delta.start,deltaEnd=deltaIsInsert?deltaStart:delta.end;return $pointsInOrder(point,deltaStart,moveIfEqual)?{row:point.row,column:point.column}:$pointsInOrder(deltaEnd,point,!moveIfEqual)?{row:point.row+deltaRowShift,column:point.column+(point.row==deltaEnd.row?deltaColShift:0)}:{row:deltaStart.row,column:deltaStart.column}}oop.implement(this,EventEmitter),this.getPosition=function(){return this.$clipPositionToDocument(this.row,this.column)},this.getDocument=function(){return this.document},this.$insertRight=!1,this.onChange=function(delta){if(!(delta.start.row==delta.end.row&&delta.start.row!=this.row||delta.start.row>this.row)){var point=$getTransformedPoint(delta,{row:this.row,column:this.column},this.$insertRight);this.setPosition(point.row,point.column,!0)}},this.setPosition=function(row,column,noClip){var pos;if(pos=noClip?{row:row,column:column}:this.$clipPositionToDocument(row,column),this.row!=pos.row||this.column!=pos.column){var old={row:this.row,column:this.column};this.row=pos.row,this.column=pos.column,this._signal(\"change\",{old:old,value:pos})}},this.detach=function(){this.document.removeEventListener(\"change\",this.$onChange)},this.attach=function(doc){this.document=doc||this.document,this.document.on(\"change\",this.$onChange)},this.$clipPositionToDocument=function(row,column){var pos={};return row>=this.document.getLength()?(pos.row=Math.max(0,this.document.getLength()-1),pos.column=this.document.getLine(pos.row).length):0>row?(pos.row=0,pos.column=0):(pos.row=row,pos.column=Math.min(this.document.getLine(pos.row).length,Math.max(0,column))),0>column&&(pos.column=0),pos}}).call(Anchor.prototype)}),ace.define(\"ace/document\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/apply_delta\",\"ace/lib/event_emitter\",\"ace/range\",\"ace/anchor\"],function(acequire,exports){\"use strict\";var oop=acequire(\"./lib/oop\"),applyDelta=acequire(\"./apply_delta\").applyDelta,EventEmitter=acequire(\"./lib/event_emitter\").EventEmitter,Range=acequire(\"./range\").Range,Anchor=acequire(\"./anchor\").Anchor,Document=function(textOrLines){this.$lines=[\"\"],0===textOrLines.length?this.$lines=[\"\"]:Array.isArray(textOrLines)?this.insertMergedLines({row:0,column:0},textOrLines):this.insert({row:0,column:0},textOrLines)};(function(){oop.implement(this,EventEmitter),this.setValue=function(text){var len=this.getLength()-1;this.remove(new Range(0,0,len,this.getLine(len).length)),this.insert({row:0,column:0},text)},this.getValue=function(){return this.getAllLines().join(this.getNewLineCharacter())},this.createAnchor=function(row,column){return new Anchor(this,row,column)},this.$split=0===\"aaa\".split(/a/).length?function(text){return text.replace(/\\r\\n|\\r/g,\"\\n\").split(\"\\n\")}:function(text){return text.split(/\\r\\n|\\r|\\n/)},this.$detectNewLine=function(text){var match=text.match(/^.*?(\\r\\n|\\r|\\n)/m);this.$autoNewLine=match?match[1]:\"\\n\",this._signal(\"changeNewLineMode\")},this.getNewLineCharacter=function(){switch(this.$newLineMode){case\"windows\":return\"\\r\\n\";case\"unix\":return\"\\n\";default:return this.$autoNewLine||\"\\n\"}},this.$autoNewLine=\"\",this.$newLineMode=\"auto\",this.setNewLineMode=function(newLineMode){this.$newLineMode!==newLineMode&&(this.$newLineMode=newLineMode,this._signal(\"changeNewLineMode\"))},this.getNewLineMode=function(){return this.$newLineMode},this.isNewLine=function(text){return\"\\r\\n\"==text||\"\\r\"==text||\"\\n\"==text},this.getLine=function(row){return this.$lines[row]||\"\"},this.getLines=function(firstRow,lastRow){return this.$lines.slice(firstRow,lastRow+1)},this.getAllLines=function(){return this.getLines(0,this.getLength())},this.getLength=function(){return this.$lines.length},this.getTextRange=function(range){return this.getLinesForRange(range).join(this.getNewLineCharacter())},this.getLinesForRange=function(range){var lines;if(range.start.row===range.end.row)lines=[this.getLine(range.start.row).substring(range.start.column,range.end.column)];else{lines=this.getLines(range.start.row,range.end.row),lines[0]=(lines[0]||\"\").substring(range.start.column);var l=lines.length-1;range.end.row-range.start.row==l&&(lines[l]=lines[l].substring(0,range.end.column))}return lines},this.insertLines=function(row,lines){return console.warn(\"Use of document.insertLines is deprecated. Use the insertFullLines method instead.\"),this.insertFullLines(row,lines)},this.removeLines=function(firstRow,lastRow){return console.warn(\"Use of document.removeLines is deprecated. Use the removeFullLines method instead.\"),this.removeFullLines(firstRow,lastRow)},this.insertNewLine=function(position){return console.warn(\"Use of document.insertNewLine is deprecated. Use insertMergedLines(position, ['', '']) instead.\"),this.insertMergedLines(position,[\"\",\"\"])},this.insert=function(position,text){return 1>=this.getLength()&&this.$detectNewLine(text),this.insertMergedLines(position,this.$split(text))},this.insertInLine=function(position,text){var start=this.clippedPos(position.row,position.column),end=this.pos(position.row,position.column+text.length);return this.applyDelta({start:start,end:end,action:\"insert\",lines:[text]},!0),this.clonePos(end)},this.clippedPos=function(row,column){var length=this.getLength();void 0===row?row=length:0>row?row=0:row>=length&&(row=length-1,column=void 0);var line=this.getLine(row);return void 0==column&&(column=line.length),column=Math.min(Math.max(column,0),line.length),{row:row,column:column}},this.clonePos=function(pos){return{row:pos.row,column:pos.column}},this.pos=function(row,column){return{row:row,column:column}},this.$clipPosition=function(position){var length=this.getLength();return position.row>=length?(position.row=Math.max(0,length-1),position.column=this.getLine(length-1).length):(position.row=Math.max(0,position.row),position.column=Math.min(Math.max(position.column,0),this.getLine(position.row).length)),position},this.insertFullLines=function(row,lines){row=Math.min(Math.max(row,0),this.getLength());var column=0;this.getLength()>row?(lines=lines.concat([\"\"]),column=0):(lines=[\"\"].concat(lines),row--,column=this.$lines[row].length),this.insertMergedLines({row:row,column:column},lines)},this.insertMergedLines=function(position,lines){var start=this.clippedPos(position.row,position.column),end={row:start.row+lines.length-1,column:(1==lines.length?start.column:0)+lines[lines.length-1].length};return this.applyDelta({start:start,end:end,action:\"insert\",lines:lines}),this.clonePos(end)},this.remove=function(range){var start=this.clippedPos(range.start.row,range.start.column),end=this.clippedPos(range.end.row,range.end.column);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})}),this.clonePos(start)},this.removeInLine=function(row,startColumn,endColumn){var start=this.clippedPos(row,startColumn),end=this.clippedPos(row,endColumn);return this.applyDelta({start:start,end:end,action:\"remove\",lines:this.getLinesForRange({start:start,end:end})},!0),this.clonePos(start)},this.removeFullLines=function(firstRow,lastRow){firstRow=Math.min(Math.max(0,firstRow),this.getLength()-1),lastRow=Math.min(Math.max(0,lastRow),this.getLength()-1);var deleteFirstNewLine=lastRow==this.getLength()-1&&firstRow>0,deleteLastNewLine=this.getLength()-1>lastRow,startRow=deleteFirstNewLine?firstRow-1:firstRow,startCol=deleteFirstNewLine?this.getLine(startRow).length:0,endRow=deleteLastNewLine?lastRow+1:lastRow,endCol=deleteLastNewLine?0:this.getLine(endRow).length,range=new Range(startRow,startCol,endRow,endCol),deletedLines=this.$lines.slice(firstRow,lastRow+1);return this.applyDelta({start:range.start,end:range.end,action:\"remove\",lines:this.getLinesForRange(range)}),deletedLines},this.removeNewLine=function(row){this.getLength()-1>row&&row>=0&&this.applyDelta({start:this.pos(row,this.getLine(row).length),end:this.pos(row+1,0),action:\"remove\",lines:[\"\",\"\"]})},this.replace=function(range,text){if(range instanceof Range||(range=Range.fromPoints(range.start,range.end)),0===text.length&&range.isEmpty())return range.start;if(text==this.getTextRange(range))return range.end;this.remove(range);var end;return end=text?this.insert(range.start,text):range.start},this.applyDeltas=function(deltas){for(var i=0;deltas.length>i;i++)this.applyDelta(deltas[i])},this.revertDeltas=function(deltas){for(var i=deltas.length-1;i>=0;i--)this.revertDelta(deltas[i])},this.applyDelta=function(delta,doNotValidate){var isInsert=\"insert\"==delta.action;(isInsert?1>=delta.lines.length&&!delta.lines[0]:!Range.comparePoints(delta.start,delta.end))||(isInsert&&delta.lines.length>2e4&&this.$splitAndapplyLargeDelta(delta,2e4),applyDelta(this.$lines,delta,doNotValidate),this._signal(\"change\",delta))},this.$splitAndapplyLargeDelta=function(delta,MAX){for(var lines=delta.lines,l=lines.length,row=delta.start.row,column=delta.start.column,from=0,to=0;;){from=to,to+=MAX-1;var chunk=lines.slice(from,to);if(to>l){delta.lines=chunk,delta.start.row=row+from,delta.start.column=column;break}chunk.push(\"\"),this.applyDelta({start:this.pos(row+from,column),end:this.pos(row+to,column=0),action:delta.action,lines:chunk},!0)}},this.revertDelta=function(delta){this.applyDelta({start:this.clonePos(delta.start),end:this.clonePos(delta.end),action:\"insert\"==delta.action?\"remove\":\"insert\",lines:delta.lines.slice()})},this.indexToPosition=function(index,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,i=startRow||0,l=lines.length;l>i;i++)if(index-=lines[i].length+newlineLength,0>index)return{row:i,column:index+lines[i].length+newlineLength};return{row:l-1,column:lines[l-1].length}},this.positionToIndex=function(pos,startRow){for(var lines=this.$lines||this.getAllLines(),newlineLength=this.getNewLineCharacter().length,index=0,row=Math.min(pos.row,lines.length),i=startRow||0;row>i;++i)index+=lines[i].length+newlineLength;return index+pos.column}}).call(Document.prototype),exports.Document=Document}),ace.define(\"ace/lib/lang\",[\"require\",\"exports\",\"module\"],function(acequire,exports){\"use strict\";exports.last=function(a){return a[a.length-1]},exports.stringReverse=function(string){return string.split(\"\").reverse().join(\"\")},exports.stringRepeat=function(string,count){for(var result=\"\";count>0;)1&count&&(result+=string),(count>>=1)&&(string+=string);return result};var trimBeginRegexp=/^\\s\\s*/,trimEndRegexp=/\\s\\s*$/;exports.stringTrimLeft=function(string){return string.replace(trimBeginRegexp,\"\")},exports.stringTrimRight=function(string){return string.replace(trimEndRegexp,\"\")},exports.copyObject=function(obj){var copy={};for(var key in obj)copy[key]=obj[key];return copy},exports.copyArray=function(array){for(var copy=[],i=0,l=array.length;l>i;i++)copy[i]=array[i]&&\"object\"==typeof array[i]?this.copyObject(array[i]):array[i];return copy},exports.deepCopy=function deepCopy(obj){if(\"object\"!=typeof obj||!obj)return obj;var copy;if(Array.isArray(obj)){copy=[];for(var key=0;obj.length>key;key++)copy[key]=deepCopy(obj[key]);return copy}if(\"[object Object]\"!==Object.prototype.toString.call(obj))return obj;copy={};for(var key in obj)copy[key]=deepCopy(obj[key]);return copy},exports.arrayToMap=function(arr){for(var map={},i=0;arr.length>i;i++)map[arr[i]]=1;return map},exports.createMap=function(props){var map=Object.create(null);for(var i in props)map[i]=props[i];return map},exports.arrayRemove=function(array,value){for(var i=0;array.length>=i;i++)value===array[i]&&array.splice(i,1)},exports.escapeRegExp=function(str){return str.replace(/([.*+?^${}()|[\\]\\/\\\\])/g,\"\\\\$1\")},exports.escapeHTML=function(str){return str.replace(/&/g,\"&#38;\").replace(/\"/g,\"&#34;\").replace(/'/g,\"&#39;\").replace(/</g,\"&#60;\")},exports.getMatchOffsets=function(string,regExp){var matches=[];return string.replace(regExp,function(str){matches.push({offset:arguments[arguments.length-2],length:str.length})}),matches},exports.deferredCall=function(fcn){var timer=null,callback=function(){timer=null,fcn()},deferred=function(timeout){return deferred.cancel(),timer=setTimeout(callback,timeout||0),deferred};return deferred.schedule=deferred,deferred.call=function(){return this.cancel(),fcn(),deferred},deferred.cancel=function(){return clearTimeout(timer),timer=null,deferred},deferred.isPending=function(){return timer},deferred},exports.delayedCall=function(fcn,defaultTimeout){var timer=null,callback=function(){timer=null,fcn()},_self=function(timeout){null==timer&&(timer=setTimeout(callback,timeout||defaultTimeout))};return _self.delay=function(timeout){timer&&clearTimeout(timer),timer=setTimeout(callback,timeout||defaultTimeout)},_self.schedule=_self,_self.call=function(){this.cancel(),fcn()},_self.cancel=function(){timer&&clearTimeout(timer),timer=null},_self.isPending=function(){return timer},_self}}),ace.define(\"ace/worker/mirror\",[\"require\",\"exports\",\"module\",\"ace/range\",\"ace/document\",\"ace/lib/lang\"],function(acequire,exports){\"use strict\";acequire(\"../range\").Range;var Document=acequire(\"../document\").Document,lang=acequire(\"../lib/lang\"),Mirror=exports.Mirror=function(sender){this.sender=sender;var doc=this.doc=new Document(\"\"),deferredUpdate=this.deferredUpdate=lang.delayedCall(this.onUpdate.bind(this)),_self=this;sender.on(\"change\",function(e){var data=e.data;if(data[0].start)doc.applyDeltas(data);else for(var i=0;data.length>i;i+=2){if(Array.isArray(data[i+1]))var d={action:\"insert\",start:data[i],lines:data[i+1]};else var d={action:\"remove\",start:data[i],end:data[i+1]};doc.applyDelta(d,!0)}return _self.$timeout?deferredUpdate.schedule(_self.$timeout):(_self.onUpdate(),void 0)})};(function(){this.$timeout=500,this.setTimeout=function(timeout){this.$timeout=timeout},this.setValue=function(value){this.doc.setValue(value),this.deferredUpdate.schedule(this.$timeout)},this.getValue=function(callbackId){this.sender.callback(this.doc.getValue(),callbackId)},this.onUpdate=function(){},this.isPending=function(){return this.deferredUpdate.isPending()}}).call(Mirror.prototype)}),ace.define(\"ace/mode/json/json_parse\",[\"require\",\"exports\",\"module\"],function(){\"use strict\";var at,ch,text,value,escapee={'\"':'\"',\"\\\\\":\"\\\\\",\"/\":\"/\",b:\"\\b\",f:\"\\f\",n:\"\\n\",r:\"\\r\",t:\"\t\"},error=function(m){throw{name:\"SyntaxError\",message:m,at:at,text:text}},next=function(c){return c&&c!==ch&&error(\"Expected '\"+c+\"' instead of '\"+ch+\"'\"),ch=text.charAt(at),at+=1,ch},number=function(){var number,string=\"\";for(\"-\"===ch&&(string=\"-\",next(\"-\"));ch>=\"0\"&&\"9\">=ch;)string+=ch,next();if(\".\"===ch)for(string+=\".\";next()&&ch>=\"0\"&&\"9\">=ch;)string+=ch;if(\"e\"===ch||\"E\"===ch)for(string+=ch,next(),(\"-\"===ch||\"+\"===ch)&&(string+=ch,next());ch>=\"0\"&&\"9\">=ch;)string+=ch,next();return number=+string,isNaN(number)?(error(\"Bad number\"),void 0):number},string=function(){var hex,i,uffff,string=\"\";if('\"'===ch)for(;next();){if('\"'===ch)return next(),string;if(\"\\\\\"===ch)if(next(),\"u\"===ch){for(uffff=0,i=0;4>i&&(hex=parseInt(next(),16),isFinite(hex));i+=1)uffff=16*uffff+hex;string+=String.fromCharCode(uffff)}else{if(\"string\"!=typeof escapee[ch])break;string+=escapee[ch]}else string+=ch}error(\"Bad string\")},white=function(){for(;ch&&\" \">=ch;)next()},word=function(){switch(ch){case\"t\":return next(\"t\"),next(\"r\"),next(\"u\"),next(\"e\"),!0;case\"f\":return next(\"f\"),next(\"a\"),next(\"l\"),next(\"s\"),next(\"e\"),!1;case\"n\":return next(\"n\"),next(\"u\"),next(\"l\"),next(\"l\"),null}error(\"Unexpected '\"+ch+\"'\")},array=function(){var array=[];if(\"[\"===ch){if(next(\"[\"),white(),\"]\"===ch)return next(\"]\"),array;for(;ch;){if(array.push(value()),white(),\"]\"===ch)return next(\"]\"),array;next(\",\"),white()}}error(\"Bad array\")},object=function(){var key,object={};if(\"{\"===ch){if(next(\"{\"),white(),\"}\"===ch)return next(\"}\"),object;for(;ch;){if(key=string(),white(),next(\":\"),Object.hasOwnProperty.call(object,key)&&error('Duplicate key \"'+key+'\"'),object[key]=value(),white(),\"}\"===ch)return next(\"}\"),object;next(\",\"),white()}}error(\"Bad object\")};return value=function(){switch(white(),ch){case\"{\":return object();case\"[\":return array();case'\"':return string();case\"-\":return number();default:return ch>=\"0\"&&\"9\">=ch?number():word()}},function(source,reviver){var result;return text=source,at=0,ch=\" \",result=value(),white(),ch&&error(\"Syntax error\"),\"function\"==typeof reviver?function walk(holder,key){var k,v,value=holder[key];if(value&&\"object\"==typeof value)for(k in value)Object.hasOwnProperty.call(value,k)&&(v=walk(value,k),void 0!==v?value[k]=v:delete value[k]);return reviver.call(holder,key,value)}({\"\":result},\"\"):result}}),ace.define(\"ace/mode/json_worker\",[\"require\",\"exports\",\"module\",\"ace/lib/oop\",\"ace/worker/mirror\",\"ace/mode/json/json_parse\"],function(acequire,exports){\"use strict\";var oop=acequire(\"../lib/oop\"),Mirror=acequire(\"../worker/mirror\").Mirror,parse=acequire(\"./json/json_parse\"),JsonWorker=exports.JsonWorker=function(sender){Mirror.call(this,sender),this.setTimeout(200)};oop.inherits(JsonWorker,Mirror),function(){this.onUpdate=function(){var value=this.doc.getValue(),errors=[];try{value&&parse(value)}catch(e){var pos=this.doc.indexToPosition(e.at-1);errors.push({row:pos.row,column:pos.column,text:e.message,type:\"error\"})}this.sender.emit(\"annotate\",errors)}}.call(JsonWorker.prototype)}),ace.define(\"ace/lib/es5-shim\",[\"require\",\"exports\",\"module\"],function(){function Empty(){}function doesDefinePropertyWork(object){try{return Object.defineProperty(object,\"sentinel\",{}),\"sentinel\"in object}catch(exception){}}function toInteger(n){return n=+n,n!==n?n=0:0!==n&&n!==1/0&&n!==-(1/0)&&(n=(n>0||-1)*Math.floor(Math.abs(n))),n}Function.prototype.bind||(Function.prototype.bind=function(that){var target=this;if(\"function\"!=typeof target)throw new TypeError(\"Function.prototype.bind called on incompatible \"+target);var args=slice.call(arguments,1),bound=function(){if(this instanceof bound){var result=target.apply(this,args.concat(slice.call(arguments)));return Object(result)===result?result:this}return target.apply(that,args.concat(slice.call(arguments)))};return target.prototype&&(Empty.prototype=target.prototype,bound.prototype=new Empty,Empty.prototype=null),bound});var defineGetter,defineSetter,lookupGetter,lookupSetter,supportsAccessors,call=Function.prototype.call,prototypeOfArray=Array.prototype,prototypeOfObject=Object.prototype,slice=prototypeOfArray.slice,_toString=call.bind(prototypeOfObject.toString),owns=call.bind(prototypeOfObject.hasOwnProperty);if((supportsAccessors=owns(prototypeOfObject,\"__defineGetter__\"))&&(defineGetter=call.bind(prototypeOfObject.__defineGetter__),defineSetter=call.bind(prototypeOfObject.__defineSetter__),lookupGetter=call.bind(prototypeOfObject.__lookupGetter__),lookupSetter=call.bind(prototypeOfObject.__lookupSetter__)),2!=[1,2].splice(0).length)if(function(){function makeArray(l){var a=Array(l+2);return a[0]=a[1]=0,a}var lengthBefore,array=[];return array.splice.apply(array,makeArray(20)),array.splice.apply(array,makeArray(26)),lengthBefore=array.length,array.splice(5,0,\"XXX\"),lengthBefore+1==array.length,lengthBefore+1==array.length?!0:void 0\n}()){var array_splice=Array.prototype.splice;Array.prototype.splice=function(start,deleteCount){return arguments.length?array_splice.apply(this,[void 0===start?0:start,void 0===deleteCount?this.length-start:deleteCount].concat(slice.call(arguments,2))):[]}}else Array.prototype.splice=function(pos,removeCount){var length=this.length;pos>0?pos>length&&(pos=length):void 0==pos?pos=0:0>pos&&(pos=Math.max(length+pos,0)),length>pos+removeCount||(removeCount=length-pos);var removed=this.slice(pos,pos+removeCount),insert=slice.call(arguments,2),add=insert.length;if(pos===length)add&&this.push.apply(this,insert);else{var remove=Math.min(removeCount,length-pos),tailOldPos=pos+remove,tailNewPos=tailOldPos+add-remove,tailCount=length-tailOldPos,lengthAfterRemove=length-remove;if(tailOldPos>tailNewPos)for(var i=0;tailCount>i;++i)this[tailNewPos+i]=this[tailOldPos+i];else if(tailNewPos>tailOldPos)for(i=tailCount;i--;)this[tailNewPos+i]=this[tailOldPos+i];if(add&&pos===lengthAfterRemove)this.length=lengthAfterRemove,this.push.apply(this,insert);else for(this.length=lengthAfterRemove+add,i=0;add>i;++i)this[pos+i]=insert[i]}return removed};Array.isArray||(Array.isArray=function(obj){return\"[object Array]\"==_toString(obj)});var boxedString=Object(\"a\"),splitString=\"a\"!=boxedString[0]||!(0 in boxedString);if(Array.prototype.forEach||(Array.prototype.forEach=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,thisp=arguments[1],i=-1,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError;for(;length>++i;)i in self&&fun.call(thisp,self[i],i,object)}),Array.prototype.map||(Array.prototype.map=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=Array(length),thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(result[i]=fun.call(thisp,self[i],i,object));return result}),Array.prototype.filter||(Array.prototype.filter=function(fun){var value,object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,result=[],thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)i in self&&(value=self[i],fun.call(thisp,value,i,object)&&result.push(value));return result}),Array.prototype.every||(Array.prototype.every=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&!fun.call(thisp,self[i],i,object))return!1;return!0}),Array.prototype.some||(Array.prototype.some=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0,thisp=arguments[1];if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");for(var i=0;length>i;i++)if(i in self&&fun.call(thisp,self[i],i,object))return!0;return!1}),Array.prototype.reduce||(Array.prototype.reduce=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduce of empty array with no initial value\");var result,i=0;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i++];break}if(++i>=length)throw new TypeError(\"reduce of empty array with no initial value\")}for(;length>i;i++)i in self&&(result=fun.call(void 0,result,self[i],i,object));return result}),Array.prototype.reduceRight||(Array.prototype.reduceRight=function(fun){var object=toObject(this),self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):object,length=self.length>>>0;if(\"[object Function]\"!=_toString(fun))throw new TypeError(fun+\" is not a function\");if(!length&&1==arguments.length)throw new TypeError(\"reduceRight of empty array with no initial value\");var result,i=length-1;if(arguments.length>=2)result=arguments[1];else for(;;){if(i in self){result=self[i--];break}if(0>--i)throw new TypeError(\"reduceRight of empty array with no initial value\")}do i in this&&(result=fun.call(void 0,result,self[i],i,object));while(i--);return result}),Array.prototype.indexOf&&-1==[0,1].indexOf(1,2)||(Array.prototype.indexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=0;for(arguments.length>1&&(i=toInteger(arguments[1])),i=i>=0?i:Math.max(0,length+i);length>i;i++)if(i in self&&self[i]===sought)return i;return-1}),Array.prototype.lastIndexOf&&-1==[0,1].lastIndexOf(0,-3)||(Array.prototype.lastIndexOf=function(sought){var self=splitString&&\"[object String]\"==_toString(this)?this.split(\"\"):toObject(this),length=self.length>>>0;if(!length)return-1;var i=length-1;for(arguments.length>1&&(i=Math.min(i,toInteger(arguments[1]))),i=i>=0?i:length-Math.abs(i);i>=0;i--)if(i in self&&sought===self[i])return i;return-1}),Object.getPrototypeOf||(Object.getPrototypeOf=function(object){return object.__proto__||(object.constructor?object.constructor.prototype:prototypeOfObject)}),!Object.getOwnPropertyDescriptor){var ERR_NON_OBJECT=\"Object.getOwnPropertyDescriptor called on a non-object: \";Object.getOwnPropertyDescriptor=function(object,property){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT+object);if(owns(object,property)){var descriptor,getter,setter;if(descriptor={enumerable:!0,configurable:!0},supportsAccessors){var prototype=object.__proto__;object.__proto__=prototypeOfObject;var getter=lookupGetter(object,property),setter=lookupSetter(object,property);if(object.__proto__=prototype,getter||setter)return getter&&(descriptor.get=getter),setter&&(descriptor.set=setter),descriptor}return descriptor.value=object[property],descriptor}}}if(Object.getOwnPropertyNames||(Object.getOwnPropertyNames=function(object){return Object.keys(object)}),!Object.create){var createEmpty;createEmpty=null===Object.prototype.__proto__?function(){return{__proto__:null}}:function(){var empty={};for(var i in empty)empty[i]=null;return empty.constructor=empty.hasOwnProperty=empty.propertyIsEnumerable=empty.isPrototypeOf=empty.toLocaleString=empty.toString=empty.valueOf=empty.__proto__=null,empty},Object.create=function(prototype,properties){var object;if(null===prototype)object=createEmpty();else{if(\"object\"!=typeof prototype)throw new TypeError(\"typeof prototype[\"+typeof prototype+\"] != 'object'\");var Type=function(){};Type.prototype=prototype,object=new Type,object.__proto__=prototype}return void 0!==properties&&Object.defineProperties(object,properties),object}}if(Object.defineProperty){var definePropertyWorksOnObject=doesDefinePropertyWork({}),definePropertyWorksOnDom=\"undefined\"==typeof document||doesDefinePropertyWork(document.createElement(\"div\"));if(!definePropertyWorksOnObject||!definePropertyWorksOnDom)var definePropertyFallback=Object.defineProperty}if(!Object.defineProperty||definePropertyFallback){var ERR_NON_OBJECT_DESCRIPTOR=\"Property description must be an object: \",ERR_NON_OBJECT_TARGET=\"Object.defineProperty called on non-object: \",ERR_ACCESSORS_NOT_SUPPORTED=\"getters & setters can not be defined on this javascript engine\";Object.defineProperty=function(object,property,descriptor){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(ERR_NON_OBJECT_TARGET+object);if(\"object\"!=typeof descriptor&&\"function\"!=typeof descriptor||null===descriptor)throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR+descriptor);if(definePropertyFallback)try{return definePropertyFallback.call(Object,object,property,descriptor)}catch(exception){}if(owns(descriptor,\"value\"))if(supportsAccessors&&(lookupGetter(object,property)||lookupSetter(object,property))){var prototype=object.__proto__;object.__proto__=prototypeOfObject,delete object[property],object[property]=descriptor.value,object.__proto__=prototype}else object[property]=descriptor.value;else{if(!supportsAccessors)throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);owns(descriptor,\"get\")&&defineGetter(object,property,descriptor.get),owns(descriptor,\"set\")&&defineSetter(object,property,descriptor.set)}return object}}Object.defineProperties||(Object.defineProperties=function(object,properties){for(var property in properties)owns(properties,property)&&Object.defineProperty(object,property,properties[property]);return object}),Object.seal||(Object.seal=function(object){return object}),Object.freeze||(Object.freeze=function(object){return object});try{Object.freeze(function(){})}catch(exception){Object.freeze=function(freezeObject){return function(object){return\"function\"==typeof object?object:freezeObject(object)}}(Object.freeze)}if(Object.preventExtensions||(Object.preventExtensions=function(object){return object}),Object.isSealed||(Object.isSealed=function(){return!1}),Object.isFrozen||(Object.isFrozen=function(){return!1}),Object.isExtensible||(Object.isExtensible=function(object){if(Object(object)===object)throw new TypeError;for(var name=\"\";owns(object,name);)name+=\"?\";object[name]=!0;var returnValue=owns(object,name);return delete object[name],returnValue}),!Object.keys){var hasDontEnumBug=!0,dontEnums=[\"toString\",\"toLocaleString\",\"valueOf\",\"hasOwnProperty\",\"isPrototypeOf\",\"propertyIsEnumerable\",\"constructor\"],dontEnumsLength=dontEnums.length;for(var key in{toString:null})hasDontEnumBug=!1;Object.keys=function(object){if(\"object\"!=typeof object&&\"function\"!=typeof object||null===object)throw new TypeError(\"Object.keys called on a non-object\");var keys=[];for(var name in object)owns(object,name)&&keys.push(name);if(hasDontEnumBug)for(var i=0,ii=dontEnumsLength;ii>i;i++){var dontEnum=dontEnums[i];owns(object,dontEnum)&&keys.push(dontEnum)}return keys}}Date.now||(Date.now=function(){return(new Date).getTime()});var ws=\"\t\\n\u000b\\f\\r   ᠎             　\\u2028\\u2029﻿\";if(!String.prototype.trim||ws.trim()){ws=\"[\"+ws+\"]\";var trimBeginRegexp=RegExp(\"^\"+ws+ws+\"*\"),trimEndRegexp=RegExp(ws+ws+\"*$\");String.prototype.trim=function(){return(this+\"\").replace(trimBeginRegexp,\"\").replace(trimEndRegexp,\"\")}}var toObject=function(o){if(null==o)throw new TypeError(\"can't convert \"+o+\" to object\");return Object(o)}});";
 },{}],"../node_modules/brace/mode/json.js":[function(require,module,exports) {
@@ -50781,9 +57373,11 @@ function theme(acequire, exports) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.default = Editor;
 
-var _react = _interopRequireWildcard(require("react"));
+var _react = _interopRequireDefault(require("react"));
+
+var _reactAce = _interopRequireDefault(require("react-ace"));
 
 var _brace = _interopRequireDefault(require("brace"));
 
@@ -50795,101 +57389,48 @@ require("./editor-theme-fluent");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
-class Editor extends _react.Component {
-  componentWillReceiveProps(nextProps) {
-    // XXX We don't allow changing most of the Editor config here to avoid
-    // infinite loops between setValue and onChange.
-    const annotations = nextProps.annotations,
-          value = nextProps.value;
+// https://github.com/ajaxorg/ace/wiki/Configuring-Ace
+const ACE_OPTIONS = {
+  // Editor options.
+  selectionStyle: 'text',
+  highlightActiveLine: false,
+  highlightSelectedWord: false,
+  cursorStyle: 'ace',
+  mergeUndoDeltas: false,
+  behavioursEnabled: false,
+  wrapBehavioursEnabled: false,
+  autoScrollEditorIntoView: false,
+  // Renderer options.
+  hScrollBarAlwaysVisible: false,
+  vScrollBarAlwaysVisible: false,
+  highlightGutterLine: true,
+  animatedScroll: false,
+  showInvisibles: false,
+  showPrintMargin: false,
+  printMarginColumn: false,
+  printMargin: false,
+  fadeFoldWidgets: false,
+  showFoldWidgets: false,
+  showLineNumbers: false,
+  displayIndentGuides: false,
+  scrollPastEnd: false,
+  fixedWidthGutter: false
+};
 
-    if (annotations) {
-      this.editor.getSession().setAnnotations(annotations);
-    }
-
-    if (value && !this.props.onChange) {
-      this.editor.setValue(value);
-      this.editor.clearSelection();
-    }
-  }
-
-  componentDidMount() {
-    const _this$props = this.props,
-          _this$props$annotatio = _this$props.annotations,
-          annotations = _this$props$annotatio === void 0 ? [] : _this$props$annotatio,
-          _this$props$fontSize = _this$props.fontSize,
-          fontSize = _this$props$fontSize === void 0 ? 14 : _this$props$fontSize,
-          _this$props$gutter = _this$props.gutter,
-          gutter = _this$props$gutter === void 0 ? true : _this$props$gutter,
-          _this$props$mode = _this$props.mode,
-          mode = _this$props$mode === void 0 ? "fluent" : _this$props$mode,
-          onChange = _this$props.onChange,
-          _this$props$readOnly = _this$props.readOnly,
-          readOnly = _this$props$readOnly === void 0 ? false : _this$props$readOnly,
-          _this$props$value = _this$props.value,
-          value = _this$props$value === void 0 ? "" : _this$props$value;
-    this.editor = _brace.default.edit(this.root);
-    this.editor.setValue(value);
-    this.editor.getSession().setAnnotations(annotations);
-    this.editor.clearSelection();
-    this.editor.gotoLine(0);
-
-    if (onChange) {
-      this.editor.on('change', () => onChange(this.editor.getValue()));
-    }
-
-    this.editor.setOptions({
-      selectionStyle: 'text',
-      highlightActiveLine: false,
-      highlightSelectedWord: false,
-      readOnly,
-      cursorStyle: 'ace',
-      mergeUndoDeltas: false,
-      behavioursEnabled: false,
-      wrapBehavioursEnabled: false,
-      autoScrollEditorIntoView: false,
-      // renderer options
-      hScrollBarAlwaysVisible: false,
-      vScrollBarAlwaysVisible: false,
-      highlightGutterLine: true,
-      animatedScroll: false,
-      showInvisibles: false,
-      showPrintMargin: false,
-      printMarginColumn: false,
-      printMargin: false,
-      fadeFoldWidgets: false,
-      showFoldWidgets: false,
-      showLineNumbers: false,
-      showGutter: gutter,
-      displayIndentGuides: false,
-      fontSize,
-      scrollPastEnd: false,
-      fixedWidthGutter: false,
-      theme: `ace/theme/fluent`
-    });
-    this.editor.getSession().setOptions({
-      firstLineNumber: 1,
-      useWorker: false,
-      useSoftTabs: true,
-      tabSize: 4,
-      mode: `ace/mode/${mode}`
-    });
-  }
-
-  render() {
-    const className = this.props.className;
-    return _react.default.createElement("div", {
-      className: className,
-      ref: elem => this.root = elem
-    });
-  }
-
+function Editor(props) {
+  return _react.default.createElement(_reactAce.default, _extends({
+    mode: "fluent",
+    theme: "fluent",
+    fontSize: 14,
+    width: "auto",
+    setOptions: ACE_OPTIONS,
+    debounceChangePeriod: 200,
+    onLoad: editor => editor.gotoLine(0)
+  }, props));
 }
-
-var _default = Editor;
-exports.default = _default;
-},{"react":"../node_modules/react/index.js","brace":"../node_modules/brace/index.js","brace/mode/json":"../node_modules/brace/mode/json.js","./editor-mode-fluent":"../src/editor-mode-fluent.js","./editor-theme-fluent":"../src/editor-theme-fluent.js"}],"../src/panel-translations.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-ace":"../node_modules/react-ace/lib/index.js","brace":"../node_modules/brace/index.js","brace/mode/json":"../node_modules/brace/mode/json.js","./editor-mode-fluent":"../src/editor-mode-fluent.js","./editor-theme-fluent":"../src/editor-theme-fluent.js"}],"../src/panel-translations.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -50919,7 +57460,7 @@ function TranslationsPanel(props) {
     mode: "fluent",
     className: "translations__editor",
     fontSize: 16,
-    gutter: true,
+    showGutter: true,
     value: value,
     annotations: annotations,
     onChange: change_translations
@@ -50969,7 +57510,7 @@ function ASTPanel(props) {
     className: "ast__editor",
     mode: "json",
     readOnly: true,
-    gutter: false,
+    showGutter: false,
     value: ast
   }));
 }
@@ -51099,7 +57640,7 @@ function ConfigPanel(props) {
   }, "External Data"), _react.default.createElement(_editor.default, {
     className: "externals__editor",
     mode: "json",
-    gutter: false,
+    showGutter: false,
     value: externals,
     onChange: change_externals
   }), _react.default.createElement("p", {
@@ -51724,7 +58265,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58021" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53739" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
