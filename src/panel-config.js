@@ -71,7 +71,7 @@ function ConfigPanel(props) {
             />
             <p className="panel__hint">
                 Hint: You can pass dates in the simplified extended
-                ISO8601 format, as returned by <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString">Date.toISOString</a>,
+                ISO8601 format, as returned by <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString">Date.toISOString</a>,
                 e.g. <code>"{ new Date().toISOString() }"</code>.
             </p>
         </section>
