@@ -27,8 +27,8 @@
     "redux-thunk": "^2.3.0"
   },
   "browserslist": [
-    "Firefox >= 52",
-    "FirefoxAndroid >= 52",
+    "Firefox >= 53",
+    "FirefoxAndroid >= 53",
     "Chrome >= 55",
     "ChromeAndroid >= 55",
     "Edge >= 15",
