@@ -28900,49 +28900,29 @@ function create_bundle(locale, translations) {
 function format_messages(ast, bundle, externals) {
   const outputs = new Map();
   const errors = [];
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    for (var _iterator = ast.body[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      const entry = _step.value;
-
-      if (entry.type !== "Message") {
-        continue;
-      }
-
-      const id = entry.id.name;
-      const message = bundle.getMessage(id);
-      const formatted_message = {
-        id,
-        value: bundle.format(message, externals, errors),
-        attributes: Object.entries(message && message.attrs || {}).map((_ref) => {
-          let _ref2 = _slicedToArray(_ref, 2),
-              attr_id = _ref2[0],
-              attr_value = _ref2[1];
-
-          return {
-            id: attr_id,
-            value: bundle.format(attr_value, externals, errors)
-          };
-        })
-      };
-      outputs.set(id, formatted_message);
+  for (const entry of ast.body) {
+    if (entry.type !== "Message") {
+      continue;
     }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
+
+    const id = entry.id.name;
+    const message = bundle.getMessage(id);
+    const formatted_message = {
+      id,
+      value: bundle.format(message, externals, errors),
+      attributes: Object.entries(message && message.attrs || {}).map((_ref) => {
+        let _ref2 = _slicedToArray(_ref, 2),
+            attr_id = _ref2[0],
+            attr_value = _ref2[1];
+
+        return {
+          id: attr_id,
+          value: bundle.format(attr_value, externals, errors)
+        };
+      })
+    };
+    outputs.set(id, formatted_message);
   }
 
   return [outputs, errors];
@@ -28957,12 +28937,11 @@ function parse_externals(externals) {
     return [{}, [err]];
   }
 
-  var _arr2 = Object.entries(obj);
+  for (const _ref3 of Object.entries(obj)) {
+    var _ref4 = _slicedToArray(_ref3, 2);
 
-  for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-    const _arr2$_i = _slicedToArray(_arr2[_i2], 2),
-          key = _arr2$_i[0],
-          val = _arr2$_i[1];
+    const key = _ref4[0];
+    const val = _ref4[1];
 
     if (iso_re.test(val)) {
       obj[key] = new Date(val);
@@ -29003,75 +28982,34 @@ var _error = require("./error");
 
 const GITHUB_API = 'https://api.github.com';
 
-function get(endpoint) {
-  var response;
-  return regeneratorRuntime.async(function get$(_context) {
-    while (1) switch (_context.prev = _context.next) {
-      case 0:
-        _context.next = 2;
-        return regeneratorRuntime.awrap(fetch(`${GITHUB_API}${endpoint}`, {
-          method: 'GET',
-          headers: new Headers({
-            'Accept': 'application/vnd.github.v3+json'
-          })
-        }));
-
-      case 2:
-        response = _context.sent;
-        return _context.abrupt("return", validate(response));
-
-      case 4:
-      case "end":
-        return _context.stop();
-    }
-  }, null, this);
+async function get(endpoint) {
+  const response = await fetch(`${GITHUB_API}${endpoint}`, {
+    method: 'GET',
+    headers: new Headers({
+      'Accept': 'application/vnd.github.v3+json'
+    })
+  });
+  return validate(response);
 }
 
-function post(endpoint, body) {
-  var response;
-  return regeneratorRuntime.async(function post$(_context2) {
-    while (1) switch (_context2.prev = _context2.next) {
-      case 0:
-        _context2.next = 2;
-        return regeneratorRuntime.awrap(fetch(`${GITHUB_API}${endpoint}`, {
-          method: 'POST',
-          headers: new Headers({
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
-          }),
-          body: JSON.stringify(body)
-        }));
-
-      case 2:
-        response = _context2.sent;
-        return _context2.abrupt("return", validate(response));
-
-      case 4:
-      case "end":
-        return _context2.stop();
-    }
-  }, null, this);
+async function post(endpoint, body) {
+  const response = await fetch(`${GITHUB_API}${endpoint}`, {
+    method: 'POST',
+    headers: new Headers({
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    }),
+    body: JSON.stringify(body)
+  });
+  return validate(response);
 }
 
-function validate(response) {
-  return regeneratorRuntime.async(function validate$(_context3) {
-    while (1) switch (_context3.prev = _context3.next) {
-      case 0:
-        if (!response.ok) {
-          _context3.next = 2;
-          break;
-        }
+async function validate(response) {
+  if (response.ok) {
+    return response.json();
+  }
 
-        return _context3.abrupt("return", response.json());
-
-      case 2:
-        throw new _error.PlaygroundError('NETWORK_ERROR', response.statusText, response);
-
-      case 3:
-      case "end":
-        return _context3.stop();
-    }
-  }, null, this);
+  throw new _error.PlaygroundError('NETWORK_ERROR', response.statusText, response);
 }
 
 function validate_gist(gist) {
@@ -29746,103 +29684,72 @@ function change_externals(value) {
 }
 
 function fetch_gist(id) {
-  return function _callee(dispatch) {
-    var gist;
-    return regeneratorRuntime.async(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          dispatch({
-            type: 'REQUEST_GIST_FETCH'
-          });
-          _context.prev = 1;
-          _context.next = 4;
-          return regeneratorRuntime.awrap((0, _github.get)(`/gists/${id}`));
+  return async function (dispatch) {
+    dispatch({
+      type: 'REQUEST_GIST_FETCH'
+    });
 
-        case 4:
-          gist = _context.sent;
-          _context.next = 10;
-          break;
+    try {
+      var gist = await (0, _github.get)(`/gists/${id}`);
+    } catch (error) {
+      return dispatch({
+        type: 'ERROR_GIST_FETCH',
+        error
+      });
+    }
 
-        case 7:
-          _context.prev = 7;
-          _context.t0 = _context["catch"](1);
-          return _context.abrupt("return", dispatch({
-            type: 'ERROR_GIST_FETCH',
-            error: _context.t0
-          }));
-
-        case 10:
-          dispatch({
-            type: 'RECEIVE_GIST_FETCH',
-            gist
-          });
-
-        case 11:
-        case "end":
-          return _context.stop();
-      }
-    }, null, this, [[1, 7]]);
+    dispatch({
+      type: 'RECEIVE_GIST_FETCH',
+      gist
+    });
   };
 }
 
 function create_gist() {
-  return function _callee2(dispatch, getState) {
-    var _getState, translations, externals_string, locale, dir, setup, body, response;
+  return async function (dispatch, getState) {
+    dispatch({
+      type: 'REQUEST_GIST_CREATE'
+    });
 
-    return regeneratorRuntime.async(function _callee2$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          dispatch({
-            type: 'REQUEST_GIST_CREATE'
-          });
-          _getState = getState(), translations = _getState.translations, externals_string = _getState.externals_string, locale = _getState.locale, dir = _getState.dir;
-          setup = {
-            locale,
-            dir
-          };
-          body = {
-            'description': 'A Fluent Playground example',
-            'public': true,
-            'files': {
-              'playground.ftl': {
-                'content': translations
-              },
-              'playground.json': {
-                'content': externals_string
-              },
-              'setup.json': {
-                'content': JSON.stringify(setup, null, 4)
-              }
-            }
-          };
-          _context2.prev = 4;
-          _context2.next = 7;
-          return regeneratorRuntime.awrap((0, _github.post)('/gists', body));
+    const _getState = getState(),
+          translations = _getState.translations,
+          externals_string = _getState.externals_string,
+          locale = _getState.locale,
+          dir = _getState.dir;
 
-        case 7:
-          response = _context2.sent;
-          _context2.next = 13;
-          break;
-
-        case 10:
-          _context2.prev = 10;
-          _context2.t0 = _context2["catch"](4);
-          return _context2.abrupt("return", dispatch({
-            type: 'ERROR_GIST_CREATE',
-            error: _context2.t0
-          }));
-
-        case 13:
-          dispatch({
-            type: 'RECEIVE_GIST_CREATE',
-            response
-          });
-
-        case 14:
-        case "end":
-          return _context2.stop();
+    const setup = {
+      locale,
+      dir
+    };
+    const body = {
+      'description': 'A Fluent Playground example',
+      'public': true,
+      'files': {
+        'playground.ftl': {
+          'content': translations
+        },
+        'playground.json': {
+          'content': externals_string
+        },
+        'setup.json': {
+          'content': JSON.stringify(setup, null, 4)
+        }
       }
-    }, null, this, [[4, 10]]);
+    };
+
+    try {
+      var response = await (0, _github.post)('/gists', body);
+    } catch (error) {
+      return dispatch({
+        type: 'ERROR_GIST_CREATE',
+        error
+      });
+    }
+
+    dispatch({
+      type: 'RECEIVE_GIST_CREATE',
+      response
+    });
   };
 }
 
@@ -58265,7 +58172,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53739" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50400" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
