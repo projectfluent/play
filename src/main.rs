@@ -8,6 +8,6 @@ fn main() {
         .parse()
         .expect("Unable to parse PORT into a number");
     Iron::new(|_: &mut Request| Ok(Response::with((status::Ok, "Hello World!"))))
-        .http(("localhost", port))
+        .http(("0.0.0.0", port))
         .unwrap();
 }
