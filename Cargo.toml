@@ -1,0 +1,8 @@
+[package]
+name = "proxy"
+version = "0.1.0"
+authors = ["Staś Małolepszy <stas@mozilla.com>"]
+edition = "2018"
+
+[dependencies]
+iron = "*"
