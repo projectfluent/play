@@ -5,5 +5,7 @@ authors = ["Staś Małolepszy <stas@mozilla.com>"]
 edition = "2018"
 
 [dependencies]
+hubcaps = "*"
 iron = "*"
 router = "*"
+tokio = "*"
