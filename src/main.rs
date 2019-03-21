@@ -1,6 +1,8 @@
+use corsware::{AllowedOrigins, CorsMiddleware, Origin, UniCase};
 use hubcaps::{Credentials, Github};
-use iron::{status, Iron, Request, Response};
+use iron::{method::Method, status, Chain, Iron, Request, Response};
 use router::Router;
+use std::collections::HashSet;
 use std::env;
 use tokio::runtime::Runtime;
 
@@ -44,5 +46,19 @@ fn main() {
         "fetch",
     );
 
-    Iron::new(router).http(("0.0.0.0", port)).unwrap();
+    let mut origins = HashSet::new();
+    origins.insert(Origin::parse("https://projectfluent.org").unwrap());
+
+    let mut chain = Chain::new(router);
+    chain.link_around(CorsMiddleware {
+        allowed_origins: AllowedOrigins::Specific(origins),
+        allowed_headers: vec![UniCase("Content-Type".to_owned())],
+        allowed_methods: vec![Method::Get, Method::Post],
+        exposed_headers: vec![],
+        allow_credentials: false,
+        max_age_seconds: 60 * 60,
+        prefer_wildcard: false,
+    });
+
+    Iron::new(chain).http(("0.0.0.0", port)).unwrap();
 }
