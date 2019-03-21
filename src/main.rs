@@ -1,7 +1,12 @@
 use corsware::{AllowedOrigins, CorsMiddleware, Origin, UniCase};
-use hubcaps::{Credentials, Github};
-use iron::{method::Method, status, Chain, Iron, Request, Response};
+use hubcaps::{gists, Credentials, Github};
+use iron::{
+    headers::ContentType, method::Method, modifiers::Header, status, Chain, Iron, IronResult,
+    Request, Response,
+};
 use router::Router;
+use serde::Serialize;
+use serde_json;
 use std::collections::HashSet;
 use std::env;
 use tokio::runtime::Runtime;
@@ -33,15 +38,11 @@ fn main() {
         move |req: &mut Request| {
             let params = req.extensions.get::<Router>().unwrap();
             let id = params.find("id").unwrap();
-
             let gist = Runtime::new()
                 .expect("Unable to create runtime")
                 .block_on(gists.get(id))
                 .expect("Unable to fetch gist");
-            println!("{:#?}", gist);
-
-            let resp = Response::with((status::Ok, format!("Gist id: {}", gist.id)));
-            Ok(resp)
+            json_response(Playground::from(gist))
         },
         "fetch",
     );
@@ -61,4 +62,42 @@ fn main() {
     });
 
     Iron::new(chain).http(("0.0.0.0", port)).unwrap();
+}
+
+#[derive(Debug, Serialize)]
+struct Playground {
+    id: String,
+    setup: String,
+    messages: String,
+    variables: String,
+}
+
+fn get_file_content(gist: &gists::Gist, name: &str) -> String {
+    gist.files.get(name).unwrap().content.clone().unwrap()
+}
+
+impl From<gists::Gist> for Playground {
+    fn from(gist: gists::Gist) -> Self {
+        Playground {
+            id: gist.id.clone(),
+            setup: get_file_content(&gist, "setup.json"),
+            messages: get_file_content(&gist, "playground.ftl"),
+            variables: get_file_content(&gist, "playground.json"),
+        }
+    }
+}
+
+fn json_response(response: impl Serialize) -> IronResult<Response> {
+    match serde_json::ser::to_string(&response) {
+        Ok(body) => Ok(Response::with((
+            status::Ok,
+            Header(ContentType::json()),
+            body,
+        ))),
+        Err(_) => Ok(Response::with((
+            status::InternalServerError,
+            Header(ContentType::json()),
+            r#"{"error": "Error serializing response"}"#,
+        ))),
+    }
 }
