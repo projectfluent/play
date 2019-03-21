@@ -27,7 +27,7 @@ fn main() {
         "index",
     );
     router.get(
-        "/gist/:id",
+        "/gists/:id",
         move |req: &mut Request| {
             let params = req.extensions.get::<Router>().unwrap();
             let id = params.find("id").unwrap();
