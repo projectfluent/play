@@ -5,7 +5,7 @@ use iron::{
     Request, Response,
 };
 use router::Router;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_json;
 use std::collections::{HashMap, HashSet};
 use std::env;
@@ -88,7 +88,9 @@ fn playground_create(req: &mut Request) -> IronResult<Response> {
     let gists_middleware = req.extensions.get::<GistsMiddleware>().unwrap();
     let gists = &gists_middleware.gists;
     let mut payload = String::new();
-    req.body.read_to_string(&mut payload).expect("Failed to read request body");
+    req.body
+        .read_to_string(&mut payload)
+        .expect("Failed to read request body");
     let playground = serde_json::from_str::<Playground>(&payload).unwrap();
     let gist = Runtime::new()
         .expect("Unable to create runtime")

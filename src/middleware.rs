@@ -1,4 +1,6 @@
 use hubcaps;
+use hyper;
+use hyper_tls;
 use iron;
 use std::sync::Arc;
 
