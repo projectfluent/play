@@ -5,10 +5,11 @@ use iron::{
     Request, Response,
 };
 use router::Router;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use serde_json;
 use std::collections::{HashMap, HashSet};
 use std::env;
+use std::io::Read;
 use tokio::runtime::Runtime;
 
 mod middleware;
@@ -30,6 +31,7 @@ fn main() {
     let mut router = Router::new();
     router.get("/", index_get, "index");
     router.get("/gists/:id", playground_get, "fetch");
+    router.post("/gists", playground_create, "create");
 
     let mut origins = HashSet::new();
     origins.insert(Origin::parse("https://projectfluent.org").unwrap());
@@ -62,9 +64,9 @@ fn index_get(_req: &mut Request) -> IronResult<Response> {
     })
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Playground {
-    id: String,
+    id: Option<String>,
     messages: String,
     variables: serde_json::Value,
     setup: serde_json::Value,
@@ -82,6 +84,19 @@ fn playground_get(req: &mut Request) -> IronResult<Response> {
     json_response(Playground::from(gist))
 }
 
+fn playground_create(req: &mut Request) -> IronResult<Response> {
+    let gists_middleware = req.extensions.get::<GistsMiddleware>().unwrap();
+    let gists = &gists_middleware.gists;
+    let mut payload = String::new();
+    req.body.read_to_string(&mut payload).expect("Failed to read request body");
+    let playground = serde_json::from_str::<Playground>(&payload).unwrap();
+    let gist = Runtime::new()
+        .expect("Unable to create runtime")
+        .block_on(gists.create(&gists::GistOptions::from(playground)))
+        .expect("Unable to create gist");
+    json_response(Playground::from(gist))
+}
+
 fn get_file_content<'gist>(gist: &'gist gists::Gist, name: &str) -> &'gist String {
     gist.files.get(name).unwrap().content.as_ref().unwrap()
 }
@@ -89,10 +104,42 @@ fn get_file_content<'gist>(gist: &'gist gists::Gist, name: &str) -> &'gist Strin
 impl From<gists::Gist> for Playground {
     fn from(gist: gists::Gist) -> Self {
         Playground {
-            id: gist.id.clone(),
+            id: Some(gist.id.clone()),
             messages: get_file_content(&gist, "playground.ftl").clone(),
             variables: serde_json::from_str(&get_file_content(&gist, "playground.json")).unwrap(),
             setup: serde_json::from_str(&get_file_content(&gist, "setup.json")).unwrap(),
+        }
+    }
+}
+
+impl From<Playground> for gists::GistOptions {
+    fn from(playground: Playground) -> Self {
+        let mut files = HashMap::new();
+        files.insert(
+            "playground.ftl".to_string(),
+            gists::Content {
+                filename: None,
+                content: playground.messages,
+            },
+        );
+        files.insert(
+            "playground.json".to_string(),
+            gists::Content {
+                filename: None,
+                content: serde_json::ser::to_string(&playground.variables).unwrap(),
+            },
+        );
+        files.insert(
+            "setup.json".to_string(),
+            gists::Content {
+                filename: None,
+                content: serde_json::ser::to_string(&playground.setup).unwrap(),
+            },
+        );
+        gists::GistOptions {
+            description: Some("A Fluent Playground snippet".to_string()),
+            public: Some(true),
+            files,
         }
     }
 }
