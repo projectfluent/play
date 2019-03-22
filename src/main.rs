@@ -67,22 +67,22 @@ fn main() {
 #[derive(Debug, Serialize)]
 struct Playground {
     id: String,
-    setup: String,
     messages: String,
-    variables: String,
+    variables: serde_json::Value,
+    setup: serde_json::Value,
 }
 
-fn get_file_content(gist: &gists::Gist, name: &str) -> String {
-    gist.files.get(name).unwrap().content.clone().unwrap()
+fn get_file_content<'gist>(gist: &'gist gists::Gist, name: &str) -> &'gist String {
+    gist.files.get(name).unwrap().content.as_ref().unwrap()
 }
 
 impl From<gists::Gist> for Playground {
     fn from(gist: gists::Gist) -> Self {
         Playground {
             id: gist.id.clone(),
-            setup: get_file_content(&gist, "setup.json"),
-            messages: get_file_content(&gist, "playground.ftl"),
-            variables: get_file_content(&gist, "playground.json"),
+            messages: get_file_content(&gist, "playground.ftl").clone(),
+            variables: serde_json::from_str(&get_file_content(&gist, "playground.json")).unwrap(),
+            setup: serde_json::from_str(&get_file_content(&gist, "setup.json")).unwrap(),
         }
     }
 }
