@@ -28,29 +28,8 @@ fn main() {
     let gists = github.gists();
 
     let mut router = Router::new();
-    router.get(
-        "/",
-        |_req: &mut Request| {
-            let resp = Response::with((status::Ok, "Hello, world!"));
-            Ok(resp)
-        },
-        "index",
-    );
-    router.get(
-        "/gists/:id",
-        |req: &mut Request| {
-            let gists_middleware = req.extensions.get::<GistsMiddleware>().unwrap();
-            let gists = &gists_middleware.gists;
-            let params = req.extensions.get::<Router>().unwrap();
-            let id = params.find("id").unwrap();
-            let gist = Runtime::new()
-                .expect("Unable to create runtime")
-                .block_on(gists.get(id))
-                .expect("Unable to fetch gist");
-            json_response(Playground::from(gist))
-        },
-        "fetch",
-    );
+    router.get("/", index_get, "index");
+    router.get("/gists/:id", playground_get, "fetch");
 
     let mut origins = HashSet::new();
     origins.insert(Origin::parse("https://projectfluent.org").unwrap());
@@ -71,11 +50,36 @@ fn main() {
 }
 
 #[derive(Debug, Serialize)]
+struct Index {
+    name: String,
+    version: String,
+}
+
+fn index_get(_req: &mut Request) -> IronResult<Response> {
+    json_response(Index {
+        name: env!("CARGO_PKG_NAME").to_string(),
+        version: env!("CARGO_PKG_VERSION").to_string(),
+    })
+}
+
+#[derive(Debug, Serialize)]
 struct Playground {
     id: String,
     messages: String,
     variables: serde_json::Value,
     setup: serde_json::Value,
+}
+
+fn playground_get(req: &mut Request) -> IronResult<Response> {
+    let gists_middleware = req.extensions.get::<GistsMiddleware>().unwrap();
+    let gists = &gists_middleware.gists;
+    let params = req.extensions.get::<Router>().unwrap();
+    let id = params.find("id").unwrap();
+    let gist = Runtime::new()
+        .expect("Unable to create runtime")
+        .block_on(gists.get(id))
+        .expect("Unable to fetch gist");
+    json_response(Playground::from(gist))
 }
 
 fn get_file_content<'gist>(gist: &'gist gists::Gist, name: &str) -> &'gist String {
