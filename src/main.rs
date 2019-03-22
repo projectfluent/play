@@ -7,9 +7,12 @@ use iron::{
 use router::Router;
 use serde::Serialize;
 use serde_json;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::env;
 use tokio::runtime::Runtime;
+
+mod middleware;
+use middleware::GistsMiddleware;
 
 fn main() {
     let port = env::var("PORT")
@@ -35,7 +38,9 @@ fn main() {
     );
     router.get(
         "/gists/:id",
-        move |req: &mut Request| {
+        |req: &mut Request| {
+            let gists_middleware = req.extensions.get::<GistsMiddleware>().unwrap();
+            let gists = &gists_middleware.gists;
             let params = req.extensions.get::<Router>().unwrap();
             let id = params.find("id").unwrap();
             let gist = Runtime::new()
@@ -51,6 +56,7 @@ fn main() {
     origins.insert(Origin::parse("https://projectfluent.org").unwrap());
 
     let mut chain = Chain::new(router);
+    chain.link_before(GistsMiddleware::new(gists));
     chain.link_around(CorsMiddleware {
         allowed_origins: AllowedOrigins::Specific(origins),
         allowed_headers: vec![UniCase("Content-Type".to_owned())],
