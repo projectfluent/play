@@ -1,1 +1,1 @@
-web: ./target/release/proxy
+web: ./target/release/fluent-play
