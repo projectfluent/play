@@ -11,7 +11,7 @@ function ConfigPanel(props) {
 
     return (
         <section className="panel">
-            <h1 className="panel__title">Language & Direction</h1>
+            <h1 className="panel__title">Language Settings</h1>
             <div className="setting">
                 <label className="setting__name" htmlFor="locale">
                     Language used for date, number and plural formatting.
@@ -61,7 +61,7 @@ function ConfigPanel(props) {
                     </select>
                 </div>
             </div>
-            <h1 className="panel__title">External Data</h1>
+            <h1 className="panel__title">Variables</h1>
             <Editor
                 className="externals__editor"
                 mode="json"

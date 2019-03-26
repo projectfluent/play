@@ -1,7 +1,6 @@
-export class PlaygroundError extends Error {
-    constructor(type, message, data) {
+export class ServerError extends Error {
+    constructor(status, message) {
         super(message);
-        this.type = type;
-        this.data = data;
+        this.status = status;
     }
 }

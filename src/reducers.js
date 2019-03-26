@@ -2,7 +2,6 @@ import { translations, externals } from './defaults';
 import {
     parse_translations, create_bundle, format_messages, parse_externals,
 } from './fluent';
-import { validate_gist } from './github';
 
 const locale = 'en-US';
 const [ast, annotations] = parse_translations(translations);
@@ -115,28 +114,12 @@ export default function reducer(state = {
         }
         case 'RECEIVE_GIST_FETCH': {
             const { gist } = action;
-
-            try {
-                validate_gist(gist);
-            } catch(error) {
-                return {
-                    ...state,
-                    is_fetching: false,
-                    fixture_error: error
-                };
-            }
-
-            const { files } = gist;
-            const translations = files['playground.ftl'].content;
-            const externals_string = files['playground.json'].content;
-
-            const { locale, dir } = parse_setup(files, state);
+            const translations = gist.messages;
+            const externals = gist.variables;
+            const { locale, dir } = gist.setup;
 
             const bundle = create_bundle(locale, translations);
             const [ast, annotations] = parse_translations(translations);
-            const [externals, externals_errors] = parse_externals(
-                externals_string
-            );
             const [out, format_errors] = format_messages(ast, bundle, externals);
 
             return {
@@ -147,8 +130,8 @@ export default function reducer(state = {
                 translations,
                 annotations,
                 externals,
-                externals_errors,
-                externals_string,
+                externals_errors: [],
+                externals_string: JSON.stringify(externals, null, 4),
                 format_errors,
                 ast,
                 bundle,
@@ -193,23 +176,4 @@ export default function reducer(state = {
         default:
             return state;
     }
-}
-
-function parse_setup(files, state) {
-    if (!files['setup.json']) {
-        return state;
-    }
-
-    const content = files['setup.json'].content;
-
-    try {
-        var setup = JSON.parse(content);
-    } catch (err) {
-        return state;
-    }
-
-    return {
-        locale: setup.locale || state.locale,
-        dir: setup.dir || state.dir,
-    };
 }

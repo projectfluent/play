@@ -1,4 +1,4 @@
-import { get, post } from './github';
+import { get, post } from './api';
 
 export function toggle_panel(name) {
     return {
@@ -40,7 +40,7 @@ export function fetch_gist(id) {
         dispatch({ type: 'REQUEST_GIST_FETCH' });
 
         try {
-            var gist = await get(`/gists/${id}`);
+            var gist = await get(`/playgrounds/${id}`);
         } catch(error) {
             return dispatch({ type: 'ERROR_GIST_FETCH', error });
         }
@@ -53,27 +53,15 @@ export function create_gist() {
     return async function(dispatch, getState) {
         dispatch({ type: 'REQUEST_GIST_CREATE' });
 
-        const { translations, externals_string, locale, dir } = getState();
-        const setup = { locale, dir };
-
+        const { translations, externals, locale, dir } = getState();
         const body = {
-            'description': 'A Fluent Playground example',
-            'public': true,
-            'files': {
-                'playground.ftl': {
-                  'content': translations
-                },
-                'playground.json': {
-                  'content': externals_string
-                },
-                'setup.json': {
-                  'content': JSON.stringify(setup, null, 4)
-                },
-            }
+            messages: translations,
+            variables: externals,
+            setup: { locale, dir, }
         };
 
         try {
-            var response = await post('/gists', body);
+            var response = await post('/playgrounds', body);
         } catch(error) {
             return dispatch({ type: 'ERROR_GIST_CREATE', error });
         }
