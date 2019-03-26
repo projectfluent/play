@@ -9,20 +9,20 @@
     "deploy": "npm run build && gh-pages -d dist"
   },
   "devDependencies": {
-    "gh-pages": "^1.2.0",
-    "parcel-bundler": "^1.10.3"
+    "gh-pages": "^2.0.1",
+    "parcel-bundler": "^1.12.3"
   },
   "dependencies": {
     "brace": "^0.11.1",
     "fluent": "0.12.0",
     "fluent-syntax": "0.12.0",
-    "intl-pluralrules": "^0.2.1",
-    "query-string": "^6.1.0",
-    "react": "^16.3.2",
-    "react-ace": "^6.3.2",
-    "react-dom": "^16.3.2",
-    "react-redux": "^5.0.7",
-    "redux": "^4.0.0",
+    "intl-pluralrules": "^1.0.0",
+    "query-string": "^6.4.0",
+    "react": "^16.8.5",
+    "react-ace": "^6.4.0",
+    "react-dom": "^16.8.5",
+    "react-redux": "^6.0.1",
+    "redux": "^4.0.1",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0"
   },
