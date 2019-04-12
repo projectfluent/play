@@ -8,6 +8,7 @@ use std::convert::TryFrom;
 use std::io::Read;
 use tokio::runtime::Runtime;
 
+use crate::errors::Error;
 use crate::json;
 use crate::middleware::GistsMiddleware;
 
@@ -39,11 +40,11 @@ pub fn create(req: &mut Request) -> IronResult<Response> {
     let gists = &gists_middleware.gists;
     let mut payload = String::new();
     if let Err(_) = req.body.read_to_string(&mut payload) {
-        return json::error("Failed to read request body".to_string());
+        return json::error(Error::UnreadableRequestBody);
     }
     let playground = match serde_json::from_str::<Playground>(&payload) {
         Ok(playground) => playground,
-        Err(_) => return json::error("Error deserializing payload".to_string()),
+        Err(_) => return json::error(Error::Deserialization),
     };
     let options = match gists::GistOptions::try_from(playground) {
         Ok(options) => options,
@@ -59,25 +60,24 @@ pub fn create(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-fn try_file_content<'gist>(gist: &'gist gists::Gist, name: &str) -> Result<&'gist String, String> {
+fn try_file_content<'gist>(gist: &'gist gists::Gist, name: &str) -> Result<&'gist String, Error> {
     gist.files
         .get(name)
-        .ok_or(format!("File missing from gist: {}", name))?
+        .ok_or(Error::MissingFile(name.to_string()))?
         .content
         .as_ref()
-        .ok_or(format!("Empty file in gist: {}", name))
+        .ok_or(Error::EmptyFile(name.to_string()))
 }
 
 fn try_deserialize_json<'gist>(
     gist: &'gist gists::Gist,
     name: &str,
-) -> Result<serde_json::value::Value, String> {
-    serde_json::from_str(try_file_content(&gist, name)?)
-        .or(Err(format!("Error deserializing {}", name)))
+) -> Result<serde_json::value::Value, Error> {
+    serde_json::from_str(try_file_content(&gist, name)?).or(Err(Error::Deserialization))
 }
 
 impl TryFrom<gists::Gist> for Playground {
-    type Error = String;
+    type Error = Error;
     fn try_from(gist: gists::Gist) -> Result<Self, Self::Error> {
         Ok(Playground {
             id: Some(gist.id.clone()),
@@ -88,12 +88,12 @@ impl TryFrom<gists::Gist> for Playground {
     }
 }
 
-fn try_serialize_json<'gist>(value: &'gist serde_json::value::Value) -> Result<String, String> {
-    serde_json::ser::to_string(value).or(Err("Error serializing playground".to_string()))
+fn try_serialize_json<'gist>(value: &'gist serde_json::value::Value) -> Result<String, Error> {
+    serde_json::ser::to_string(value).or(Err(Error::Serialization))
 }
 
 impl TryFrom<Playground> for gists::GistOptions {
-    type Error = String;
+    type Error = Error;
     fn try_from(playground: Playground) -> Result<Self, Self::Error> {
         let mut files = HashMap::new();
         files.insert(

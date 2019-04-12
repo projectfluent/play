@@ -5,11 +5,12 @@ use router::Router;
 use std::collections::HashSet;
 use std::env;
 
+mod errors;
 mod info;
 mod json;
 mod middleware;
 mod playground;
-use middleware::GistsMiddleware;
+use crate::middleware::GistsMiddleware;
 
 fn main() {
     let port = env::var("PORT")
