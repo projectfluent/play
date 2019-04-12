@@ -25,10 +25,14 @@ pub fn get(req: &mut Request) -> IronResult<Response> {
     let gists = &gists_middleware.gists;
     let params = req.extensions.get::<Router>().unwrap();
     let id = params.find("id").expect("No route parameter called id");
-    let gist = Runtime::new()
-        .expect("Unable to create runtime")
-        .block_on(gists.get(id))
-        .expect("Unable to fetch gist");
+    let mut rt = match Runtime::new() {
+        Ok(rt) => rt,
+        Err(_) => return json::error(Error::Runtime),
+    };
+    let gist = match rt.block_on(gists.get(id)) {
+        Ok(gist) => gist,
+        Err(_) => return json::error(Error::GistFetch),
+    };
     match Playground::try_from(gist) {
         Ok(playground) => json::respond(playground),
         Err(err) => json::error(err),
@@ -50,10 +54,14 @@ pub fn create(req: &mut Request) -> IronResult<Response> {
         Ok(options) => options,
         Err(err) => return json::error(err),
     };
-    let gist = Runtime::new()
-        .expect("Unable to create runtime")
-        .block_on(gists.create(&options))
-        .expect("Unable to create gist");
+    let mut rt = match Runtime::new() {
+        Ok(rt) => rt,
+        Err(_) => return json::error(Error::Runtime),
+    };
+    let gist = match rt.block_on(gists.create(&options)) {
+        Ok(gist) => gist,
+        Err(_) => return json::error(Error::GistCreate),
+    };
     match Playground::try_from(gist) {
         Ok(playground) => json::respond(playground),
         Err(err) => json::error(err),
