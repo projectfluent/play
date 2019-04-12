@@ -23,7 +23,7 @@ pub fn get(req: &mut Request) -> IronResult<Response> {
     let gists_middleware = req.extensions.get::<GistsMiddleware>().unwrap();
     let gists = &gists_middleware.gists;
     let params = req.extensions.get::<Router>().unwrap();
-    let id = params.find("id").unwrap();
+    let id = params.find("id").expect("No route parameter called id");
     let gist = Runtime::new()
         .expect("Unable to create runtime")
         .block_on(gists.get(id))
@@ -38,18 +38,22 @@ pub fn create(req: &mut Request) -> IronResult<Response> {
     let gists_middleware = req.extensions.get::<GistsMiddleware>().unwrap();
     let gists = &gists_middleware.gists;
     let mut payload = String::new();
-    req.body
-        .read_to_string(&mut payload)
-        .expect("Failed to read request body");
-    let playground = serde_json::from_str::<Playground>(&payload).unwrap();
-    let created = gists::GistOptions::try_from(playground).and_then(|options| {
-        let gist = Runtime::new()
-            .expect("Unable to create runtime")
-            .block_on(gists.create(&options))
-            .expect("Unable to create gist");
-        Playground::try_from(gist)
-    });
-    match created {
+    if let Err(_) = req.body.read_to_string(&mut payload) {
+        return json::error("Failed to read request body".to_string());
+    }
+    let playground = match serde_json::from_str::<Playground>(&payload) {
+        Ok(playground) => playground,
+        Err(_) => return json::error("Error deserializing payload".to_string()),
+    };
+    let options = match gists::GistOptions::try_from(playground) {
+        Ok(options) => options,
+        Err(err) => return json::error(err),
+    };
+    let gist = Runtime::new()
+        .expect("Unable to create runtime")
+        .block_on(gists.create(&options))
+        .expect("Unable to create gist");
+    match Playground::try_from(gist) {
         Ok(playground) => json::respond(playground),
         Err(err) => json::error(err),
     }
