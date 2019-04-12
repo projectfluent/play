@@ -1,5 +1,5 @@
 use iron::{IronResult, Request, Response};
-use serde::{Serialize};
+use serde::Serialize;
 
 use crate::json;
 

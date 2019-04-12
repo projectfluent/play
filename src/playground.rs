@@ -1,12 +1,10 @@
 use hubcaps::gists;
-use iron::{
-    IronResult,
-    Request, Response,
-};
+use iron::{IronResult, Request, Response};
 use router::Router;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::io::Read;
 use tokio::runtime::Runtime;
 
@@ -30,7 +28,10 @@ pub fn get(req: &mut Request) -> IronResult<Response> {
         .expect("Unable to create runtime")
         .block_on(gists.get(id))
         .expect("Unable to fetch gist");
-    json::respond(Playground::from(gist))
+    match Playground::try_from(gist) {
+        Ok(playground) => json::respond(playground),
+        Err(err) => json::error(err),
+    }
 }
 
 pub fn create(req: &mut Request) -> IronResult<Response> {
@@ -45,21 +46,38 @@ pub fn create(req: &mut Request) -> IronResult<Response> {
         .expect("Unable to create runtime")
         .block_on(gists.create(&gists::GistOptions::from(playground)))
         .expect("Unable to create gist");
-    json::respond(Playground::from(gist))
+    match Playground::try_from(gist) {
+        Ok(playground) => json::respond(playground),
+        Err(err) => json::error(err),
+    }
 }
 
-fn get_file_content<'gist>(gist: &'gist gists::Gist, name: &str) -> &'gist String {
-    gist.files.get(name).unwrap().content.as_ref().unwrap()
+fn try_file_content<'gist>(gist: &'gist gists::Gist, name: &str) -> Result<&'gist String, String> {
+    gist.files
+        .get(name)
+        .ok_or(format!("File missing from gist: {}", name))?
+        .content
+        .as_ref()
+        .ok_or(format!("Empty file in gist: {}", name))
 }
 
-impl From<gists::Gist> for Playground {
-    fn from(gist: gists::Gist) -> Self {
-        Playground {
+fn try_json_value<'gist>(
+    gist: &'gist gists::Gist,
+    name: &str,
+) -> Result<serde_json::value::Value, String> {
+    serde_json::from_str(try_file_content(&gist, name)?)
+        .or(Err(format!("Error deserializing {}", name)))
+}
+
+impl TryFrom<gists::Gist> for Playground {
+    type Error = String;
+    fn try_from(gist: gists::Gist) -> Result<Self, Self::Error> {
+        Ok(Playground {
             id: Some(gist.id.clone()),
-            messages: get_file_content(&gist, "playground.ftl").clone(),
-            variables: serde_json::from_str(&get_file_content(&gist, "playground.json")).unwrap(),
-            setup: serde_json::from_str(&get_file_content(&gist, "setup.json")).unwrap(),
-        }
+            messages: try_file_content(&gist, "playground.ftl")?.clone(),
+            variables: try_json_value(&gist, "playground.json")?,
+            setup: try_json_value(&gist, "setup.json")?,
+        })
     }
 }
 

@@ -1,10 +1,4 @@
-use iron::{
-    headers::ContentType,
-    modifiers::Header,
-    status,
-    IronResult,
-    Response,
-};
+use iron::{headers::ContentType, modifiers::Header, status, IronResult, Response};
 use serde::Serialize;
 use serde_json;
 
@@ -21,4 +15,12 @@ pub fn respond(response: impl Serialize) -> IronResult<Response> {
             r#"{"error": "Error serializing response"}"#,
         ))),
     }
+}
+
+pub fn error(message: String) -> IronResult<Response> {
+    Ok(Response::with((
+        status::InternalServerError,
+        Header(ContentType::json()),
+        format!(r#"{{"error": "{}"}}"#, message),
+    )))
 }

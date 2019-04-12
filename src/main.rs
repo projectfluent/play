@@ -1,17 +1,14 @@
 use corsware::{AllowedOrigins, CorsMiddleware, Origin, UniCase};
 use hubcaps::{Credentials, Github};
-use iron::{
-    method::Method,
-    Chain, Iron,
-};
+use iron::{method::Method, Chain, Iron};
 use router::Router;
 use std::collections::HashSet;
 use std::env;
 
-mod json;
 mod info;
-mod playground;
+mod json;
 mod middleware;
+mod playground;
 use middleware::GistsMiddleware;
 
 fn main() {
