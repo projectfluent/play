@@ -18,9 +18,9 @@ pub fn respond(response: impl Serialize) -> IronResult<Response> {
     }
 }
 
-pub fn error(message: impl Display) -> IronResult<Response> {
+pub fn error(status: status::Status, message: impl Display) -> IronResult<Response> {
     Ok(Response::with((
-        status::InternalServerError,
+        status,
         Header(ContentType::json()),
         format!(r#"{{"error": "{}"}}"#, message),
     )))

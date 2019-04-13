@@ -1,5 +1,5 @@
 use hubcaps::gists;
-use iron::{IronResult, Request, Response};
+use iron::{status, IronResult, Request, Response};
 use router::Router;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -27,15 +27,15 @@ pub fn get(req: &mut Request) -> IronResult<Response> {
     let id = params.find("id").expect("No route parameter called id");
     let mut rt = match Runtime::new() {
         Ok(rt) => rt,
-        Err(_) => return json::error(Error::Runtime),
+        Err(_) => return json::error(status::ServiceUnavailable, Error::Runtime),
     };
     let gist = match rt.block_on(gists.get(id)) {
         Ok(gist) => gist,
-        Err(_) => return json::error(Error::GistFetch),
+        Err(_) => return json::error(status::InternalServerError, Error::GistFetch),
     };
     match Playground::try_from(gist) {
         Ok(playground) => json::respond(playground),
-        Err(err) => json::error(err),
+        Err(err) => json::error(status::InternalServerError, err),
     }
 }
 
@@ -44,27 +44,27 @@ pub fn create(req: &mut Request) -> IronResult<Response> {
     let gists = &gists_middleware.gists;
     let mut payload = String::new();
     if let Err(_) = req.body.read_to_string(&mut payload) {
-        return json::error(Error::UnreadableRequestBody);
+        return json::error(status::InternalServerError, Error::UnreadableRequestBody);
     }
     let playground = match serde_json::from_str::<Playground>(&payload) {
         Ok(playground) => playground,
-        Err(_) => return json::error(Error::Deserialization),
+        Err(_) => return json::error(status::InternalServerError, Error::Deserialization),
     };
     let options = match gists::GistOptions::try_from(playground) {
         Ok(options) => options,
-        Err(err) => return json::error(err),
+        Err(err) => return json::error(status::InternalServerError, err),
     };
     let mut rt = match Runtime::new() {
         Ok(rt) => rt,
-        Err(_) => return json::error(Error::Runtime),
+        Err(_) => return json::error(status::ServiceUnavailable, Error::Runtime),
     };
     let gist = match rt.block_on(gists.create(&options)) {
         Ok(gist) => gist,
-        Err(_) => return json::error(Error::GistCreate),
+        Err(_) => return json::error(status::InternalServerError, Error::GistCreate),
     };
     match Playground::try_from(gist) {
         Ok(playground) => json::respond(playground),
-        Err(err) => json::error(err),
+        Err(err) => json::error(status::InternalServerError, err),
     }
 }
 
