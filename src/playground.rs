@@ -34,9 +34,9 @@ pub fn get(req: &mut Request) -> IronResult<Response> {
         Err(hubcaps::errors::Error(hubcaps::errors::ErrorKind::Fault { code, .. }, _))
             if code == 404 =>
         {
-            return json::error(status::NotFound, Error::GistNotFound)
+            return json::error(status::NotFound, Error::NotFound)
         }
-        Err(_) => return json::error(status::InternalServerError, Error::GistFetch),
+        Err(_) => return json::error(status::InternalServerError, Error::Fetching),
     };
     match Playground::try_from(gist) {
         Ok(playground) => json::respond(playground),
@@ -49,11 +49,11 @@ pub fn create(req: &mut Request) -> IronResult<Response> {
     let gists = &gists_middleware.gists;
     let mut payload = String::new();
     if let Err(_) = req.body.read_to_string(&mut payload) {
-        return json::error(status::InternalServerError, Error::UnreadableRequestBody);
+        return json::error(status::InternalServerError, Error::ReadingRequest);
     }
     let playground = match serde_json::from_str::<Playground>(&payload) {
         Ok(playground) => playground,
-        Err(_) => return json::error(status::InternalServerError, Error::Deserialization),
+        Err(_) => return json::error(status::InternalServerError, Error::Deserializing),
     };
     let options = match gists::GistOptions::try_from(playground) {
         Ok(options) => options,
@@ -65,7 +65,7 @@ pub fn create(req: &mut Request) -> IronResult<Response> {
     };
     let gist = match rt.block_on(gists.create(&options)) {
         Ok(gist) => gist,
-        Err(_) => return json::error(status::InternalServerError, Error::GistCreate),
+        Err(_) => return json::error(status::InternalServerError, Error::Creating),
     };
     match Playground::try_from(gist) {
         Ok(playground) => json::respond(playground),
@@ -86,7 +86,7 @@ fn try_deserialize_json<'gist>(
     gist: &'gist gists::Gist,
     name: &str,
 ) -> Result<serde_json::value::Value, Error> {
-    serde_json::from_str(try_file_content(&gist, name)?).or(Err(Error::Deserialization))
+    serde_json::from_str(try_file_content(&gist, name)?).or(Err(Error::Deserializing))
 }
 
 impl TryFrom<gists::Gist> for Playground {
@@ -102,7 +102,7 @@ impl TryFrom<gists::Gist> for Playground {
 }
 
 fn try_serialize_json<'gist>(value: &'gist serde_json::value::Value) -> Result<String, Error> {
-    serde_json::ser::to_string(value).or(Err(Error::Serialization))
+    serde_json::ser::to_string(value).or(Err(Error::Serializing))
 }
 
 impl TryFrom<Playground> for gists::GistOptions {
