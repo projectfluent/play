@@ -2,11 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Editor from './editor';
-import { change_locale, change_dir, change_externals } from './actions';
+import { change_locale, change_dir, change_variables } from './actions';
 
 function ConfigPanel(props) {
     const {
-        locale, dir, externals, change_locale, change_dir, change_externals
+        locale, dir, variables, change_locale, change_dir, change_variables
     } = props;
 
     return (
@@ -63,11 +63,11 @@ function ConfigPanel(props) {
             </div>
             <h1 className="panel__title">Variables</h1>
             <Editor
-                className="externals__editor"
+                className="variables__editor"
                 mode="json"
                 showGutter={false}
-                value={externals}
-                onChange={change_externals}
+                value={variables}
+                onChange={change_variables}
             />
             <p className="panel__hint">
                 Hint: You can pass dates in the simplified extended
@@ -81,13 +81,13 @@ function ConfigPanel(props) {
 const mapState = state => ({
     locale: state.locale,
     dir: state.dir,
-    externals: state.externals_string
+    variables: state.variables_string
 });
 
 const mapDispatch = {
     change_locale: evt => change_locale(evt.target.value),
     change_dir: evt => change_dir(evt.target.value),
-    change_externals
+    change_variables
 };
 
 export default connect(mapState, mapDispatch)(ConfigPanel);

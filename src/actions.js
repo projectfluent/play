@@ -7,9 +7,9 @@ export function toggle_panel(name) {
     };
 }
 
-export function change_translations(value) {
+export function change_messages(value) {
     return {
-      type: 'CHANGE_TRANSLATIONS',
+      type: 'CHANGE_MESSAGES',
       value
     };
 }
@@ -28,9 +28,9 @@ export function change_dir(value) {
     };
 }
 
-export function change_externals(value) {
+export function change_variables(value) {
     return {
-      type: 'CHANGE_EXTERNALS',
+      type: 'CHANGE_VARIABLES',
       value
     };
 }
@@ -53,10 +53,10 @@ export function create_gist() {
     return async function(dispatch, getState) {
         dispatch({ type: 'REQUEST_GIST_CREATE' });
 
-        const { translations, externals, locale, dir } = getState();
+        const { messages, variables, locale, dir } = getState();
         const body = {
-            messages: translations,
-            variables: externals,
+            messages,
+            variables,
             setup: { locale, dir, }
         };
 

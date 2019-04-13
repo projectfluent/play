@@ -9,11 +9,11 @@ function PanelsList(props) {
         <div className="panelslist">
             <button
                 className={
-                    visible_panels.has('translations')
+                    visible_panels.has('messages')
                         ? 'panelslist__button panelslist__button--active'
                         : 'panelslist__button'
                 }
-                onClick={evt => toggle_panel('translations', evt)}>
+                onClick={evt => toggle_panel('messages', evt)}>
                 Translations
             </button>
 
