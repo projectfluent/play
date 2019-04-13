@@ -5,7 +5,6 @@ import {
 
 const locale = 'en-US';
 const [ast, annotations] = parse_messages(defaults.messages);
-const variables_string = JSON.stringify(defaults.variables, null, 4);
 const bundle = create_bundle(locale, defaults.messages);
 const [out, format_errors] = format_messages(ast, bundle, defaults.variables);
 
@@ -16,7 +15,7 @@ const default_state = {
     format_errors,
     variables: defaults.variables,
     variables_errors: [],
-    variables_string,
+    variables_string: JSON.stringify(defaults.variables, null, 4),
     ast,
     bundle,
     out
@@ -114,24 +113,20 @@ export default function reducer(state = {
         }
         case 'RECEIVE_GIST_FETCH': {
             const { gist } = action;
-            const messages = gist.messages;
-            const variables = gist.variables;
-            const { locale, dir } = gist.setup;
-
-            const bundle = create_bundle(locale, messages);
-            const [ast, annotations] = parse_messages(messages);
-            const [out, format_errors] = format_messages(ast, bundle, variables);
+            const bundle = create_bundle(locale, gist.messages);
+            const [ast, annotations] = parse_messages(gist.messages);
+            const [out, format_errors] = format_messages(ast, bundle, gist.variables);
 
             return {
                 ...state,
                 is_fetching: false,
-                locale,
-                dir,
-                messages,
+                locale: gist.setup.locale,
+                dir: gist.setup.dir,
+                messages: gist.messages,
                 annotations,
-                variables,
+                variables: gist.variables,
                 variables_errors: [],
-                variables_string: JSON.stringify(variables, null, 4),
+                variables_string: JSON.stringify(gist.variables, null, 4),
                 format_errors,
                 ast,
                 bundle,
@@ -156,12 +151,11 @@ export default function reducer(state = {
             };
         }
         case 'RECEIVE_GIST_CREATE': {
-            const { response: { id } } = action;
-
+            const { response } = action;
             return {
                 ...state,
                 is_creating: false,
-                gist_id: id
+                gist_id: response.id
             };
         }
         case 'RESET_ALL': {
