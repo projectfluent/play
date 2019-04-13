@@ -51,16 +51,16 @@ function ConsolePanel(props) {
 
 function mapState(state) {
     const {
-        variables_errors,
+        variables_error,
         annotations,
         format_errors,
     } = state;
+    const errors = variables_error
+        ? [variables_error, ...format_errors]
+        : format_errors;
     return {
         annotations,
-        errors: [
-            ...variables_errors,
-            ...format_errors
-        ]
+        errors
     };
 }
 

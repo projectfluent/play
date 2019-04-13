@@ -33,10 +33,10 @@ function GistError(props) {
 function Share(props) {
     const {
         is_fetching, fixture_error, is_creating, create_error, gist_id,
-        create_gist
+        create_gist, variables_error
     } = props;
 
-    if (is_fetching || fixture_error) {
+    if (is_fetching || fixture_error || variables_error) {
         return (
             <button className="share__button" disabled={true}>
                 Share via Gist
@@ -69,6 +69,7 @@ function Share(props) {
 }
 
 const mapState = state => ({
+    variables_error: state.variables_error,
     is_fetching: state.is_fetching,
     fixture_error: state.fixture_error,
     is_creating: state.is_creating,

@@ -14,7 +14,7 @@ const default_state = {
     annotations,
     format_errors,
     variables: defaults.variables,
-    variables_errors: [],
+    variables_error: null,
     variables_string: JSON.stringify(defaults.variables, null, 4),
     ast,
     bundle,
@@ -84,13 +84,13 @@ export default function reducer(state = {
             const { value } = action;
             const { ast, bundle } = state;
 
-            const [variables, variables_errors] = parse_variables(value);
+            const [variables, variables_error] = parse_variables(value);
             const [out, format_errors] = format_messages(ast, bundle, variables);
 
             return {
                 ...state,
                 variables,
-                variables_errors,
+                variables_error,
                 variables_string: value,
                 format_errors,
                 out
@@ -125,7 +125,7 @@ export default function reducer(state = {
                 messages: gist.messages,
                 annotations,
                 variables: gist.variables,
-                variables_errors: [],
+                variables_error: null,
                 variables_string: JSON.stringify(gist.variables, null, 4),
                 format_errors,
                 ast,

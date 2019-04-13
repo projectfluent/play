@@ -86,7 +86,7 @@ export function parse_variables(variables) {
     try {
         var obj = JSON.parse(variables);
     } catch (err) {
-        return [{}, [err]];
+        return [{}, err];
     }
 
     for (const [key, val] of Object.entries(obj)) {
@@ -95,5 +95,5 @@ export function parse_variables(variables) {
       }
     }
 
-    return [obj, []];
+    return [obj, null];
 }
