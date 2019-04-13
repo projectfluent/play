@@ -3,6 +3,7 @@ use std::fmt;
 #[derive(Debug)]
 pub enum Error {
     Runtime,
+    GistNotFound,
     GistFetch,
     GistCreate,
     UnreadableRequestBody,
@@ -16,6 +17,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::Runtime => write!(f, "Error creating runtime"),
+            Error::GistNotFound => write!(f, "Playground not found"),
             Error::GistFetch => write!(f, "Error fetching playground"),
             Error::GistCreate => write!(f, "Error creating playground"),
             Error::UnreadableRequestBody => write!(f, "Error reading request body"),

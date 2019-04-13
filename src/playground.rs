@@ -31,6 +31,11 @@ pub fn get(req: &mut Request) -> IronResult<Response> {
     };
     let gist = match rt.block_on(gists.get(id)) {
         Ok(gist) => gist,
+        Err(hubcaps::errors::Error(hubcaps::errors::ErrorKind::Fault { code, .. }, _))
+            if code == 404 =>
+        {
+            return json::error(status::NotFound, Error::GistNotFound)
+        }
         Err(_) => return json::error(status::InternalServerError, Error::GistFetch),
     };
     match Playground::try_from(gist) {
