@@ -102,7 +102,7 @@ impl TryFrom<gists::Gist> for Playground {
 }
 
 fn try_serialize_json<'gist>(value: &'gist serde_json::value::Value) -> Result<String, Error> {
-    serde_json::ser::to_string(value).or(Err(Error::Serializing))
+    serde_json::ser::to_string_pretty(value).or(Err(Error::Serializing))
 }
 
 impl TryFrom<Playground> for gists::GistOptions {
