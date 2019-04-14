@@ -14,7 +14,7 @@ use crate::middleware::GistsMiddleware;
 
 fn main() {
     let port = env::var("PORT")
-        .unwrap_or("8080".to_string())
+        .unwrap_or_else(|_| "8080".to_string())
         .parse()
         .expect("Unable to parse PORT into a number");
     let token = env::var("GITHUB_API_TOKEN").expect("Missing GitHub API token");

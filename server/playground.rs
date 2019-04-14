@@ -48,7 +48,7 @@ pub fn create(req: &mut Request) -> IronResult<Response> {
     let gists_middleware = req.extensions.get::<GistsMiddleware>().unwrap();
     let gists = &gists_middleware.gists;
     let mut payload = String::new();
-    if let Err(_) = req.body.read_to_string(&mut payload) {
+    if req.body.read_to_string(&mut payload).is_err() {
         return json::error(status::InternalServerError, Error::ReadingRequest);
     }
     let playground = match serde_json::from_str::<Playground>(&payload) {
@@ -76,10 +76,10 @@ pub fn create(req: &mut Request) -> IronResult<Response> {
 fn try_file_content<'gist>(gist: &'gist gists::Gist, name: &str) -> Result<&'gist String, Error> {
     gist.files
         .get(name)
-        .ok_or(Error::MissingFile(name.to_string()))?
+        .ok_or_else(|| Error::MissingFile(name.to_string()))?
         .content
         .as_ref()
-        .ok_or(Error::EmptyFile(name.to_string()))
+        .ok_or_else(|| Error::EmptyFile(name.to_string()))
 }
 
 fn try_deserialize_json<'gist>(
@@ -101,7 +101,7 @@ impl TryFrom<gists::Gist> for Playground {
     }
 }
 
-fn try_serialize_json<'gist>(value: &'gist serde_json::value::Value) -> Result<String, Error> {
+fn try_serialize_json(value: &serde_json::value::Value) -> Result<String, Error> {
     serde_json::ser::to_string_pretty(value).or(Err(Error::Serializing))
 }
 
