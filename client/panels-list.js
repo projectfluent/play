@@ -14,7 +14,7 @@ function PanelsList(props) {
                         : 'panelslist__button'
                 }
                 onClick={evt => toggle_panel('messages', evt)}>
-                Translations
+                Messages
             </button>
 
             <button
