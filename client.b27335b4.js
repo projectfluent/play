@@ -28534,14 +28534,14 @@ var define;
 var global = arguments[3];
 !function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t(e.reduxLogger=e.reduxLogger||{})}(this,function(e){"use strict";function t(e,t){e.super_=t,e.prototype=Object.create(t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}})}function r(e,t){Object.defineProperty(this,"kind",{value:e,enumerable:!0}),t&&t.length&&Object.defineProperty(this,"path",{value:t,enumerable:!0})}function n(e,t,r){n.super_.call(this,"E",e),Object.defineProperty(this,"lhs",{value:t,enumerable:!0}),Object.defineProperty(this,"rhs",{value:r,enumerable:!0})}function o(e,t){o.super_.call(this,"N",e),Object.defineProperty(this,"rhs",{value:t,enumerable:!0})}function i(e,t){i.super_.call(this,"D",e),Object.defineProperty(this,"lhs",{value:t,enumerable:!0})}function a(e,t,r){a.super_.call(this,"A",e),Object.defineProperty(this,"index",{value:t,enumerable:!0}),Object.defineProperty(this,"item",{value:r,enumerable:!0})}function f(e,t,r){var n=e.slice((r||t)+1||e.length);return e.length=t<0?e.length+t:t,e.push.apply(e,n),e}function u(e){var t="undefined"==typeof e?"undefined":N(e);return"object"!==t?t:e===Math?"math":null===e?"null":Array.isArray(e)?"array":"[object Date]"===Object.prototype.toString.call(e)?"date":"function"==typeof e.toString&&/^\/.*\//.test(e.toString())?"regexp":"object"}function l(e,t,r,c,s,d,p){s=s||[],p=p||[];var g=s.slice(0);if("undefined"!=typeof d){if(c){if("function"==typeof c&&c(g,d))return;if("object"===("undefined"==typeof c?"undefined":N(c))){if(c.prefilter&&c.prefilter(g,d))return;if(c.normalize){var h=c.normalize(g,d,e,t);h&&(e=h[0],t=h[1])}}}g.push(d)}"regexp"===u(e)&&"regexp"===u(t)&&(e=e.toString(),t=t.toString());var y="undefined"==typeof e?"undefined":N(e),v="undefined"==typeof t?"undefined":N(t),b="undefined"!==y||p&&p[p.length-1].lhs&&p[p.length-1].lhs.hasOwnProperty(d),m="undefined"!==v||p&&p[p.length-1].rhs&&p[p.length-1].rhs.hasOwnProperty(d);if(!b&&m)r(new o(g,t));else if(!m&&b)r(new i(g,e));else if(u(e)!==u(t))r(new n(g,e,t));else if("date"===u(e)&&e-t!==0)r(new n(g,e,t));else if("object"===y&&null!==e&&null!==t)if(p.filter(function(t){return t.lhs===e}).length)e!==t&&r(new n(g,e,t));else{if(p.push({lhs:e,rhs:t}),Array.isArray(e)){var w;e.length;for(w=0;w<e.length;w++)w>=t.length?r(new a(g,w,new i(void 0,e[w]))):l(e[w],t[w],r,c,g,w,p);for(;w<t.length;)r(new a(g,w,new o(void 0,t[w++])))}else{var x=Object.keys(e),S=Object.keys(t);x.forEach(function(n,o){var i=S.indexOf(n);i>=0?(l(e[n],t[n],r,c,g,n,p),S=f(S,i)):l(e[n],void 0,r,c,g,n,p)}),S.forEach(function(e){l(void 0,t[e],r,c,g,e,p)})}p.length=p.length-1}else e!==t&&("number"===y&&isNaN(e)&&isNaN(t)||r(new n(g,e,t)))}function c(e,t,r,n){return n=n||[],l(e,t,function(e){e&&n.push(e)},r),n.length?n:void 0}function s(e,t,r){if(r.path&&r.path.length){var n,o=e[t],i=r.path.length-1;for(n=0;n<i;n++)o=o[r.path[n]];switch(r.kind){case"A":s(o[r.path[n]],r.index,r.item);break;case"D":delete o[r.path[n]];break;case"E":case"N":o[r.path[n]]=r.rhs}}else switch(r.kind){case"A":s(e[t],r.index,r.item);break;case"D":e=f(e,t);break;case"E":case"N":e[t]=r.rhs}return e}function d(e,t,r){if(e&&t&&r&&r.kind){for(var n=e,o=-1,i=r.path?r.path.length-1:0;++o<i;)"undefined"==typeof n[r.path[o]]&&(n[r.path[o]]="number"==typeof r.path[o]?[]:{}),n=n[r.path[o]];switch(r.kind){case"A":s(r.path?n[r.path[o]]:n,r.index,r.item);break;case"D":delete n[r.path[o]];break;case"E":case"N":n[r.path[o]]=r.rhs}}}function p(e,t,r){if(r.path&&r.path.length){var n,o=e[t],i=r.path.length-1;for(n=0;n<i;n++)o=o[r.path[n]];switch(r.kind){case"A":p(o[r.path[n]],r.index,r.item);break;case"D":o[r.path[n]]=r.lhs;break;case"E":o[r.path[n]]=r.lhs;break;case"N":delete o[r.path[n]]}}else switch(r.kind){case"A":p(e[t],r.index,r.item);break;case"D":e[t]=r.lhs;break;case"E":e[t]=r.lhs;break;case"N":e=f(e,t)}return e}function g(e,t,r){if(e&&t&&r&&r.kind){var n,o,i=e;for(o=r.path.length-1,n=0;n<o;n++)"undefined"==typeof i[r.path[n]]&&(i[r.path[n]]={}),i=i[r.path[n]];switch(r.kind){case"A":p(i[r.path[n]],r.index,r.item);break;case"D":i[r.path[n]]=r.lhs;break;case"E":i[r.path[n]]=r.lhs;break;case"N":delete i[r.path[n]]}}}function h(e,t,r){if(e&&t){var n=function(n){r&&!r(e,t,n)||d(e,t,n)};l(e,t,n)}}function y(e){return"color: "+F[e].color+"; font-weight: bold"}function v(e){var t=e.kind,r=e.path,n=e.lhs,o=e.rhs,i=e.index,a=e.item;switch(t){case"E":return[r.join("."),n,"→",o];case"N":return[r.join("."),o];case"D":return[r.join(".")];case"A":return[r.join(".")+"["+i+"]",a];default:return[]}}function b(e,t,r,n){var o=c(e,t);try{n?r.groupCollapsed("diff"):r.group("diff")}catch(e){r.log("diff")}o?o.forEach(function(e){var t=e.kind,n=v(e);r.log.apply(r,["%c "+F[t].text,y(t)].concat(P(n)))}):r.log("—— no diff ——");try{r.groupEnd()}catch(e){r.log("—— diff end —— ")}}function m(e,t,r,n){switch("undefined"==typeof e?"undefined":N(e)){case"object":return"function"==typeof e[n]?e[n].apply(e,P(r)):e[n];case"function":return e(t);default:return e}}function w(e){var t=e.timestamp,r=e.duration;return function(e,n,o){var i=["action"];return i.push("%c"+String(e.type)),t&&i.push("%c@ "+n),r&&i.push("%c(in "+o.toFixed(2)+" ms)"),i.join(" ")}}function x(e,t){var r=t.logger,n=t.actionTransformer,o=t.titleFormatter,i=void 0===o?w(t):o,a=t.collapsed,f=t.colors,u=t.level,l=t.diff,c="undefined"==typeof t.titleFormatter;e.forEach(function(o,s){var d=o.started,p=o.startedTime,g=o.action,h=o.prevState,y=o.error,v=o.took,w=o.nextState,x=e[s+1];x&&(w=x.prevState,v=x.started-d);var S=n(g),k="function"==typeof a?a(function(){return w},g,o):a,j=D(p),E=f.title?"color: "+f.title(S)+";":"",A=["color: gray; font-weight: lighter;"];A.push(E),t.timestamp&&A.push("color: gray; font-weight: lighter;"),t.duration&&A.push("color: gray; font-weight: lighter;");var O=i(S,j,v);try{k?f.title&&c?r.groupCollapsed.apply(r,["%c "+O].concat(A)):r.groupCollapsed(O):f.title&&c?r.group.apply(r,["%c "+O].concat(A)):r.group(O)}catch(e){r.log(O)}var N=m(u,S,[h],"prevState"),P=m(u,S,[S],"action"),C=m(u,S,[y,h],"error"),F=m(u,S,[w],"nextState");if(N)if(f.prevState){var L="color: "+f.prevState(h)+"; font-weight: bold";r[N]("%c prev state",L,h)}else r[N]("prev state",h);if(P)if(f.action){var T="color: "+f.action(S)+"; font-weight: bold";r[P]("%c action    ",T,S)}else r[P]("action    ",S);if(y&&C)if(f.error){var M="color: "+f.error(y,h)+"; font-weight: bold;";r[C]("%c error     ",M,y)}else r[C]("error     ",y);if(F)if(f.nextState){var _="color: "+f.nextState(w)+"; font-weight: bold";r[F]("%c next state",_,w)}else r[F]("next state",w);l&&b(h,w,r,k);try{r.groupEnd()}catch(e){r.log("—— log end ——")}})}function S(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},t=Object.assign({},L,e),r=t.logger,n=t.stateTransformer,o=t.errorTransformer,i=t.predicate,a=t.logErrors,f=t.diffPredicate;if("undefined"==typeof r)return function(){return function(e){return function(t){return e(t)}}};if(e.getState&&e.dispatch)return console.error("[redux-logger] redux-logger not installed. Make sure to pass logger instance as middleware:\n// Logger with default options\nimport { logger } from 'redux-logger'\nconst store = createStore(\n  reducer,\n  applyMiddleware(logger)\n)\n// Or you can create your own logger with custom options http://bit.ly/redux-logger-options\nimport createLogger from 'redux-logger'\nconst logger = createLogger({\n  // ...options\n});\nconst store = createStore(\n  reducer,\n  applyMiddleware(logger)\n)\n"),function(){return function(e){return function(t){return e(t)}}};var u=[];return function(e){var r=e.getState;return function(e){return function(l){if("function"==typeof i&&!i(r,l))return e(l);var c={};u.push(c),c.started=O.now(),c.startedTime=new Date,c.prevState=n(r()),c.action=l;var s=void 0;if(a)try{s=e(l)}catch(e){c.error=o(e)}else s=e(l);c.took=O.now()-c.started,c.nextState=n(r());var d=t.diff&&"function"==typeof f?f(r,l):t.diff;if(x(u,Object.assign({},t,{diff:d})),u.length=0,c.error)throw c.error;return s}}}}var k,j,E=function(e,t){return new Array(t+1).join(e)},A=function(e,t){return E("0",t-e.toString().length)+e},D=function(e){return A(e.getHours(),2)+":"+A(e.getMinutes(),2)+":"+A(e.getSeconds(),2)+"."+A(e.getMilliseconds(),3)},O="undefined"!=typeof performance&&null!==performance&&"function"==typeof performance.now?performance:Date,N="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},P=function(e){if(Array.isArray(e)){for(var t=0,r=Array(e.length);t<e.length;t++)r[t]=e[t];return r}return Array.from(e)},C=[];k="object"===("undefined"==typeof global?"undefined":N(global))&&global?global:"undefined"!=typeof window?window:{},j=k.DeepDiff,j&&C.push(function(){"undefined"!=typeof j&&k.DeepDiff===c&&(k.DeepDiff=j,j=void 0)}),t(n,r),t(o,r),t(i,r),t(a,r),Object.defineProperties(c,{diff:{value:c,enumerable:!0},observableDiff:{value:l,enumerable:!0},applyDiff:{value:h,enumerable:!0},applyChange:{value:d,enumerable:!0},revertChange:{value:g,enumerable:!0},isConflict:{value:function(){return"undefined"!=typeof j},enumerable:!0},noConflict:{value:function(){return C&&(C.forEach(function(e){e()}),C=null),c},enumerable:!0}});var F={E:{color:"#2196F3",text:"CHANGED:"},N:{color:"#4CAF50",text:"ADDED:"},D:{color:"#F44336",text:"DELETED:"},A:{color:"#2196F3",text:"ARRAY:"}},L={level:"log",logger:console,logErrors:!0,collapsed:void 0,predicate:void 0,duration:!1,timestamp:!0,stateTransformer:function(e){return e},actionTransformer:function(e){return e},errorTransformer:function(e){return e},colors:{title:function(){return"inherit"},prevState:function(){return"#9E9E9E"},action:function(){return"#03A9F4"},nextState:function(){return"#4CAF50"},error:function(){return"#F20404"}},diff:!1,diffPredicate:void 0,transformer:void 0},T=function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},t=e.dispatch,r=e.getState;return"function"==typeof t||"function"==typeof r?S()({dispatch:t,getState:r}):void console.error("\n[redux-logger v3] BREAKING CHANGE\n[redux-logger v3] Since 3.0.0 redux-logger exports by default logger with default settings.\n[redux-logger v3] Change\n[redux-logger v3] import createLogger from 'redux-logger'\n[redux-logger v3] to\n[redux-logger v3] import { createLogger } from 'redux-logger'\n")};e.defaults=L,e.createLogger=S,e.logger=T,e.default=T,Object.defineProperty(e,"__esModule",{value:!0})});
 
-},{}],"../src/defaults.js":[function(require,module,exports) {
+},{}],"../client/defaults.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.externals = exports.translations = void 0;
-const translations = `# Try editing the translations here!
+exports.variables = exports.messages = void 0;
+const messages = `# Try editing the translations here!
 
 hello-world = Hello, world!
 
@@ -28558,13 +28558,13 @@ liked-comment =
         [female] her
        *[other] their
     } post.`;
-exports.translations = translations;
-const externals = {
+exports.messages = messages;
+const variables = {
   user_name: 'Anne',
   user_gender: 'female',
   photo_count: 3
 };
-exports.externals = externals;
+exports.variables = variables;
 },{}],"../node_modules/make-plural/umd/plurals.js":[function(require,module,exports) {
 var define;
 var _cp = [
@@ -34555,16 +34555,16 @@ var global = arguments[3];
     value: true
   });
 });
-},{}],"../src/fluent.js":[function(require,module,exports) {
+},{}],"../client/fluent.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.parse_translations = parse_translations;
+exports.parse_messages = parse_messages;
 exports.create_bundle = create_bundle;
 exports.format_messages = format_messages;
-exports.parse_externals = parse_externals;
+exports.parse_variables = parse_variables;
 
 require("intl-pluralrules");
 
@@ -34604,26 +34604,26 @@ function annotation_display(source, junk, annot) {
   };
 }
 
-function parse_translations(translations) {
+function parse_messages(messages) {
   try {
-    var res = fluent_parser.parse(translations);
+    var res = fluent_parser.parse(messages);
   } catch (err) {
     console.error(err);
     return [new _compat2.Resource([]), []];
   }
 
   const junks = res.body.filter(entry => entry.type === "Junk");
-  const annotations = junks.reduce((annots, junk) => annots.concat(junk.annotations.map(annot => annotation_display(translations, junk, annot))), []);
+  const annotations = junks.reduce((annots, junk) => annots.concat(junk.annotations.map(annot => annotation_display(messages, junk, annot))), []);
   return [res, annotations];
 }
 
-function create_bundle(locale, translations) {
+function create_bundle(locale, messages) {
   const bundle = new _compat.FluentBundle(locale);
-  bundle.addMessages(translations);
+  bundle.addMessages(messages);
   return bundle;
 }
 
-function format_messages(ast, bundle, externals) {
+function format_messages(ast, bundle, variables) {
   const outputs = new Map();
   const errors = [];
 
@@ -34636,7 +34636,7 @@ function format_messages(ast, bundle, externals) {
     const message = bundle.getMessage(id);
     const formatted_message = {
       id,
-      value: bundle.format(message, externals, errors),
+      value: bundle.format(message, variables, errors),
       attributes: Object.entries(message && message.attrs || {}).map((_ref) => {
         let _ref2 = _slicedToArray(_ref, 2),
             attr_id = _ref2[0],
@@ -34644,7 +34644,7 @@ function format_messages(ast, bundle, externals) {
 
         return {
           id: attr_id,
-          value: bundle.format(attr_value, externals, errors)
+          value: bundle.format(attr_value, variables, errors)
         };
       })
     };
@@ -34656,11 +34656,11 @@ function format_messages(ast, bundle, externals) {
 
 const iso_re = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
-function parse_externals(externals) {
+function parse_variables(variables) {
   try {
-    var obj = JSON.parse(externals);
+    var obj = JSON.parse(variables);
   } catch (err) {
-    return [{}, [err]];
+    return [{}, err];
   }
 
   for (const _ref3 of Object.entries(obj)) {
@@ -34674,103 +34674,9 @@ function parse_externals(externals) {
     }
   }
 
-  return [obj, []];
+  return [obj, null];
 }
-},{"intl-pluralrules":"../node_modules/intl-pluralrules/polyfill.js","fluent/compat":"../node_modules/fluent/compat.js","fluent-syntax/compat":"../node_modules/fluent-syntax/compat.js"}],"../src/error.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.PlaygroundError = void 0;
-
-class PlaygroundError extends Error {
-  constructor(type, message, data) {
-    super(message);
-    this.type = type;
-    this.data = data;
-  }
-
-}
-
-exports.PlaygroundError = PlaygroundError;
-},{}],"../src/github.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.get = get;
-exports.post = post;
-exports.validate_gist = validate_gist;
-
-var _error = require("./error");
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-const GITHUB_API = 'https://api.github.com';
-
-function get(_x) {
-  return _get.apply(this, arguments);
-}
-
-function _get() {
-  _get = _asyncToGenerator(function* (endpoint) {
-    const response = yield fetch(`${GITHUB_API}${endpoint}`, {
-      method: 'GET',
-      headers: new Headers({
-        'Accept': 'application/vnd.github.v3+json'
-      })
-    });
-    return validate(response);
-  });
-  return _get.apply(this, arguments);
-}
-
-function post(_x2, _x3) {
-  return _post.apply(this, arguments);
-}
-
-function _post() {
-  _post = _asyncToGenerator(function* (endpoint, body) {
-    const response = yield fetch(`${GITHUB_API}${endpoint}`, {
-      method: 'POST',
-      headers: new Headers({
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      }),
-      body: JSON.stringify(body)
-    });
-    return validate(response);
-  });
-  return _post.apply(this, arguments);
-}
-
-function validate(_x4) {
-  return _validate.apply(this, arguments);
-}
-
-function _validate() {
-  _validate = _asyncToGenerator(function* (response) {
-    if (response.ok) {
-      return response.json();
-    }
-
-    throw new _error.PlaygroundError('NETWORK_ERROR', response.statusText, response);
-  });
-  return _validate.apply(this, arguments);
-}
-
-function validate_gist(gist) {
-  const files = gist.files;
-
-  if (!('playground.ftl' in files && 'playground.json' in files)) {
-    throw new _error.PlaygroundError('FIXTURE_ERROR', 'Required files missing');
-  }
-}
-},{"./error":"../src/error.js"}],"../src/reducers.js":[function(require,module,exports) {
+},{"intl-pluralrules":"../node_modules/intl-pluralrules/polyfill.js","fluent/compat":"../node_modules/fluent/compat.js","fluent-syntax/compat":"../node_modules/fluent-syntax/compat.js"}],"../client/reducers.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -34778,11 +34684,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = reducer;
 
-var _defaults = require("./defaults");
+var defaults = _interopRequireWildcard(require("./defaults"));
 
 var _fluent = require("./fluent");
 
-var _github = require("./github");
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
 
@@ -34798,31 +34704,31 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 const locale = 'en-US';
 
-const _parse_translations = (0, _fluent.parse_translations)(_defaults.translations),
-      _parse_translations2 = _slicedToArray(_parse_translations, 2),
-      ast = _parse_translations2[0],
-      annotations = _parse_translations2[1];
+const _parse_messages = (0, _fluent.parse_messages)(defaults.messages),
+      _parse_messages2 = _slicedToArray(_parse_messages, 2),
+      ast = _parse_messages2[0],
+      annotations = _parse_messages2[1];
 
-const externals_string = JSON.stringify(_defaults.externals, null, 4);
-const bundle = (0, _fluent.create_bundle)(locale, _defaults.translations);
+const bundle = (0, _fluent.create_bundle)(locale, defaults.messages);
 
-const _format_messages = (0, _fluent.format_messages)(ast, bundle, _defaults.externals),
+const _format_messages = (0, _fluent.format_messages)(ast, bundle, defaults.variables),
       _format_messages2 = _slicedToArray(_format_messages, 2),
       out = _format_messages2[0],
       format_errors = _format_messages2[1];
 
 const default_state = {
   locale,
-  translations: _defaults.translations,
+  messages: defaults.messages,
   annotations,
   format_errors,
-  externals: _defaults.externals,
-  externals_errors: [],
-  externals_string,
+  variables: defaults.variables,
+  variables_error: null,
+  variables_string: JSON.stringify(defaults.variables, null, 4),
   ast,
   bundle,
   out
 };
+const KNOWN_PANELS = ["messages", "ast", "config", "console", "output"];
 
 function reducer() {
   let state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _objectSpread({}, default_state, {
@@ -34832,7 +34738,7 @@ function reducer() {
     is_creating: false,
     create_error: null,
     gist_id: null,
-    visible_panels: new Set(['translations', 'output'])
+    visible_panels: new Set(['messages', 'output'])
   });
   let action = arguments.length > 1 ? arguments[1] : undefined;
 
@@ -34846,25 +34752,25 @@ function reducer() {
         });
       }
 
-    case 'CHANGE_TRANSLATIONS':
+    case 'CHANGE_MESSAGES':
       {
         const value = action.value;
         const locale = state.locale,
-              externals = state.externals;
+              variables = state.variables;
         const bundle = (0, _fluent.create_bundle)(locale, value);
 
-        const _parse_translations3 = (0, _fluent.parse_translations)(value),
-              _parse_translations4 = _slicedToArray(_parse_translations3, 2),
-              ast = _parse_translations4[0],
-              annotations = _parse_translations4[1];
+        const _parse_messages3 = (0, _fluent.parse_messages)(value),
+              _parse_messages4 = _slicedToArray(_parse_messages3, 2),
+              ast = _parse_messages4[0],
+              annotations = _parse_messages4[1];
 
-        const _format_messages3 = (0, _fluent.format_messages)(ast, bundle, externals),
+        const _format_messages3 = (0, _fluent.format_messages)(ast, bundle, variables),
               _format_messages4 = _slicedToArray(_format_messages3, 2),
               out = _format_messages4[0],
               format_errors = _format_messages4[1];
 
         return _objectSpread({}, state, {
-          translations: value,
+          messages: value,
           annotations,
           format_errors,
           ast,
@@ -34877,11 +34783,11 @@ function reducer() {
       {
         const locale = action.value;
         const ast = state.ast,
-              translations = state.translations,
-              externals = state.externals;
-        const bundle = (0, _fluent.create_bundle)(locale, translations);
+              messages = state.messages,
+              variables = state.variables;
+        const bundle = (0, _fluent.create_bundle)(locale, messages);
 
-        const _format_messages5 = (0, _fluent.format_messages)(ast, bundle, externals),
+        const _format_messages5 = (0, _fluent.format_messages)(ast, bundle, variables),
               _format_messages6 = _slicedToArray(_format_messages5, 2),
               out = _format_messages6[0],
               format_errors = _format_messages6[1];
@@ -34901,26 +34807,26 @@ function reducer() {
         });
       }
 
-    case 'CHANGE_EXTERNALS':
+    case 'CHANGE_VARIABLES':
       {
         const value = action.value;
         const ast = state.ast,
               bundle = state.bundle;
 
-        const _parse_externals = (0, _fluent.parse_externals)(value),
-              _parse_externals2 = _slicedToArray(_parse_externals, 2),
-              externals = _parse_externals2[0],
-              externals_errors = _parse_externals2[1];
+        const _parse_variables = (0, _fluent.parse_variables)(value),
+              _parse_variables2 = _slicedToArray(_parse_variables, 2),
+              variables = _parse_variables2[0],
+              variables_error = _parse_variables2[1];
 
-        const _format_messages7 = (0, _fluent.format_messages)(ast, bundle, externals),
+        const _format_messages7 = (0, _fluent.format_messages)(ast, bundle, variables),
               _format_messages8 = _slicedToArray(_format_messages7, 2),
               out = _format_messages8[0],
               format_errors = _format_messages8[1];
 
         return _objectSpread({}, state, {
-          externals,
-          externals_errors,
-          externals_string: value,
+          variables,
+          variables_error,
+          variables_string: value,
           format_errors,
           out
         });
@@ -34946,50 +34852,29 @@ function reducer() {
     case 'RECEIVE_GIST_FETCH':
       {
         const gist = action.gist;
+        const bundle = (0, _fluent.create_bundle)(locale, gist.messages);
 
-        try {
-          (0, _github.validate_gist)(gist);
-        } catch (error) {
-          return _objectSpread({}, state, {
-            is_fetching: false,
-            fixture_error: error
-          });
-        }
+        const _parse_messages5 = (0, _fluent.parse_messages)(gist.messages),
+              _parse_messages6 = _slicedToArray(_parse_messages5, 2),
+              ast = _parse_messages6[0],
+              annotations = _parse_messages6[1];
 
-        const files = gist.files;
-        const translations = files['playground.ftl'].content;
-        const externals_string = files['playground.json'].content;
-
-        const _parse_setup = parse_setup(files, state),
-              locale = _parse_setup.locale,
-              dir = _parse_setup.dir;
-
-        const bundle = (0, _fluent.create_bundle)(locale, translations);
-
-        const _parse_translations5 = (0, _fluent.parse_translations)(translations),
-              _parse_translations6 = _slicedToArray(_parse_translations5, 2),
-              ast = _parse_translations6[0],
-              annotations = _parse_translations6[1];
-
-        const _parse_externals3 = (0, _fluent.parse_externals)(externals_string),
-              _parse_externals4 = _slicedToArray(_parse_externals3, 2),
-              externals = _parse_externals4[0],
-              externals_errors = _parse_externals4[1];
-
-        const _format_messages9 = (0, _fluent.format_messages)(ast, bundle, externals),
+        const _format_messages9 = (0, _fluent.format_messages)(ast, bundle, gist.variables),
               _format_messages10 = _slicedToArray(_format_messages9, 2),
               out = _format_messages10[0],
               format_errors = _format_messages10[1];
 
+        const gist_panels = Array.isArray(gist.setup.visible) ? new Set(gist.setup.visible.filter(panel_name => KNOWN_PANELS.includes(panel_name))) : state.visible_panels;
         return _objectSpread({}, state, {
           is_fetching: false,
-          locale,
-          dir,
-          translations,
+          visible_panels: gist_panels,
+          locale: gist.setup.locale,
+          dir: gist.setup.dir,
+          messages: gist.messages,
           annotations,
-          externals,
-          externals_errors,
-          externals_string,
+          variables: gist.variables,
+          variables_error: null,
+          variables_string: JSON.stringify(gist.variables, null, 4),
           format_errors,
           ast,
           bundle,
@@ -35018,10 +34903,10 @@ function reducer() {
 
     case 'RECEIVE_GIST_CREATE':
       {
-        const id = action.response.id;
+        const response = action.response;
         return _objectSpread({}, state, {
           is_creating: false,
-          gist_id: id
+          gist_id: response.id
         });
       }
 
@@ -35031,7 +34916,7 @@ function reducer() {
           is_fetching: false,
           is_creating: false,
           fixture_error: null,
-          visible_panels: new Set(['translations', 'output'])
+          visible_panels: new Set(['messages', 'output'])
         });
       }
 
@@ -35039,26 +34924,7 @@ function reducer() {
       return state;
   }
 }
-
-function parse_setup(files, state) {
-  if (!files['setup.json']) {
-    return state;
-  }
-
-  const content = files['setup.json'].content;
-
-  try {
-    var setup = JSON.parse(content);
-  } catch (err) {
-    return state;
-  }
-
-  return {
-    locale: setup.locale || state.locale,
-    dir: setup.dir || state.dir
-  };
-}
-},{"./defaults":"../src/defaults.js","./fluent":"../src/fluent.js","./github":"../src/github.js"}],"../src/store.js":[function(require,module,exports) {
+},{"./defaults":"../client/defaults.js","./fluent":"../client/fluent.js"}],"../client/store.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -35081,7 +34947,7 @@ const middlewares = "development" === 'development' ? [_reduxThunk.default, (0, 
 var _default = (0, _redux.createStore)(_reducers.default, (0, _redux.applyMiddleware)(...middlewares));
 
 exports.default = _default;
-},{"redux":"../node_modules/redux/es/redux.js","redux-thunk":"../node_modules/redux-thunk/es/index.js","redux-logger":"../node_modules/redux-logger/dist/redux-logger.js","./reducers":"../src/reducers.js"}],"../node_modules/strict-uri-encode/index.js":[function(require,module,exports) {
+},{"redux":"../node_modules/redux/es/redux.js","redux-thunk":"../node_modules/redux-thunk/es/index.js","redux-logger":"../node_modules/redux-logger/dist/redux-logger.js","./reducers":"../client/reducers.js"}],"../node_modules/strict-uri-encode/index.js":[function(require,module,exports) {
 'use strict';
 
 module.exports = str => encodeURIComponent(str).replace(/[!'()*]/g, x => `%${x.charCodeAt(0).toString(16).toUpperCase()}`);
@@ -35428,22 +35294,104 @@ exports.parseUrl = (input, options) => {
     query: parse(extract(input), options)
   };
 };
-},{"strict-uri-encode":"../node_modules/strict-uri-encode/index.js","decode-uri-component":"../node_modules/decode-uri-component/index.js"}],"../src/actions.js":[function(require,module,exports) {
+},{"strict-uri-encode":"../node_modules/strict-uri-encode/index.js","decode-uri-component":"../node_modules/decode-uri-component/index.js"}],"../client/error.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ServerError = void 0;
+
+class ServerError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+
+}
+
+exports.ServerError = ServerError;
+},{}],"../client/api.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.get = get;
+exports.post = post;
+
+var _error = require("./error");
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+//const SERVER_URL = 'https://fluent-play.herokuapp.com';
+const SERVER_URL = 'http://fluent-playground.herokuapp.test:8080';
+
+function get(_x) {
+  return _get.apply(this, arguments);
+}
+
+function _get() {
+  _get = _asyncToGenerator(function* (endpoint) {
+    const response = yield fetch(`${SERVER_URL}${endpoint}`, {
+      method: 'GET'
+    });
+    return validate(response);
+  });
+  return _get.apply(this, arguments);
+}
+
+function post(_x2, _x3) {
+  return _post.apply(this, arguments);
+}
+
+function _post() {
+  _post = _asyncToGenerator(function* (endpoint, body) {
+    const response = yield fetch(`${SERVER_URL}${endpoint}`, {
+      method: 'POST',
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      }),
+      body: JSON.stringify(body)
+    });
+    return validate(response);
+  });
+  return _post.apply(this, arguments);
+}
+
+function validate(_x4) {
+  return _validate.apply(this, arguments);
+}
+
+function _validate() {
+  _validate = _asyncToGenerator(function* (response) {
+    if (response.ok) {
+      return response.json();
+    }
+
+    let message = (yield response.json()).error;
+    throw new _error.ServerError(response.status, message);
+  });
+  return _validate.apply(this, arguments);
+}
+},{"./error":"../client/error.js"}],"../client/actions.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.toggle_panel = toggle_panel;
-exports.change_translations = change_translations;
+exports.change_messages = change_messages;
 exports.change_locale = change_locale;
 exports.change_dir = change_dir;
-exports.change_externals = change_externals;
+exports.change_variables = change_variables;
 exports.fetch_gist = fetch_gist;
 exports.create_gist = create_gist;
 exports.reset_all = reset_all;
 
-var _github = require("./github");
+var _api = require("./api");
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
@@ -35456,9 +35404,9 @@ function toggle_panel(name) {
   };
 }
 
-function change_translations(value) {
+function change_messages(value) {
   return {
-    type: 'CHANGE_TRANSLATIONS',
+    type: 'CHANGE_MESSAGES',
     value
   };
 }
@@ -35477,9 +35425,9 @@ function change_dir(value) {
   };
 }
 
-function change_externals(value) {
+function change_variables(value) {
   return {
-    type: 'CHANGE_EXTERNALS',
+    type: 'CHANGE_VARIABLES',
     value
   };
 }
@@ -35494,7 +35442,7 @@ function fetch_gist(id) {
         });
 
         try {
-          var gist = yield (0, _github.get)(`/gists/${id}`);
+          var gist = yield (0, _api.get)(`/playgrounds/${id}`);
         } catch (error) {
           return dispatch({
             type: 'ERROR_GIST_FETCH',
@@ -35525,33 +35473,24 @@ function create_gist() {
         });
 
         const _getState = getState(),
-              translations = _getState.translations,
-              externals_string = _getState.externals_string,
+              messages = _getState.messages,
+              variables = _getState.variables,
               locale = _getState.locale,
-              dir = _getState.dir;
+              dir = _getState.dir,
+              visible_panels = _getState.visible_panels;
 
-        const setup = {
-          locale,
-          dir
-        };
         const body = {
-          'description': 'A Fluent Playground example',
-          'public': true,
-          'files': {
-            'playground.ftl': {
-              'content': translations
-            },
-            'playground.json': {
-              'content': externals_string
-            },
-            'setup.json': {
-              'content': JSON.stringify(setup, null, 4)
-            }
+          messages,
+          variables,
+          setup: {
+            visible: Array.from(visible_panels),
+            locale,
+            dir
           }
         };
 
         try {
-          var response = yield (0, _github.post)('/gists', body);
+          var response = yield (0, _api.post)('/playgrounds', body);
         } catch (error) {
           return dispatch({
             type: 'ERROR_GIST_CREATE',
@@ -35580,7 +35519,7 @@ function reset_all() {
     type: 'RESET_ALL'
   };
 }
-},{"./github":"../src/github.js"}],"../src/panels-list.js":[function(require,module,exports) {
+},{"./api":"../client/api.js"}],"../client/panels-list.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -35602,9 +35541,9 @@ function PanelsList(props) {
   return _react.default.createElement("div", {
     className: "panelslist"
   }, _react.default.createElement("button", {
-    className: visible_panels.has('translations') ? 'panelslist__button panelslist__button--active' : 'panelslist__button',
-    onClick: evt => toggle_panel('translations', evt)
-  }, "Translations"), _react.default.createElement("button", {
+    className: visible_panels.has('messages') ? 'panelslist__button panelslist__button--active' : 'panelslist__button',
+    onClick: evt => toggle_panel('messages', evt)
+  }, "Messages"), _react.default.createElement("button", {
     className: visible_panels.has('ast') ? 'panelslist__button panelslist__button--active' : 'panelslist__button',
     onClick: evt => toggle_panel('ast', evt)
   }, "AST"), _react.default.createElement("button", {
@@ -35638,7 +35577,7 @@ function mapDispatch(dispatch) {
 var _default = (0, _reactRedux.connect)(mapState, mapDispatch)(PanelsList);
 
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./actions":"../src/actions.js"}],"../node_modules/lodash.isequal/index.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./actions":"../client/actions.js"}],"../node_modules/lodash.isequal/index.js":[function(require,module,exports) {
 var global = arguments[3];
 
 /**
@@ -62829,7 +62768,7 @@ oop.inherits(Mode, TextMode);
 exports.Mode = Mode;
 });
 
-},{"../worker/json":"../node_modules/brace/worker/json.js"}],"../src/editor-mode-fluent.js":[function(require,module,exports) {
+},{"../worker/json":"../node_modules/brace/worker/json.js"}],"../client/editor-mode-fluent.js":[function(require,module,exports) {
 /* global ace */
 ace.define("ace/mode/fluent_highlight_rules", ["require", "exports", "module", "ace/lib/oop", "ace/mode/text_highlight_rules"], highlighting);
 ace.define("ace/mode/fluent", ["require", "exports", "module", "ace/lib/oop", "ace/mode/text", "ace/mode/fluent_highlight_rules"], mode);
@@ -62965,7 +62904,7 @@ function mode(acequire, exports) {
   }).call(Mode.prototype);
   exports.Mode = Mode;
 }
-},{}],"../src/editor-theme-fluent.js":[function(require,module,exports) {
+},{}],"../client/editor-theme-fluent.js":[function(require,module,exports) {
 /* global ace */
 ace.define("ace/theme/fluent", ["require", "exports", "module", "ace/lib/dom"], theme);
 
@@ -63093,7 +63032,7 @@ function theme(acequire, exports) {
   const dom = acequire("../lib/dom");
   dom.importCssString(exports.cssText, exports.cssClass);
 }
-},{}],"../src/editor.js":[function(require,module,exports) {
+},{}],"../client/editor.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63156,7 +63095,7 @@ function Editor(props) {
     onLoad: editor => editor.gotoLine(0)
   }, props));
 }
-},{"react":"../node_modules/react/index.js","react-ace":"../node_modules/react-ace/lib/index.js","brace":"../node_modules/brace/index.js","brace/mode/json":"../node_modules/brace/mode/json.js","./editor-mode-fluent":"../src/editor-mode-fluent.js","./editor-theme-fluent":"../src/editor-theme-fluent.js"}],"../src/panel-translations.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-ace":"../node_modules/react-ace/lib/index.js","brace":"../node_modules/brace/index.js","brace/mode/json":"../node_modules/brace/mode/json.js","./editor-mode-fluent":"../client/editor-mode-fluent.js","./editor-theme-fluent":"../client/editor-theme-fluent.js"}],"../client/panel-messages.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63174,27 +63113,27 @@ var _actions = require("./actions");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function TranslationsPanel(props) {
+function MessagesPanel(props) {
   const value = props.value,
         annotations = props.annotations,
-        change_translations = props.change_translations;
+        change_messages = props.change_messages;
   return _react.default.createElement("section", {
     className: "panel panel--white"
   }, _react.default.createElement("h1", {
     className: "panel__title"
-  }, "Translations"), _react.default.createElement(_editor.default, {
+  }, "Messages"), _react.default.createElement(_editor.default, {
     mode: "fluent",
-    className: "translations__editor",
+    className: "messages__editor",
     fontSize: 16,
     showGutter: true,
     value: value,
     annotations: annotations,
-    onChange: change_translations
+    onChange: change_messages
   }));
 }
 
 const mapState = state => ({
-  value: state.translations,
+  value: state.messages,
   annotations: state.annotations.map(annot => ({
     type: 'error',
     text: `${annot.code}: ${annot.message}`,
@@ -63204,13 +63143,13 @@ const mapState = state => ({
 });
 
 const mapDispatch = {
-  change_translations: _actions.change_translations
+  change_messages: _actions.change_messages
 };
 
-var _default = (0, _reactRedux.connect)(mapState, mapDispatch)(TranslationsPanel);
+var _default = (0, _reactRedux.connect)(mapState, mapDispatch)(MessagesPanel);
 
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./editor":"../src/editor.js","./actions":"../src/actions.js"}],"../src/panel-ast.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./editor":"../client/editor.js","./actions":"../client/actions.js"}],"../client/panel-ast.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63248,7 +63187,7 @@ const mapState = state => ({
 var _default = (0, _reactRedux.connect)(mapState)(ASTPanel);
 
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./editor":"../src/editor.js"}],"../src/panel-config.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./editor":"../client/editor.js"}],"../client/panel-config.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63269,15 +63208,15 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function ConfigPanel(props) {
   const locale = props.locale,
         dir = props.dir,
-        externals = props.externals,
+        variables = props.variables,
         change_locale = props.change_locale,
         change_dir = props.change_dir,
-        change_externals = props.change_externals;
+        change_variables = props.change_variables;
   return _react.default.createElement("section", {
     className: "panel"
   }, _react.default.createElement("h1", {
     className: "panel__title"
-  }, "Language & Direction"), _react.default.createElement("div", {
+  }, "Language Settings"), _react.default.createElement("div", {
     className: "setting"
   }, _react.default.createElement("label", {
     className: "setting__name",
@@ -63363,12 +63302,12 @@ function ConfigPanel(props) {
     value: "rtl"
   }, "Right-to-left")))), _react.default.createElement("h1", {
     className: "panel__title"
-  }, "External Data"), _react.default.createElement(_editor.default, {
-    className: "externals__editor",
+  }, "Variables"), _react.default.createElement(_editor.default, {
+    className: "variables__editor",
     mode: "json",
     showGutter: false,
-    value: externals,
-    onChange: change_externals
+    value: variables,
+    onChange: change_variables
   }), _react.default.createElement("p", {
     className: "panel__hint"
   }, "Hint: You can pass dates in the simplified extended ISO8601 format, as returned by ", _react.default.createElement("a", {
@@ -63379,19 +63318,19 @@ function ConfigPanel(props) {
 const mapState = state => ({
   locale: state.locale,
   dir: state.dir,
-  externals: state.externals_string
+  variables: state.variables_string
 });
 
 const mapDispatch = {
   change_locale: evt => (0, _actions.change_locale)(evt.target.value),
   change_dir: evt => (0, _actions.change_dir)(evt.target.value),
-  change_externals: _actions.change_externals
+  change_variables: _actions.change_variables
 };
 
 var _default = (0, _reactRedux.connect)(mapState, mapDispatch)(ConfigPanel);
 
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./editor":"../src/editor.js","./actions":"../src/actions.js"}],"../src/panel-console.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./editor":"../client/editor.js","./actions":"../client/actions.js"}],"../client/panel-console.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63460,19 +63399,20 @@ function ConsolePanel(props) {
 }
 
 function mapState(state) {
-  const externals_errors = state.externals_errors,
+  const variables_error = state.variables_error,
         annotations = state.annotations,
         format_errors = state.format_errors;
+  const errors = variables_error ? [variables_error, ...format_errors] : format_errors;
   return {
     annotations,
-    errors: [...externals_errors, ...format_errors]
+    errors
   };
 }
 
 var _default = (0, _reactRedux.connect)(mapState)(ConsolePanel);
 
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js"}],"../src/panel-output.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js"}],"../client/panel-output.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63603,7 +63543,7 @@ const mapState = state => ({
 var _default = (0, _reactRedux.connect)(mapState)(OutputPanel);
 
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js"}],"../src/panels.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js"}],"../client/panels.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63615,7 +63555,7 @@ var _react = _interopRequireDefault(require("react"));
 
 var _reactRedux = require("react-redux");
 
-var _panelTranslations = _interopRequireDefault(require("./panel-translations"));
+var _panelMessages = _interopRequireDefault(require("./panel-messages"));
 
 var _panelAst = _interopRequireDefault(require("./panel-ast"));
 
@@ -63631,7 +63571,7 @@ function Panels(props) {
   const visible = props.visible;
   return _react.default.createElement("div", {
     className: "panels"
-  }, visible.has('translations') && _react.default.createElement(_panelTranslations.default, null), visible.has('ast') && _react.default.createElement(_panelAst.default, null), visible.has('config') && _react.default.createElement(_panelConfig.default, null), visible.has('console') && _react.default.createElement(_panelConsole.default, null), visible.has('output') && _react.default.createElement(_panelOutput.default, null));
+  }, visible.has('messages') && _react.default.createElement(_panelMessages.default, null), visible.has('ast') && _react.default.createElement(_panelAst.default, null), visible.has('config') && _react.default.createElement(_panelConfig.default, null), visible.has('console') && _react.default.createElement(_panelConsole.default, null), visible.has('output') && _react.default.createElement(_panelOutput.default, null));
 }
 
 function mapState(state) {
@@ -63643,7 +63583,7 @@ function mapState(state) {
 var _default = (0, _reactRedux.connect)(mapState)(Panels);
 
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./panel-translations":"../src/panel-translations.js","./panel-ast":"../src/panel-ast.js","./panel-config":"../src/panel-config.js","./panel-console":"../src/panel-console.js","./panel-output":"../src/panel-output.js"}],"../src/share.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./panel-messages":"../client/panel-messages.js","./panel-ast":"../client/panel-ast.js","./panel-config":"../client/panel-config.js","./panel-console":"../client/panel-console.js","./panel-output":"../client/panel-output.js"}],"../client/share.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63670,7 +63610,7 @@ class GistURL extends _react.Component {
     const _window$location = window.location,
           origin = _window$location.origin,
           pathname = _window$location.pathname;
-    const url = `${origin}${pathname}?gist=${id}`;
+    const url = `${origin}${pathname}?id=${id}`;
     return _react.default.createElement("input", {
       readonly: true,
       type: "text",
@@ -63695,13 +63635,14 @@ function Share(props) {
         is_creating = props.is_creating,
         create_error = props.create_error,
         gist_id = props.gist_id,
-        create_gist = props.create_gist;
+        create_gist = props.create_gist,
+        variables_error = props.variables_error;
 
-  if (is_fetching || fixture_error) {
+  if (is_fetching || fixture_error || variables_error) {
     return _react.default.createElement("button", {
       className: "share__button",
       disabled: true
-    }, "Share via Gist");
+    }, "Get shareable link");
   }
 
   if (is_creating) {
@@ -63719,10 +63660,11 @@ function Share(props) {
   return _react.default.createElement("div", null, _react.default.createElement("button", {
     className: "share__button",
     onClick: create_gist
-  }, "Share via Gist"), more);
+  }, "Get shareable link"), more);
 }
 
 const mapState = state => ({
+  variables_error: state.variables_error,
   is_fetching: state.is_fetching,
   fixture_error: state.fixture_error,
   is_creating: state.is_creating,
@@ -63737,7 +63679,7 @@ const mapDispatch = {
 var _default = (0, _reactRedux.connect)(mapState, mapDispatch)(Share);
 
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./actions":"../src/actions.js"}],"../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","./actions":"../client/actions.js"}],"../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 
 function getBundleURLCached() {
@@ -63804,12 +63746,12 @@ function reloadCSS() {
 }
 
 module.exports = reloadCSS;
-},{"./bundle-url":"../node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"../src/style.css":[function(require,module,exports) {
+},{"./bundle-url":"../node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"../client/style.css":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"../src/app.js":[function(require,module,exports) {
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"../client/app.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63848,39 +63790,11 @@ function Fetching() {
 function FixtureError(props) {
   const error = props.error,
         action = props.action;
-  let error_message;
-
-  switch (error.type) {
-    case 'NETWORK_ERROR':
-      {
-        const response = error.data;
-        error_message = _react.default.createElement("div", {
-          className: "app__error"
-        }, response.status === 404 ? 'Gist not found.' : `Error fetching the gist: ${response.statusText}`);
-        break;
-      }
-
-    case 'FIXTURE_ERROR':
-      {
-        error_message = _react.default.createElement("div", {
-          className: "app__error"
-        }, "The gist does not appear to contain valid Playground files.");
-        break;
-      }
-
-    default:
-      {
-        // Log the error for debugging.
-        console.error(error);
-        error_message = _react.default.createElement("div", {
-          className: "app__error"
-        }, "Something went wrong.");
-      }
-  }
-
   return _react.default.createElement("div", {
     className: "app__modal"
-  }, error_message, _react.default.createElement("button", {
+  }, _react.default.createElement("div", {
+    className: "app__error"
+  }, error.message), _react.default.createElement("button", {
     className: "modal__button",
     onClick: action
   }, "Use defaults"));
@@ -63889,11 +63803,11 @@ function FixtureError(props) {
 class App extends _react.Component {
   componentWillMount() {
     const _query$parse = _queryString.default.parse(window.location.search),
-          gist = _query$parse.gist;
+          id = _query$parse.id;
 
-    if (gist) {
+    if (id) {
       const fetch_gist = this.props.fetch_gist;
-      fetch_gist(gist);
+      fetch_gist(id);
     }
   }
 
@@ -63946,7 +63860,7 @@ const mapDispatch = {
 var _default = (0, _reactRedux.connect)(mapState, mapDispatch)(App);
 
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","query-string":"../node_modules/query-string/index.js","./panels-list":"../src/panels-list.js","./panels":"../src/panels.js","./share":"../src/share.js","./actions":"../src/actions.js","./style.css":"../src/style.css"}],"../src/index.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-redux":"../node_modules/react-redux/es/index.js","query-string":"../node_modules/query-string/index.js","./panels-list":"../client/panels-list.js","./panels":"../client/panels.js","./share":"../client/share.js","./actions":"../client/actions.js","./style.css":"../client/style.css"}],"../client/index.js":[function(require,module,exports) {
 "use strict";
 
 var _react = _interopRequireDefault(require("react"));
@@ -63964,7 +63878,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 _reactDom.default.render(_react.default.createElement(_reactRedux.Provider, {
   store: _store.default
 }, _react.default.createElement(_app.default, null)), document.getElementById('root'));
-},{"react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js","react-redux":"../node_modules/react-redux/es/index.js","./store":"../src/store.js","./app.js":"../src/app.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js","react-redux":"../node_modules/react-redux/es/index.js","./store":"../client/store.js","./app.js":"../client/app.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -63992,7 +63906,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64147" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57074" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -64167,5 +64081,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["../node_modules/parcel-bundler/src/builtins/hmr-runtime.js","../src/index.js"], null)
-//# sourceMappingURL=/src.7ed060e2.js.map
+},{}]},{},["../node_modules/parcel-bundler/src/builtins/hmr-runtime.js","../client/index.js"], null)
+//# sourceMappingURL=/client.b27335b4.js.map
