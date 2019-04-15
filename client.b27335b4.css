@@ -189,6 +189,7 @@ code, pre {
 }
 
 .message code,
+.term code,
 .attribute code {
     font-size: .9rem;
     padding: 2px;

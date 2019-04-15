@@ -63465,9 +63465,9 @@ function Term(props) {
     className: "panel__row term"
   }, _react.default.createElement("div", {
     className: "term__id"
-  }, _react.default.createElement("code", null, id)), _react.default.createElement("div", {
+  }, _react.default.createElement("code", null, "-", id)), _react.default.createElement("div", {
     className: "term__value"
-  }, "Terms may only be used in other Messages."));
+  }, "Terms cannot be accessed outside of Messages."));
 }
 
 function Junk(props) {
@@ -63902,7 +63902,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58030" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58268" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
