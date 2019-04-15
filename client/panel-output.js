@@ -36,10 +36,10 @@ function Term(props) {
     return (
         <div className="panel__row term">
             <div className="term__id">
-                <code>{id}</code>
+                <code>-{id}</code>
             </div>
             <div className="term__value">
-                Terms may only be used in other Messages.
+                Terms cannot be accessed outside of Messages.
             </div>
         </div>
     );
