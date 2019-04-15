@@ -28541,9 +28541,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.variables = exports.messages = void 0;
-const messages = `# Try editing the translations here!
+const messages = `\
+# Try editing the translations below.
+# Set $variables' values in the Config tab.
 
-shared-photos-to-stream =
+shared-photos =
     {$UserName} {$PhotoCount ->
         [one] added a new photo
        *[other] added {$PhotoCount} new photos
@@ -63900,7 +63902,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57993" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58030" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
