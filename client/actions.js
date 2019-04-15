@@ -53,11 +53,17 @@ export function create_gist() {
     return async function(dispatch, getState) {
         dispatch({ type: 'REQUEST_GIST_CREATE' });
 
-        const { messages, variables, locale, dir } = getState();
+        const {
+            messages, variables, locale, dir, visible_panels
+        } = getState();
         const body = {
             messages,
             variables,
-            setup: { locale, dir, }
+            setup: {
+                visible: Array.from(visible_panels),
+                locale,
+                dir,
+            }
         };
 
         try {

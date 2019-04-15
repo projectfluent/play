@@ -21,6 +21,8 @@ const default_state = {
     out
 };
 
+const KNOWN_PANELS = ["messages", "ast", "config", "console", "output"];
+
 export default function reducer(state = {
     ...default_state,
     dir: 'ltr',
@@ -116,10 +118,15 @@ export default function reducer(state = {
             const bundle = create_bundle(locale, gist.messages);
             const [ast, annotations] = parse_messages(gist.messages);
             const [out, format_errors] = format_messages(ast, bundle, gist.variables);
+            const gist_panels = Array.isArray(gist.setup.visible) ?
+                new Set(gist.setup.visible.filter(
+                    panel_name => KNOWN_PANELS.includes(panel_name))):
+                state.visible_panels;
 
             return {
                 ...state,
                 is_fetching: false,
+                visible_panels: gist_panels,
                 locale: gist.setup.locale,
                 dir: gist.setup.dir,
                 messages: gist.messages,
