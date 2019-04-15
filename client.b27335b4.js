@@ -28543,26 +28543,21 @@ Object.defineProperty(exports, "__esModule", {
 exports.variables = exports.messages = void 0;
 const messages = `# Try editing the translations here!
 
-hello-world = Hello, world!
-
-shared-photos =
-    { $user_name } { $photo_count ->
-        [0] hasn't added any photos yet
+shared-photos-to-stream =
+    {$UserName} {$PhotoCount ->
         [one] added a new photo
-       *[other] added { $photo_count } new photos
+       *[other] added {$PhotoCount} new photos
+    } to {$UserGender ->
+        [male] his stream
+        [female] her stream
+       *[other] their stream
     }.
-
-liked-comment =
-    { $user_name } liked your comment on { $user_gender ->
-        [male] his
-        [female] her
-       *[other] their
-    } post.`;
+`;
 exports.messages = messages;
 const variables = {
-  user_name: 'Anne',
-  user_gender: 'female',
-  photo_count: 3
+  UserName: 'Anne',
+  UserGender: 'female',
+  PhotoCount: 3
 };
 exports.variables = variables;
 },{}],"../node_modules/make-plural/umd/plurals.js":[function(require,module,exports) {
@@ -35326,8 +35321,7 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-//const SERVER_URL = 'https://fluent-play.herokuapp.com';
-const SERVER_URL = 'http://fluent-playground.herokuapp.test:8080';
+const SERVER_URL = 'https://fluent-play.herokuapp.com';
 
 function get(_x) {
   return _get.apply(this, arguments);
@@ -63906,7 +63900,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57074" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57993" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
