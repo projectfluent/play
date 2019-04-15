@@ -1,0 +1,20 @@
+[package]
+name = "fluent-play"
+version = "0.1.0"
+authors = ["Staś Małolepszy <stas@mozilla.com>"]
+edition = "2018"
+
+[[bin]]
+name = "fluent-play"
+path = "server/main.rs"
+
+[dependencies]
+corsware = "0.2.*"
+hubcaps = "0.5.*"
+hyper = "0.12.*"
+hyper-tls = "0.3.*"
+iron = "0.6.*"
+router = "0.6.*"
+serde = { version = "1.*", features = ["derive"] }
+serde_json = "1.*"
+tokio = "0.1.*"

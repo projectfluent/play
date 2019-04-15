@@ -27,9 +27,9 @@ function annotation_display(source, junk, annot) {
     }
 }
 
-export function parse_translations(translations) {
+export function parse_messages(messages) {
     try {
-        var res = fluent_parser.parse(translations);
+        var res = fluent_parser.parse(messages);
     }  catch (err) {
         console.error(err);
         return [
@@ -42,7 +42,7 @@ export function parse_translations(translations) {
     const annotations = junks.reduce(
         (annots, junk) => annots.concat(
             junk.annotations.map(
-                annot => annotation_display(translations, junk, annot)
+                annot => annotation_display(messages, junk, annot)
             )
         ),
         []
@@ -50,13 +50,13 @@ export function parse_translations(translations) {
     return [res, annotations];
 }
 
-export function create_bundle(locale, translations) {
+export function create_bundle(locale, messages) {
     const bundle = new FluentBundle(locale);
-    bundle.addMessages(translations);
+    bundle.addMessages(messages);
     return bundle;
 }
 
-export function format_messages(ast, bundle, externals) {
+export function format_messages(ast, bundle, variables) {
     const outputs = new Map(); 
     const errors = [];
     for (const entry of ast.body) {
@@ -67,11 +67,11 @@ export function format_messages(ast, bundle, externals) {
         const message = bundle.getMessage(id);
         const formatted_message = {
             id,
-            value: bundle.format(message, externals, errors),
+            value: bundle.format(message, variables, errors),
             attributes: Object.entries(message && message.attrs || {}).map(
                 ([attr_id, attr_value]) => ({
                     id: attr_id,
-                    value: bundle.format(attr_value, externals, errors)
+                    value: bundle.format(attr_value, variables, errors)
                 })
             )
         };
@@ -82,11 +82,11 @@ export function format_messages(ast, bundle, externals) {
 
 const iso_re = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
-export function parse_externals(externals) {
+export function parse_variables(variables) {
     try {
-        var obj = JSON.parse(externals);
+        var obj = JSON.parse(variables);
     } catch (err) {
-        return [{}, [err]];
+        return [{}, err];
     }
 
     for (const [key, val] of Object.entries(obj)) {
@@ -95,5 +95,5 @@ export function parse_externals(externals) {
       }
     }
 
-    return [obj, []];
+    return [obj, null];
 }

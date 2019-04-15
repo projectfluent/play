@@ -1,4 +1,4 @@
-export const translations = 
+export const messages =
 `# Try editing the translations here!
 
 hello-world = Hello, world!
@@ -17,7 +17,7 @@ liked-comment =
        *[other] their
     } post.`;
 
-export const externals = {
+export const variables = {
   user_name: 'Anne',
   user_gender: 'female',
   photo_count: 3

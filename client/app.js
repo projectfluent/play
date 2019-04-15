@@ -21,45 +21,11 @@ function Fetching() {
 
 function FixtureError(props) {
     const { error, action } = props;
-    let error_message;
-
-    switch (error.type) {
-        case 'NETWORK_ERROR': {
-            const { data: response } = error;
-            error_message = (
-                <div className="app__error">
-                    {response.status === 404
-                        ? 'Gist not found.'
-                        : `Error fetching the gist: ${response.statusText}`
-                    }
-                </div>
-            );
-            break;
-        }
-        case 'FIXTURE_ERROR': {
-            error_message = (
-                <div className="app__error">
-                    The gist does not appear to contain valid
-                    Playground files.
-                </div>
-            );
-            break;
-        }
-        default: {
-            // Log the error for debugging.
-            console.error(error);
-
-            error_message = (
-                <div className="app__error">
-                    Something went wrong.
-                </div>
-            );
-        }
-    }
-
     return (
         <div className="app__modal">
-            {error_message}
+            <div className="app__error">
+                {error.message}
+            </div>
             <button className="modal__button" onClick={action}>
                 Use defaults
             </button>

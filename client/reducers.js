@@ -1,23 +1,21 @@
-import { translations, externals } from './defaults';
+import * as defaults from './defaults';
 import {
-    parse_translations, create_bundle, format_messages, parse_externals,
+    parse_messages, create_bundle, format_messages, parse_variables,
 } from './fluent';
-import { validate_gist } from './github';
 
 const locale = 'en-US';
-const [ast, annotations] = parse_translations(translations);
-const externals_string = JSON.stringify(externals, null, 4);
-const bundle = create_bundle(locale, translations);
-const [out, format_errors] = format_messages(ast, bundle, externals);
+const [ast, annotations] = parse_messages(defaults.messages);
+const bundle = create_bundle(locale, defaults.messages);
+const [out, format_errors] = format_messages(ast, bundle, defaults.variables);
 
 const default_state = {
     locale,
-    translations,
+    messages: defaults.messages,
     annotations,
     format_errors,
-    externals,
-    externals_errors: [],
-    externals_string,
+    variables: defaults.variables,
+    variables_error: null,
+    variables_string: JSON.stringify(defaults.variables, null, 4),
     ast,
     bundle,
     out
@@ -31,7 +29,7 @@ export default function reducer(state = {
     is_creating: false,
     create_error: null,
     gist_id: null,
-    visible_panels: new Set(['translations', 'output'])
+    visible_panels: new Set(['messages', 'output'])
 }, action) {
     switch (action.type) {
         case 'TOGGLE_PANEL': {
@@ -45,16 +43,16 @@ export default function reducer(state = {
                     : visible_panels.add(name)
             };
         }
-        case 'CHANGE_TRANSLATIONS': {
+        case 'CHANGE_MESSAGES': {
             const { value } = action;
-            const { locale, externals } = state;
+            const { locale, variables } = state;
             const bundle = create_bundle(locale, value);
-            const [ast, annotations] = parse_translations(value);
-            const [out, format_errors] = format_messages(ast, bundle, externals);
+            const [ast, annotations] = parse_messages(value);
+            const [out, format_errors] = format_messages(ast, bundle, variables);
 
             return {
                 ...state,
-                translations: value,
+                messages: value,
                 annotations,
                 format_errors,
                 ast,
@@ -64,9 +62,9 @@ export default function reducer(state = {
         }
         case 'CHANGE_LOCALE': {
             const { value: locale } = action;
-            const { ast, translations, externals } = state;
-            const bundle = create_bundle(locale, translations);
-            const [out, format_errors] = format_messages(ast, bundle, externals);
+            const { ast, messages, variables } = state;
+            const bundle = create_bundle(locale, messages);
+            const [out, format_errors] = format_messages(ast, bundle, variables);
 
             return {
                 ...state,
@@ -82,18 +80,18 @@ export default function reducer(state = {
                 dir: action.value
             };
         }
-        case 'CHANGE_EXTERNALS': {
+        case 'CHANGE_VARIABLES': {
             const { value } = action;
             const { ast, bundle } = state;
 
-            const [externals, externals_errors] = parse_externals(value);
-            const [out, format_errors] = format_messages(ast, bundle, externals);
+            const [variables, variables_error] = parse_variables(value);
+            const [out, format_errors] = format_messages(ast, bundle, variables);
 
             return {
                 ...state,
-                externals,
-                externals_errors,
-                externals_string: value,
+                variables,
+                variables_error,
+                variables_string: value,
                 format_errors,
                 out
             };
@@ -115,40 +113,20 @@ export default function reducer(state = {
         }
         case 'RECEIVE_GIST_FETCH': {
             const { gist } = action;
-
-            try {
-                validate_gist(gist);
-            } catch(error) {
-                return {
-                    ...state,
-                    is_fetching: false,
-                    fixture_error: error
-                };
-            }
-
-            const { files } = gist;
-            const translations = files['playground.ftl'].content;
-            const externals_string = files['playground.json'].content;
-
-            const { locale, dir } = parse_setup(files, state);
-
-            const bundle = create_bundle(locale, translations);
-            const [ast, annotations] = parse_translations(translations);
-            const [externals, externals_errors] = parse_externals(
-                externals_string
-            );
-            const [out, format_errors] = format_messages(ast, bundle, externals);
+            const bundle = create_bundle(locale, gist.messages);
+            const [ast, annotations] = parse_messages(gist.messages);
+            const [out, format_errors] = format_messages(ast, bundle, gist.variables);
 
             return {
                 ...state,
                 is_fetching: false,
-                locale,
-                dir,
-                translations,
+                locale: gist.setup.locale,
+                dir: gist.setup.dir,
+                messages: gist.messages,
                 annotations,
-                externals,
-                externals_errors,
-                externals_string,
+                variables: gist.variables,
+                variables_error: null,
+                variables_string: JSON.stringify(gist.variables, null, 4),
                 format_errors,
                 ast,
                 bundle,
@@ -173,12 +151,11 @@ export default function reducer(state = {
             };
         }
         case 'RECEIVE_GIST_CREATE': {
-            const { response: { id } } = action;
-
+            const { response } = action;
             return {
                 ...state,
                 is_creating: false,
-                gist_id: id
+                gist_id: response.id
             };
         }
         case 'RESET_ALL': {
@@ -187,29 +164,10 @@ export default function reducer(state = {
                 is_fetching: false,
                 is_creating: false,
                 fixture_error: null,
-                visible_panels: new Set(['translations', 'output'])
+                visible_panels: new Set(['messages', 'output'])
             };
         }
         default:
             return state;
     }
-}
-
-function parse_setup(files, state) {
-    if (!files['setup.json']) {
-        return state;
-    }
-
-    const content = files['setup.json'].content;
-
-    try {
-        var setup = JSON.parse(content);
-    } catch (err) {
-        return state;
-    }
-
-    return {
-        locale: setup.locale || state.locale,
-        dir: setup.dir || state.dir,
-    };
 }

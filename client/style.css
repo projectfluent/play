@@ -164,19 +164,19 @@ code, pre {
     flex: 1;
 }
 
-.translations__editor,
+.messages__editor,
 .ast__editor,
-.externals__editor {
+.variables__editor {
     flex: 1;
     margin: 0 0 -5px -5px;
 }
 
-.translations__editor {
+.messages__editor {
     background-color: #fff !important;
 }
 
 .ast__editor,
-.externals__editor {
+.variables__editor {
     background-color: transparent !important;
 }
 
