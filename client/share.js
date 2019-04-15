@@ -12,7 +12,7 @@ class GistURL extends Component {
     render() {
       const { id } = this.props;
       const { origin, pathname } = window.location;
-      const url = `${origin}${pathname}?gist=${id}`;
+      const url = `${origin}${pathname}?id=${id}`;
       return (
           <input
               readonly={true}
@@ -39,7 +39,7 @@ function Share(props) {
     if (is_fetching || fixture_error || variables_error) {
         return (
             <button className="share__button" disabled={true}>
-                Share via Gist
+                Get shareable link
             </button>
         );
     }
@@ -61,7 +61,7 @@ function Share(props) {
     return (
       <div>
           <button className="share__button" onClick={create_gist}>
-              Share via Gist
+              Get shareable link
           </button>
           { more }
       </div>

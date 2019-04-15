@@ -35,11 +35,11 @@ function FixtureError(props) {
 
 class App extends Component {
     componentWillMount() {
-        const { gist } = query.parse(window.location.search);
+        const { id } = query.parse(window.location.search);
 
-        if (gist) {
+        if (id) {
             const { fetch_gist } = this.props;
-            fetch_gist(gist);
+            fetch_gist(id);
         }
     }
 
