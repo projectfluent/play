@@ -28546,10 +28546,10 @@ const messages = `\
 # Set $variables' values in the Config tab.
 
 shared-photos =
-    {$UserName} {$PhotoCount ->
+    {$userName} {$photoCount ->
         [one] added a new photo
-       *[other] added {$PhotoCount} new photos
-    } to {$UserGender ->
+       *[other] added {$photoCount} new photos
+    } to {$userGender ->
         [male] his stream
         [female] her stream
        *[other] their stream
@@ -28557,9 +28557,9 @@ shared-photos =
 `;
 exports.messages = messages;
 const variables = {
-  UserName: 'Anne',
-  UserGender: 'female',
-  PhotoCount: 3
+  userName: 'Anne',
+  userGender: 'female',
+  photoCount: 3
 };
 exports.variables = variables;
 },{}],"../node_modules/make-plural/umd/plurals.js":[function(require,module,exports) {
@@ -63902,7 +63902,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58268" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59081" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
