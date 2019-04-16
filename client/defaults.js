@@ -3,10 +3,10 @@ export const messages = `\
 # Set $variables' values in the Config tab.
 
 shared-photos =
-    {$UserName} {$PhotoCount ->
+    {$userName} {$photoCount ->
         [one] added a new photo
-       *[other] added {$PhotoCount} new photos
-    } to {$UserGender ->
+       *[other] added {$photoCount} new photos
+    } to {$userGender ->
         [male] his stream
         [female] her stream
        *[other] their stream
@@ -14,7 +14,7 @@ shared-photos =
 `;
 
 export const variables = {
-  UserName: 'Anne',
-  UserGender: 'female',
-  PhotoCount: 3
+  userName: 'Anne',
+  userGender: 'female',
+  photoCount: 3
 };
