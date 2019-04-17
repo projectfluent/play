@@ -20,6 +20,8 @@ function ConfigPanel(props) {
                     <select id="locale" value={locale} onChange={change_locale}>
                         <option value="ar">Arabic</option>
                         <option value="br">Breton</option>
+                        <option value="zh-CN">Chinese (Simplified)</option>
+                        <option value="zh-TW">Chinese (Traditional)</option>
                         <option value="cs">Czech</option>
                         <option value="da">Danish</option>
                         <option value="nl">Dutch</option>
@@ -29,9 +31,11 @@ function ConfigPanel(props) {
                         <option value="fi">Finnish</option>
                         <option value="fr">French</option>
                         <option value="ka">Georgian</option>
+                        <option value="de">German</option>
                         <option value="he">Hebrew</option>
                         <option value="hi-IN">Hindi</option>
                         <option value="is">Icelandic</option>
+                        <option value="ja">Japanese</option>
                         <option value="kn">Kannada</option>
                         <option value="lv">Latvian</option>
                         <option value="lt">Lithuanian</option>
