@@ -63238,10 +63238,14 @@ function ConfigPanel(props) {
   }, "Danish"), _react.default.createElement("option", {
     value: "nl"
   }, "Dutch"), _react.default.createElement("option", {
+    value: "en-CA"
+  }, "English (Canada)"), _react.default.createElement("option", {
+    value: "en-ZA"
+  }, "English (South Africa)"), _react.default.createElement("option", {
+    value: "en-GB"
+  }, "English (UK)"), _react.default.createElement("option", {
     value: "en-US"
   }, "English (US)"), _react.default.createElement("option", {
-    value: "en-GB"
-  }, "English (British)"), _react.default.createElement("option", {
     value: "et"
   }, "Estonian"), _react.default.createElement("option", {
     value: "fi"
@@ -63258,10 +63262,14 @@ function ConfigPanel(props) {
   }, "Hindi"), _react.default.createElement("option", {
     value: "is"
   }, "Icelandic"), _react.default.createElement("option", {
+    value: "it"
+  }, "Italian"), _react.default.createElement("option", {
     value: "ja"
   }, "Japanese"), _react.default.createElement("option", {
     value: "kn"
   }, "Kannada"), _react.default.createElement("option", {
+    value: "ko"
+  }, "Korean"), _react.default.createElement("option", {
     value: "lv"
   }, "Latvian"), _react.default.createElement("option", {
     value: "lt"
@@ -63274,6 +63282,8 @@ function ConfigPanel(props) {
   }, "Norwegian bokm\xE5l"), _react.default.createElement("option", {
     value: "pl"
   }, "Polish"), _react.default.createElement("option", {
+    value: "ru"
+  }, "Russian"), _react.default.createElement("option", {
     value: "gd"
   }, "Scottish Gaelic"), _react.default.createElement("option", {
     value: "si"
@@ -63910,7 +63920,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56796" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52788" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
