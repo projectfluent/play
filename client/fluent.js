@@ -1,7 +1,7 @@
 import 'intl-pluralrules';
-import { FluentBundle } from 'fluent/compat';
+import { FluentBundle } from '@fluent/bundle/compat';
 import { FluentParser, lineOffset, columnOffset, Resource }
-    from 'fluent-syntax/compat';
+    from '@fluent/syntax/compat';
 
 const fluent_parser = new FluentParser();
 
