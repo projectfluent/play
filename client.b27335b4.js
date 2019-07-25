@@ -30646,12 +30646,12 @@ if (typeof Intl === 'undefined') {
   var supported = Intl.PluralRules.supportedLocalesOf(test);
   if (supported.length < test.length) Intl.PluralRules = _pluralRules.default;
 }
-},{"./plural-rules":"../node_modules/intl-pluralrules/plural-rules.js"}],"../node_modules/fluent/compat.js":[function(require,module,exports) {
+},{"./plural-rules":"../node_modules/intl-pluralrules/plural-rules.js"}],"../node_modules/@fluent/bundle/compat.js":[function(require,module,exports) {
 var define;
 var global = arguments[3];
-/* fluent@0.12.0 */
+/* @fluent/bundle@0.13.0 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define('fluent', ['exports'], factory) : (global = global || self, factory(global.Fluent = {}));
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define('@fluent/bundle', ['exports'], factory) : (global = global || self, factory(global.FluentBundle = {}));
 })(this, function (exports) {
   'use strict';
 
@@ -30778,8 +30778,12 @@ var global = arguments[3];
   }
 
   class FluentNone extends FluentType {
+    valueOf() {
+      return null;
+    }
+
     toString() {
-      return this.value || "???";
+      return "{".concat(this.value || "???", "}");
     }
 
   }
@@ -30820,21 +30824,6 @@ var global = arguments[3];
 
   }
 
-  var builtins = {
-    "NUMBER": (_ref, opts) => {
-      let _ref2 = _slicedToArray(_ref, 1),
-          arg = _ref2[0];
-
-      return new FluentNumber(arg.valueOf(), merge(arg.opts, opts));
-    },
-    "DATETIME": (_ref3, opts) => {
-      let _ref4 = _slicedToArray(_ref3, 1),
-          arg = _ref4[0];
-
-      return new FluentDateTime(arg.valueOf(), merge(arg.opts, opts));
-    }
-  };
-
   function merge(argopts, opts) {
     return Object.assign({}, argopts, values(opts));
   }
@@ -30853,6 +30842,42 @@ var global = arguments[3];
     return unwrapped;
   }
 
+  function NUMBER(_ref, opts) {
+    let _ref2 = _slicedToArray(_ref, 1),
+        arg = _ref2[0];
+
+    if (arg instanceof FluentNone) {
+      return arg;
+    }
+
+    if (arg instanceof FluentNumber) {
+      return new FluentNumber(arg.valueOf(), merge(arg.opts, opts));
+    }
+
+    return new FluentNone("NUMBER()");
+  }
+
+  function DATETIME(_ref3, opts) {
+    let _ref4 = _slicedToArray(_ref3, 1),
+        arg = _ref4[0];
+
+    if (arg instanceof FluentNone) {
+      return arg;
+    }
+
+    if (arg instanceof FluentDateTime) {
+      return new FluentDateTime(arg.valueOf(), merge(arg.opts, opts));
+    }
+
+    return new FluentNone("DATETIME()");
+  }
+
+  var builtins =
+  /*#__PURE__*/
+  Object.freeze({
+    NUMBER: NUMBER,
+    DATETIME: DATETIME
+  });
   const MAX_PLACEABLE_LENGTH = 2500; // Unicode bidi isolation characters.
 
   const FSI = "\u2068";
@@ -31044,7 +31069,7 @@ var global = arguments[3];
       }
 
       scope.errors.push(new ReferenceError("Unknown attribute: ".concat(attr)));
-      return Type(scope, message);
+      return new FluentNone("".concat(name, ".").concat(attr));
     }
 
     return Type(scope, message);
@@ -31083,7 +31108,7 @@ var global = arguments[3];
       }
 
       scope.errors.push(new ReferenceError("Unknown attribute: ".concat(attr)));
-      return Type(local, term);
+      return new FluentNone("".concat(id, ".").concat(attr));
     }
 
     return Type(local, term);
@@ -31111,7 +31136,7 @@ var global = arguments[3];
       return func(...getArguments(scope, args));
     } catch (e) {
       // XXX Report errors.
-      return new FluentNone();
+      return new FluentNone("".concat(name, "()"));
     }
   } // Resolve a select expression to the member object.
 
@@ -32139,37 +32164,6 @@ var global = arguments[3];
     }
 
   }
-
-  function nonBlank(line) {
-    return !/^\s*$/.test(line);
-  }
-
-  function countIndent(line) {
-    const _line$match = line.match(/^\s*/),
-          _line$match2 = _slicedToArray(_line$match, 1),
-          indent = _line$match2[0];
-
-    return indent.length;
-  }
-  /**
-   * Template literal tag for dedenting FTL code.
-   *
-   * Strip the common indent of non-blank lines. Remove blank lines.
-   *
-   * @param {Array<string>} strings
-   */
-
-
-  function ftl(strings) {
-    const _strings = _slicedToArray(strings, 1),
-          code = _strings[0];
-
-    const lines = code.split("\n").filter(nonBlank);
-    const indents = lines.map(countIndent);
-    const common = Math.min(...indents);
-    const indent = new RegExp("^\\s{".concat(common, "}"));
-    return lines.map(line => line.replace(indent, "")).join("\n");
-  }
   /*
    * @module fluent
    * @overview
@@ -32186,17 +32180,16 @@ var global = arguments[3];
   exports.FluentNumber = FluentNumber;
   exports.FluentResource = FluentResource;
   exports.FluentType = FluentType;
-  exports.ftl = ftl;
   Object.defineProperty(exports, '__esModule', {
     value: true
   });
 });
-},{}],"../node_modules/fluent-syntax/compat.js":[function(require,module,exports) {
+},{}],"../node_modules/@fluent/syntax/compat.js":[function(require,module,exports) {
 var define;
 var global = arguments[3];
-/* fluent-syntax@0.13.0 */
+/* @fluent/syntax@0.14.0 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define('fluent-syntax', ['exports'], factory) : (global = global || self, factory(global.FluentSyntax = {}));
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define('@fluent/syntax', ['exports'], factory) : (global = global || self, factory(global.FluentSyntax = {}));
 })(this, function (exports) {
   'use strict';
   /*
@@ -34565,9 +34558,9 @@ exports.parse_variables = parse_variables;
 
 require("intl-pluralrules");
 
-var _compat = require("fluent/compat");
+var _compat = require("@fluent/bundle/compat");
 
-var _compat2 = require("fluent-syntax/compat");
+var _compat2 = require("@fluent/syntax/compat");
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
@@ -34673,7 +34666,7 @@ function parse_variables(variables) {
 
   return [obj, null];
 }
-},{"intl-pluralrules":"../node_modules/intl-pluralrules/polyfill.js","fluent/compat":"../node_modules/fluent/compat.js","fluent-syntax/compat":"../node_modules/fluent-syntax/compat.js"}],"../client/reducers.js":[function(require,module,exports) {
+},{"intl-pluralrules":"../node_modules/intl-pluralrules/polyfill.js","@fluent/bundle/compat":"../node_modules/@fluent/bundle/compat.js","@fluent/syntax/compat":"../node_modules/@fluent/syntax/compat.js"}],"../client/reducers.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63920,7 +63913,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52788" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53282" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
