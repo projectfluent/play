@@ -1,5 +1,5 @@
 import 'intl-pluralrules';
-import { FluentBundle } from '@fluent/bundle/compat';
+import { FluentBundle, FluentResource } from '@fluent/bundle/compat';
 import { FluentParser, lineOffset, columnOffset, Resource }
     from '@fluent/syntax/compat';
 
@@ -52,7 +52,7 @@ export function parse_messages(messages) {
 
 export function create_bundle(locale, messages) {
     const bundle = new FluentBundle(locale);
-    bundle.addMessages(messages);
+    bundle.addResource(new FluentResource(messages));
     return bundle;
 }
 
@@ -63,19 +63,21 @@ export function format_messages(ast, bundle, variables) {
         if (entry.type !== "Message") {
             continue;
         }
-        const id = entry.id.name;
-        const message = bundle.getMessage(id);
-        const formatted_message = {
-            id,
-            value: bundle.format(message, variables, errors),
-            attributes: Object.entries(message && message.attrs || {}).map(
-                ([attr_id, attr_value]) => ({
-                    id: attr_id,
-                    value: bundle.format(attr_value, variables, errors)
-                })
-            )
-        };
-        outputs.set(id, formatted_message);
+
+        let id = entry.id.name;
+        let message = bundle.getMessage(id);
+        let value = message.value
+            ? bundle.formatPattern(message.value, variables, errors)
+            : null;
+        let attributes = [];
+        for (let [name, value] of Object.entries(message.attributes)) {
+            attributes.push({
+                id: name,
+                value: bundle.formatPattern(value, variables, errors)
+            })
+        }
+
+        outputs.set(id, {id, value, attributes});
     }
     return [outputs, errors];
 }
