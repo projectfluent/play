@@ -32,6 +32,7 @@ fn main() {
 
     let mut origins = HashSet::new();
     origins.insert(Origin::parse("https://projectfluent.org").unwrap());
+    origins.insert(Origin::parse("https://www.projectfluent.org").unwrap());
 
     let mut chain = Chain::new(router);
     chain.link_before(GistsMiddleware::new(gists));
