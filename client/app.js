@@ -34,7 +34,7 @@ function FixtureError(props) {
 }
 
 class App extends Component {
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const { id } = query.parse(window.location.search);
 
         if (id) {
