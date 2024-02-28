@@ -91,11 +91,6 @@ code, pre {
     border: outset 2px #999;
 }
 
-.share__error {
-    font-size: .8rem;
-    color: #666;
-}
-
 .panelslist__button {
     margin: .2rem;
     padding: .3rem .5rem;

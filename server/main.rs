@@ -28,7 +28,6 @@ fn main() {
     let mut router = Router::new();
     router.get("/", info::get, "info");
     router.get("/playgrounds/:id", playground::get, "get_playground");
-    router.post("/playgrounds", playground::create, "create_playground");
 
     let mut origins = HashSet::new();
     origins.insert(Origin::parse("https://projectfluent.org").unwrap());
