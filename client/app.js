@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import query from 'query-string';
 
 import PanelsList from './panels-list';
 import Panels from './panels';
@@ -33,11 +32,11 @@ function FixtureError(props) {
 
 class App extends Component {
     componentDidMount() {
-        const { id, s: link } = query.parse(window.location.search);
-        if (link) {
-            this.props.open_link(link);
-        } else if (id) {
-            this.props.fetch_gist(id);
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('s')) {
+            this.props.open_link(params.get('s'));
+        } else if (params.has('id')) {
+            this.props.fetch_gist(params.get('id'));
         }
     }
 
