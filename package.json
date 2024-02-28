@@ -1,6 +1,5 @@
 {
   "name": "fluent-playground",
-  "version": "0.1.0",
   "homepage": "https://projectfluent.org/play",
   "private": true,
   "scripts": {
@@ -24,13 +23,5 @@
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0"
   },
-  "browserslist": [
-    "Firefox >= 53",
-    "FirefoxAndroid >= 53",
-    "Chrome >= 55",
-    "ChromeAndroid >= 55",
-    "Edge >= 15",
-    "Safari >= 10.1",
-    "iOS >= 10.3"
-  ]
+  "browserslist": "> 0.5%, last 2 versions, not dead"
 }
