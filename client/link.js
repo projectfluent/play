@@ -1,5 +1,5 @@
 export function build_link_url({ messages, variables, locale, dir, visible_panels }) {
-    const body = {
+    const str = JSON.stringify({
         messages,
         variables,
         setup: {
@@ -7,8 +7,9 @@ export function build_link_url({ messages, variables, locale, dir, visible_panel
             locale,
             dir,
         }
-    };
-    const base64 = btoa(JSON.stringify(body));
+    });
+    const bytes = new TextEncoder().encode(str);
+    const base64 = btoa(String.fromCodePoint(...bytes));
     const link = base64
         .replace(/[+]/g, '-')
         .replace(/[/]/g, '_')
@@ -20,5 +21,7 @@ export function build_link_url({ messages, variables, locale, dir, visible_panel
 
 export function parse_link(link) {
     const base64 = link.replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(base64));
+    const bytes = Uint8Array.from(atob(base64), (m) => m.codePointAt(0));
+    const str = new TextDecoder().decode(bytes)
+    return JSON.parse(str);
 }
