@@ -1,4 +1,3 @@
-import 'intl-pluralrules';
 import { FluentBundle, FluentResource } from '@fluent/bundle/compat';
 import { FluentParser, lineOffset, columnOffset, Resource }
     from '@fluent/syntax/compat';
