@@ -7,8 +7,6 @@ import Panels from './panels';
 import Share from './share';
 import { fetch_gist, reset_all } from './actions';
 
-import './style.css';
-
 function Fetching() {
     return (
         <div className="app__modal">
