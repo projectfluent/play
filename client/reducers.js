@@ -2,6 +2,7 @@ import * as defaults from './defaults';
 import {
     parse_messages, create_bundle, format_messages, parse_variables,
 } from './fluent';
+import { build_link_url } from './link';
 
 const locale = 'en-US';
 const [ast, annotations] = parse_messages(defaults.messages);
@@ -23,16 +24,26 @@ const default_state = {
 
 const KNOWN_PANELS = ["messages", "ast", "config", "console", "output"];
 
+function set_window_location(state) {
+    if (state.show_link) {
+        history.replaceState(null, '', build_link_url(state));
+    } else if (state.show_link === false) {
+        const url = new URL(window.location);
+        url.searchParams.delete('id');
+        url.searchParams.delete('s');
+        history.replaceState(null, '', url);
+    }
+}
+
 export default function reducer(state = {
     ...default_state,
     dir: 'ltr',
     is_fetching: false,
     fixture_error: null,
-    is_creating: false,
-    create_error: null,
-    gist_id: null,
+    show_link: null,
     visible_panels: new Set(['messages', 'output'])
 }, action) {
+    set_window_location(state);
     switch (action.type) {
         case 'TOGGLE_PANEL': {
             const { name } = action;
@@ -125,6 +136,7 @@ export default function reducer(state = {
 
             return {
                 ...state,
+                show_link: true,
                 is_fetching: false,
                 visible_panels: gist_panels,
                 locale: gist.setup.locale,
@@ -140,36 +152,46 @@ export default function reducer(state = {
                 out
             };
         }
-        case 'REQUEST_GIST_CREATE': {
-            return {
-                ...state,
-                is_creating: true,
-                create_error: null,
-                gist_id: null
-            };
-        }
-        case 'ERROR_GIST_CREATE': {
+        case 'ERROR_OPEN_LINK': {
             const { error } = action;
+            return { ...state, fixture_error: error };
+        }
+        case 'OPEN_LINK': {
+            const { body } = action;
+            const bundle = create_bundle(locale, body.messages);
+            const [ast, annotations] = parse_messages(body.messages);
+            const [out, format_errors] = format_messages(ast, bundle, body.variables);
+            const visible_panels = Array.isArray(body.setup.visible) ?
+                new Set(body.setup.visible.filter(
+                    panel_name => KNOWN_PANELS.includes(panel_name))):
+                state.visible_panels;
+
             return {
                 ...state,
-                is_creating: false,
-                create_error: error,
-                gist_id: null
+                show_link: true,
+                visible_panels,
+                locale: body.setup.locale,
+                dir: body.setup.dir,
+                messages: body.messages,
+                annotations,
+                variables: body.variables,
+                variables_error: null,
+                variables_string: JSON.stringify(body.variables, null, 4),
+                format_errors,
+                ast,
+                bundle,
+                out
             };
         }
-        case 'RECEIVE_GIST_CREATE': {
-            const { response } = action;
-            return {
-                ...state,
-                is_creating: false,
-                gist_id: response.id
-            };
+        case 'TOGGLE_LINK': {
+            const next = { ...state, show_link: !state.show_link };
+            set_window_location(next);
+            return next;
         }
         case 'RESET_ALL': {
             return {
                 ...default_state,
                 is_fetching: false,
-                is_creating: false,
                 fixture_error: null,
                 visible_panels: new Set(['messages', 'output'])
             };

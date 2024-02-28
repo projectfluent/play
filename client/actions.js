@@ -1,4 +1,5 @@
-import { get, post } from './api';
+import { get } from './api';
+import { parse_link } from './link';
 
 export function toggle_panel(name) {
     return {
@@ -49,31 +50,17 @@ export function fetch_gist(id) {
     };
 }
 
-export function create_gist() {
-    return async function(dispatch, getState) {
-        dispatch({ type: 'REQUEST_GIST_CREATE' });
+export function open_link(link) {
+    try {
+        const body = parse_link(link);
+        return { type: 'OPEN_LINK', body };
+    } catch (error) {
+        return { type: 'ERROR_OPEN_LINK', error };
+    }
+}
 
-        const {
-            messages, variables, locale, dir, visible_panels
-        } = getState();
-        const body = {
-            messages,
-            variables,
-            setup: {
-                visible: Array.from(visible_panels),
-                locale,
-                dir,
-            }
-        };
-
-        try {
-            var response = await post('/playgrounds', body);
-        } catch(error) {
-            return dispatch({ type: 'ERROR_GIST_CREATE', error });
-        }
-
-        dispatch({ type: 'RECEIVE_GIST_CREATE', response });
-    };
+export function toggle_link() {
+    return { type: 'TOGGLE_LINK' };
 }
 
 export function reset_all() {

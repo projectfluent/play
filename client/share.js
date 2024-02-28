@@ -1,84 +1,47 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 
-import { create_gist } from './actions';
-
-class GistURL extends Component {
-    componentDidMount() {
-        this.input.focus();
-        this.input.select();
-    }
-
-    render() {
-      const { id } = this.props;
-      const { origin, pathname } = window.location;
-      const url = `${origin}${pathname}?id=${id}`;
-      return (
-          <input
-              readonly={true}
-              type="text"
-              value={url}
-              ref={node => this.input = node}
-          />
-      );
-  }
-}
-
-function GistError(props) {
-    const { error } = props;
-    console.error(error);
-    return <em className="share__error">Network Error</em>;
-}
+import { toggle_link } from './actions';
+import { build_link_url } from './link';
 
 function Share(props) {
     const {
-        is_fetching, fixture_error, is_creating, create_error, gist_id,
-        create_gist, variables_error
+        is_fetching, fixture_error, show_link, toggle_link, variables_error
     } = props;
 
+    let disabled = false;
+    let more = null;
+    let text = 'Show shareable link';
     if (is_fetching || fixture_error || variables_error) {
-        return (
-            <button className="share__button" disabled={true}>
-                Get shareable link
-            </button>
-        );
+        disabled = true;
+    } else if (show_link) {
+        more = <input
+            readOnly
+            type="text"
+            value={build_link_url(props)}
+            onFocus={ev => ev.target.select()}
+        />;
+        text = 'Hide shareable link';
     }
-
-    if (is_creating) {
-        return (
-            <button className="share__button" disabled={true}>
-                Creating…
-            </button>
-        );
-    }
-
-    const more = gist_id
-        ? <GistURL id={gist_id} />
-        : create_error
-            ? <GistError error={create_error} />
-            : null;
 
     return (
-      <div>
-          <button className="share__button" onClick={create_gist}>
-              Get shareable link
-          </button>
-          { more }
-      </div>
+        <div>
+            <button
+                className="share__button"
+                disabled={disabled}
+                onClick={toggle_link}
+            >
+                { text }
+            </button>
+            { more }
+        </div>
     );
 }
 
-const mapState = state => ({
-    variables_error: state.variables_error,
-    is_fetching: state.is_fetching,
-    fixture_error: state.fixture_error,
-    is_creating: state.is_creating,
-    create_error: state.create_error,
-    gist_id: state.gist_id
-});
+const mapState = state => state;
 
 const mapDispatch = {
-    create_gist,
+    toggle_link,
 };
 
 export default connect(mapState, mapDispatch)(Share);

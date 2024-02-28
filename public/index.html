@@ -1,32 +1,34 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title>Fluent Playground</title>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-77033033-23"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=UA-77033033-23"
+    ></script>
     <script>
-        var doNotTrack =
-               navigator.doNotTrack === "1" // Modern browsers
-            || navigator.doNotTrack === "yes" // Firefox < 32
-            || window.doNotTrack === "1" // IE11
-            || navigator.msDoNotTrack === "1"; // IE9, IE10
-        if (!doNotTrack) {
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {dataLayer.push(arguments);}
-            gtag("js", new Date());
-            gtag("config", "UA-77033033-23", {
-                anonymize_ip: true,
-            });
+      if (navigator.doNotTrack !== "1") {
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
         }
+        gtag("js", new Date());
+        gtag("config", "UA-77033033-23", { anonymize_ip: true });
+      }
     </script>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="./favicon.ico">
-    <link href="https://fonts.googleapis.com/css?family=Sarina" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Sarina"
+    />
+    <link rel="stylesheet" href="../client/style.css" />
 
-    <script src="../client/index.js" defer></script>
+    <script type="module" src="../client/index.js"></script>
   </head>
   <body>
     <div id="root"></div>

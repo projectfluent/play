@@ -5,9 +5,7 @@ import query from 'query-string';
 import PanelsList from './panels-list';
 import Panels from './panels';
 import Share from './share';
-import { fetch_gist, reset_all } from './actions';
-
-import './style.css';
+import { fetch_gist, open_link, reset_all } from './actions';
 
 function Fetching() {
     return (
@@ -34,12 +32,12 @@ function FixtureError(props) {
 }
 
 class App extends Component {
-    UNSAFE_componentWillMount() {
-        const { id } = query.parse(window.location.search);
-
-        if (id) {
-            const { fetch_gist } = this.props;
-            fetch_gist(id);
+    componentDidMount() {
+        const { id, s: link } = query.parse(window.location.search);
+        if (link) {
+            this.props.open_link(link);
+        } else if (id) {
+            this.props.fetch_gist(id);
         }
     }
 
@@ -89,6 +87,7 @@ const mapState = state => ({
 
 const mapDispatch = {
     fetch_gist,
+    open_link,
     reset_all
 };
 

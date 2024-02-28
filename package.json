@@ -4,13 +4,14 @@
   "homepage": "https://projectfluent.org/play",
   "private": true,
   "scripts": {
-    "start": "parcel serve public/index.html",
+    "start": "parcel public/index.html",
     "build": "parcel build --public-url /play public/index.html",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "devDependencies": {
     "gh-pages": "^2.0.1",
-    "parcel-bundler": "^1.12.3"
+    "parcel": "^2.11.0",
+    "process": "^0.11.10"
   },
   "dependencies": {
     "@fluent/bundle": "0.14.0",
